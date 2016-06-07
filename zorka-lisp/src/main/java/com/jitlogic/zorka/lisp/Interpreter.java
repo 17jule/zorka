@@ -187,7 +187,7 @@ public class Interpreter {
             } catch (Exception e) {
                 LispException le = new LispException("Error evaluating expr", e);
                 le.addEvalItem(x);
-                throw e;
+                throw le;
             }
         }
     }
@@ -201,10 +201,16 @@ public class Interpreter {
     }
 
     public Seq readScript(String path) {
-        try (InputStream is = open(path)) {
+        InputStream is = null;
+        try {
+            is = open(path);
             return new Reader(new File(path).getName(), is).readAll();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new LispException("Cannot open script: " + path, e);
+        } finally {
+            if (is != null) {
+                try {is.close();} catch (IOException e) { }
+            }
         }
     }
 

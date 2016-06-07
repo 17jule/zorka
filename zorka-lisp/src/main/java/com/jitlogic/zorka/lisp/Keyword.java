@@ -64,7 +64,7 @@ public class Keyword {
         return 31 * name.hashCode() + (ns != null ? 17 * ns.hashCode() : 0);
     }
 
-    private static Map<String,Keyword> keywords = new HashMap<>();
+    private static Map<String,Keyword> keywords = new HashMap<String,Keyword>();
 
     /**
      * Returns keyword of given name.

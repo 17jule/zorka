@@ -38,7 +38,7 @@ public class NativeMethod implements Fn {
     @Override
     public Object apply(Interpreter ctx, Environment env, Seq args) {
         try {
-            if (method.getParameterCount() == 3) {
+            if (method.getParameterTypes().length == 3) {  // TODO this is expensive
                 return method.invoke(obj, ctx, env, args);
             } else {
                 return method.invoke(obj, args);

@@ -47,7 +47,7 @@ public class LispTestSuite extends ParentRunner<String> {
 
     @Override
     protected List<String> getChildren() {
-        List<String> lst = new ArrayList<>(tests.scripts().length);
+        List<String> lst = new ArrayList<String>(tests.scripts().length);
         Collections.addAll(lst, tests.scripts());
         return lst;
     }
@@ -66,7 +66,7 @@ public class LispTestSuite extends ParentRunner<String> {
             testForms = new Reader(child, is).readAll();
         } catch (Exception e) {
             notifier.fireTestFailure(new Failure(Description.createTestDescription(child, ""),
-                new AssertionError("Script not found:: " + name, e)));
+                new AssertionError("Script not found:: " + name)));
             return;
         }
         Interpreter ctx = new Interpreter();

@@ -39,13 +39,13 @@ public class JavaMethod implements Fn {
     @Override
     public Object apply(Interpreter ctx, Environment env, Seq args) {
         try {
-            Object[] xargs = new Object[method.getParameterCount()];
+            Object[] xargs = new Object[method.getParameterTypes().length]; // TODO this is expensive
             for (int i = 0; i < xargs.length - (method.isVarArgs() ? 1 : 0); i++) {
                 xargs[i] = car(args);
                 args = next(args);
             }
             if (method.isVarArgs()) {
-                Class<?> atype = method.getParameterTypes()[method.getParameterCount() - 1];
+                Class<?> atype = method.getParameterTypes()[method.getParameterTypes().length - 1];  // TODO this is expensive
                 Object[] vargs = (Object[])Array.newInstance(atype.getComponentType(), length(args));
                 for (int i = 0; i < vargs.length; i++) {
                     Object v = car(args);

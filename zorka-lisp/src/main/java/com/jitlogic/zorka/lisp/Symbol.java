@@ -64,7 +64,7 @@ public class Symbol {
         return 31 * name.hashCode() + (ns != null ? 17 * ns.hashCode() : 0);
     }
 
-    private static Map<String,Symbol> symbols = new HashMap<>();
+    private static Map<String,Symbol> symbols = new HashMap<String,Symbol>();
 
     /**
      * Returns symbol of given name.

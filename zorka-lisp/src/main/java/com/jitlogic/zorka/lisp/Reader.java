@@ -290,12 +290,12 @@ public class Reader {
         if (cc == -1 || Character.isWhitespace(cc)) {
             return ' ';
         }
-        if (!Character.isAlphabetic(cc)) {
+        if (!Character.isLetterOrDigit(cc)) {
             return (char)cc;
         }
         StringBuilder sb = new StringBuilder(16);
         sb.append((char)cc);
-        for (cc = getch(); Character.isAlphabetic(cc); cc = getch()) {
+        for (cc = getch(); Character.isLetterOrDigit(cc); cc = getch()) {
             sb.append((char)cc);
         }
         if (cc != -1) {

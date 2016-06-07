@@ -13,6 +13,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.jitlogic.zorka</groupId>
+            <artifactId>zorka-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>

@@ -79,7 +79,7 @@ public class LispTestSupport {
     }
 
     protected List vec(Object...objs) {
-        List<Object> vec = new ArrayList<>(objs.length);
+        List<Object> vec = new ArrayList<Object>(objs.length);
         for (Object obj : objs) {
             vec.add(obj);
         }

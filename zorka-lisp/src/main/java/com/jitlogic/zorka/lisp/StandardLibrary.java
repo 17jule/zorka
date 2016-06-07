@@ -198,7 +198,7 @@ public class StandardLibrary {
 
     @Primitive("array-list")
     public static List arrayList(Object...objs) {
-        List rslt = new ArrayList<>(objs.length);
+        List<Object> rslt = new ArrayList<Object>(objs.length);
         for (int i = 0; i < objs.length; i++) {
             rslt.add(objs[i]);
         }
@@ -379,7 +379,7 @@ public class StandardLibrary {
             throw new LispException("Uneven number of arguments passed to hash-map function.");
         }
 
-        Map m = new HashMap<>();
+        Map<Object,Object> m = new HashMap<Object,Object>();
 
         for (int i = 1; i < objs.length; i += 2) {
             m.put(objs[i-1], objs[i]);
@@ -606,7 +606,7 @@ public class StandardLibrary {
             throw new LispException("Uneven number of arguments passed to hash-map function.");
         }
 
-        Map m = new TreeMap<>();
+        Map<Object,Object> m = new TreeMap<Object,Object>();
 
         for (int i = 1; i < objs.length; i += 2) {
             m.put(objs[i-1], objs[i]);
@@ -617,7 +617,7 @@ public class StandardLibrary {
 
     @Primitive("vector")
     public static List<Object> vector(Seq lst) {
-        List<Object> vec = new ArrayList<>();
+        List<Object> vec = new ArrayList<Object>();
         for (Seq cur = lst; cur != null; cur = next(cur)) {
             vec.add(car(cur));
         }

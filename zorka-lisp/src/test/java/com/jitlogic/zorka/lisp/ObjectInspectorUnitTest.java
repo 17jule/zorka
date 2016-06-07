@@ -96,28 +96,28 @@ public class ObjectInspectorUnitTest {
     public void testInspectDoubleArrayLength() {
         double[] array = {1.0, 2.0, 3.0};
         assertEquals((Object)3, ObjectInspector.get(array, "length"));
-        assertEquals(2.0, ObjectInspector.get(array, 1), 0.01);
+        assertEquals(2.0, (Double)ObjectInspector.get(array, 1), 0.01);
     }
 
     @Test
     public void testInspectFloatArrayLength() {
         float[] array = {1, 2, 3};
         assertEquals((Object)3, ObjectInspector.get(array, "length"));
-        assertEquals((double)2, (double)(float)ObjectInspector.get(array, 1), 0.01);
+        assertEquals(2f, (Float)ObjectInspector.get(array, 1), 0.01);
     }
 
     @Test
     public void testInspectShortArrayLength() {
         short[] array = {1, 2, 3};
-        assertEquals((Object)3, ObjectInspector.get(array, "length"));
-        assertEquals((Object)(short) 2, ObjectInspector.get(array, 1));
+        assertEquals(3, ObjectInspector.get(array, "length"));
+        assertEquals((short) 2, ObjectInspector.get(array, 1));
     }
 
     @Test
     public void testInspectCharArrayLength() {
         char[] array = {'A', 'B', 'C'};
-        assertEquals((Object)3, ObjectInspector.get(array, "length"));
-        assertEquals((Object)'B', ObjectInspector.get(array, 1));
+        assertEquals(3, ObjectInspector.get(array, "length"));
+        assertEquals('B', ObjectInspector.get(array, 1));
     }
 
     @Test
@@ -135,8 +135,8 @@ public class ObjectInspectorUnitTest {
         map.put("b", 22);
         map.put("c", 33);
 
-        assertEquals((Object)11, ObjectInspector.get(map, "a"));
-        assertEquals((Object)3, ObjectInspector.get(map, "size()"));
+        assertEquals(11, ObjectInspector.get(map, "a"));
+        assertEquals(3, ObjectInspector.get(map, "size()"));
     }
 
 
