@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2015 Rafal Lewczuk <rafal.lewczuk@jitlogic.com>
+ * Copyright 2012-2016 Rafal Lewczuk <rafal.lewczuk@jitlogic.com>
  * <p/>
  * This is free software. You can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -434,9 +434,9 @@ public class ObjectInspector {
 
 
     public static List<Method> lookupMethods(Class<?> clazz, String name, boolean isStatic) {
-        Map<String,Method> m = new HashMap<>();
+        Map<String,Method> m = new HashMap<String,Method>();
         lookupMethods(clazz, name, m);
-        List<Method> rslt = new ArrayList<>(m.size());
+        List<Method> rslt = new ArrayList<Method>(m.size());
         for (Map.Entry<String,Method> e : m.entrySet()) {
             if (isStatic == Modifier.isStatic(e.getValue().getModifiers())) {
                 rslt.add(e.getValue());
@@ -705,7 +705,7 @@ public class ObjectInspector {
 
 
     public static Map<Symbol,Object> destructure(Object params, Seq args) {
-        Map<Symbol, Object> pmap = new HashMap<>();
+        Map<Symbol, Object> pmap = new HashMap<Symbol,Object>();
         return destructure(params, args, pmap);
     }
 
