@@ -1,0 +1,108 @@
+
+
+; No argument processing at all. All arguments are passed as varargs list.
+(deftest bare-destructing-test
+(defn func args
+  (is= args '((1 2 3))))
+  (func '(1 2 3)))
+
+
+; Standard named arguments
+(deftest standard-arg-processing-test
+  (defn func (a b)
+    (is= a 42)
+    (is= b 38)
+  (func 42 38)))
+
+
+; Standard named arguments plus varargs at the end
+(deftest combined-std-vararg-destructuring-test
+  (defn func (a b . c)
+    (is= a 1)
+    (is= b 2)
+    (is= c '(3 4)))
+  (func 1 2 3 4))
+
+
+; Nested destructuring
+(deftest nested-destructuring-test
+  (defn func (a (b c) d)
+    (is= a 1)
+    (is= b 2)
+    (is= c 3)
+    (is= d 4))
+  (func 1 '(2 3) 4))
+
+
+; Pass an argument and destructure it at the same time
+(deftest nested-and-aliased-destructuring-test
+  (defn func (a (b c :as d) e)
+    (is= a 1)
+    (is= b 2)
+    (is= c 3)
+    (is= d '(2 3 4))
+    (is= e 5))
+  (func 1 '(2 3 4) 5))
+
+
+; Destructure lists
+(deftest simple-list-destructuring-test
+  (defn func (a (b c) d)
+    (is= a 1)
+    (is= b 2)
+    (is= c 3)
+    (is= d 4))
+  (func 1 (array-list 2 3) 4))
+
+
+; Destructure maps (no keys, just simple iteration)
+(deftest sequable-map-destructuring-test
+  (defn func (a ((b c) (d e)) f)
+    (is= a 1)
+    (is= b 2)
+    (is= c 3)
+    (is= d 4)
+    (is= e 5)
+    (is= f 6))
+  (func 1 (tree-map 2 3 4 5) 6))
+
+
+; Destructure maps via keys using ObjectInspector and string arguments
+(deftest string-aliased-map-destructuring-test
+  (defn func (a (b "B" c "CCC") d)
+    (is= a 1)
+    (is= b 2)
+    (is= c 3)
+    (is= d 4))
+  (func 1 (hash-map "B" 2 "CCC" 3 "XXX" 42) 4))
+
+
+; Destructure maps via keys using ObjectInspector and keyword arguments
+(deftest keyword-aliased-str-map-destructuring-test
+  (defn func ((a :a b :b))
+    (is= a 1)
+    (is= b 2))
+  (func (hash-map "a" 1 "b" 2)))
+
+
+; Destructure maps via keys using ObjectInspector and keyword arguments
+(deftest keyword-aliased-kw-map-destructuring-test
+  (defn func ((a :a b :b))
+    (is= a 1)
+    (is= b 2))
+  (func (hash-map :a 1 :b 2)))
+
+
+(deftest keyword-aliased-keylist-map-destructuring-test
+  (defn func ((:keys (a b)))
+    (is= a 1)
+    (is= b 2))
+  (func (hash-map :a 1 "b" 2)))
+
+
+(deftest kw-aliased-with-defaults-destructuring
+  (defn func ((:keys (a b) :or (a 10 b 20)))
+    (is= a 1)
+    (is= b 20))
+  (func (hash-map :a 1 :c 30)))
+

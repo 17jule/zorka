@@ -1,0 +1,227 @@
+; /**
+;  * From book: The Seasoned Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 18: We Change Therefor We Are The Same !
+;  */
+
+
+(define kar car)
+(define kdr cdr)
+(define kons cons)
+(define set-kdr set-cdr)
+
+(define kounter)
+
+(define set-kounter)
+
+(define konsC
+  (let ((N 0))
+    (set! kounter
+      (lambda () N))
+    (set! set-kounter
+      (lambda (n)
+        (set! N n)))
+    (lambda (x y)
+      (set! N (inc N))
+      (kons x y))))
+
+
+
+(defn lots (m)
+  (cond
+    ((zero? m) '())
+    (else (kons 'egg (lots (dec m))))))
+
+(defn lenkth (l)
+  (cond
+    ((null? l) 0)
+    (else (inc (lenkth (kdr l))))))
+
+
+(deftest test-lots-lenkth
+  (is= '(egg egg egg) (lots 3))
+  (is= '(egg egg egg egg egg) (lots 5))
+  (is= 42 (lenkth (lots 42))))
+
+
+(defn add-at-end (l)
+  (cond
+    ((null? (kdr l))
+      (konsC (kar l) (kons 'egg nil)))
+    (else
+      (konsC (kar l) (add-at-end (kdr l))))))
+
+(deftest test-add-at-end
+  (is= '(egg egg egg egg) (add-at-end (lots 3)))
+  (is= 3 (kounter)) (set-kounter 0))
+
+
+(defn add-at-end-too (l)
+  (letrec
+    ((A (lambda (ls)
+          (cond
+            ((null? (kdr ls)) (set-kdr ls (kons 'egg nil)))
+            (else (A (kdr ls)))))))
+    (A l)
+    l))
+
+(deftest test-add-at-end
+  (set-kounter 0)
+  (is= '(egg egg egg egg) (add-at-end-too (lots 3)))
+  (is= 0 (kounter)))
+
+
+; Example shadows of car/cdr/cons
+
+(defn kons (kar kdr)
+  (lambda (selector)
+    (selector kar kdr)))
+
+(defn kar (c)
+  (c (lambda (a d) a)))
+
+(defn kdr (c)
+  (c (lambda (a d) d)))
+
+(deftest test-kons-kdr
+  (is= 'a (kar (kons 'a 'b)))
+  (is= 'b (kdr (kons 'a 'b))))
+
+
+; More sophisticated shadows of list functions (includes list termination and set-cdr)
+
+(defn bons (kar)
+  (let ((kdr nil))
+    (lambda (selector)
+      (selector
+        (lambda (x) (set! kdr x))
+        kar
+        kdr))))
+
+(defn kar (c)
+  (c (lambda (s a d) a)))
+
+(defn kdr (c)
+  (c (lambda (s a d) d)))
+
+(defn set-kdr (c x)
+  ((c (lambda (s a d) s)) x))
+
+(defn kons (a d)
+  (let ((c (bons a)))
+    (set-kdr c d)
+    c))
+
+(deftest test-lots-lenkth-kons
+  (is= 'a (kar (bons 'a)))
+  (is= 'a (kar (kons 'a 'b)))
+  (is= 'b (kdr (kons 'a 'b)))
+  (is= 'egg (kar (lots 3)))
+  (is= 'egg (kar (kdr (lots 3))))
+  (is= 3 (lenkth (lots 3))))
+
+
+(defn lots (m)
+  (cond
+    ((zero? m) '())
+    (else (konsC 'egg (lots (dec m))))))
+
+(defn add-at-end (l)
+  (cond
+    ((null? (kdr l))
+      (konsC (kar l) (konsC 'egg nil)))
+    (else
+      (konsC (kar l) (add-at-end (kdr l))))))
+
+(defn add-at-end-too (l)
+  (letrec
+    ((A (lambda (ls)
+          (cond
+            ((null? (kdr ls)) (set-kdr ls (konsC 'egg nil)))
+            (else (A (kdr ls)))))))
+    (A l)
+    l))
+
+
+
+(define dozen (lots 12))
+
+(deftest test-dozen-kounter
+  (is= 12 (kounter)))
+
+(define bakers-dozen (add-at-end dozen))
+
+(deftest test-add-at-end-kounter
+  (is= 25 (kounter)))
+
+(define bakers-dozen-too (add-at-end-too dozen))
+
+(deftest test-add-at-end-too-kounter
+  (is= 26 (kounter)))
+
+(define bakers-dozen-again (add-at-end dozen))
+
+(deftest test-add-at-end-again-kounter
+  (is= 40 (kounter)))
+
+(defn eklist? (ls1 ls2)
+  (cond
+    ((null? ls1) (null? ls2))
+    ((null? ls2) #f)
+    (else
+      (and
+        (eq? (kar ls1) (kar ls2))
+        (eklist? (kdr ls1) (kdr ls2))))))
+
+(defn test-eklist?-fn
+  (is (eklist? backers-dozen backers-dozen-too)))
+
+(defn same? (c1 c2)
+  (let ((t1 (kdr c1)) (t2 (kdr c2)))
+    (set-kdr c1 1)
+    (set-kdr c2 2)
+    (let ((v (= (kdr c1) (kdr c2))))
+      (set! c1 t1)
+      (set! c2 t2)
+      v)))
+
+(deftest test-same?-fn
+  (isnt (same? dozen bakers-dozen))
+  (is (same? dozen bakers-dozen-too))
+  (isnt (same? (kons 'egg nil) (kons 'egg nil))))
+
+
+(defn last-kons (ls)
+  (cond
+    ((null? (kdr ls)) ls)
+    (else (last-kons (kdr ls)))))
+
+(define long (lots 12))
+
+(set-kdr (last-kons long) long)
+
+(defn infinite-lenkth (p)
+  (letcc infinite
+    (letrec
+      ((C (lambda (p q)
+            (cond
+              ((same? p q) (infinite #f))
+              ((null? q) 0)
+              ((null? (kdr q)) 1)
+              (else
+                (+ (C (kdr p) (kdr (kdr q))) 2))))))
+      (cond
+        ((null? p) 0)
+        (else
+          (inc (C p (kdr p))))))))
+
+(deftest test-infinite-lenkth
+  ; TODO fix this
+  ;(is= 13 (infinite-lenkth dozen))
+  ;(is= #f (infinite-lenkth long))
+  )
+
+
+
+
+

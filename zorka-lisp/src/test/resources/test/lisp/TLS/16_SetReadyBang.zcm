@@ -1,0 +1,242 @@
+; /**
+;  * From book: The Seasoned Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 16: Set, Ready, Bang !
+;  */
+
+(define last 'angelfood)
+
+(defn sweet-toothL (food)
+  (set! last food)
+  (cons food (cons 'cake '())))
+
+(deftest test-sweet-toothL
+  (is= '(fruit cake) (sweet-toothL 'fruit))
+  (is= 'fruit last)
+  (is= '(carrot cake) (sweet-toothL 'carrot)))
+
+
+(define ingredients '())
+
+(defn sweet-toothR (food)
+  (set! ingredients (cons food ingredients))
+  (cons food (cons 'cake '())))
+
+(deftest test-sweet-toothR
+  (is= '(fruit cake) (sweet-toothR 'fruit))
+  (is= '(fruit) ingredients)
+  (is= '(carrot cake) (sweet-toothR 'carrot))
+  (is= '(carrot fruit) ingredients))
+
+
+(defn deep (n)
+  (cond
+    ((zero? n) 'pizza)
+    (else (cons (deep (dec n)) nil))))
+
+(deftest test-deep-fn
+  (is= '(((pizza))) (deep 3))
+  (is= '(((((((pizza))))))) (deep 7)))
+
+
+(define Ns '())
+(define Rs '())
+
+; /**
+;  * The Nineteenth Commandment:
+;  *
+;  * Use (set!...) to remember valuable things between
+;  * distinct uses of a function.
+;  */
+(defn deepR (n)
+  (let ((result (deep n)))
+    (set! Rs (cons result Rs))
+    (set! Ns (cons n Ns))
+    result))
+
+(deftest test-deepR
+  (is= '(((pizza))) (deepR 3))
+  (is= '(3) Ns)
+  (is= '((((pizza)))) Rs)
+  (is= '(((((pizza))))) (deepR 5))
+  (is= '(5 3) Ns)
+  (is= '((((((pizza))))) (((pizza)))) Rs))
+
+
+(defn find (n Ns Rs)
+  (letrec
+    ((A (lambda (ns rs)
+          (cond
+            ((null? ns) nil)
+            ((= (car ns) n) (car rs))
+            (else (A (cdr ns) (cdr rs)))))))
+    (A Ns Rs)))
+
+(deftest test-find
+  (is= '(((pizza))) (find 3 Ns Rs))
+  (is= '(5 3) Ns))
+
+
+
+(defn member? (a lat)
+  (letrec
+    ((yes? (lambda (l)
+      (cond
+        ((null? l) #f)
+        ((eq? (car l) a) #t)
+        (else (yes? (cdr l)))))))
+    (yes? lat)))
+
+(defn deepM (n)
+  (if (member? n Ns)
+    (find n Ns Rs)
+    (deepR n)))
+
+(deftest test-deepM
+  (is= '(((pizza))) (deepM 3))
+  (is= '(5 3) Ns)
+  (is= '((pizza)) (deepM 2))
+  (is= '(2 5 3) Ns)
+  (is= '(((pizza))(((((pizza)))))(((pizza)))) Rs))
+
+
+
+(defn deepM (n)
+  (if (member? n Ns)
+    (find n Ns Rs)
+    (let ((result (deep n)))
+      (set! Rs (cons result Rs))
+      (set! Ns (cons n Ns))
+      result)))
+
+(defn deep (n)
+  (cond
+    ((zero? n) 'pizza)
+    (else (cons (deepM (dec n)) '()))))
+
+(deftest test-deep-2
+  (is= '(((((((((pizza))))))))) (deepM 9))
+  (is= '(9 8 7 6 2 5 3) Ns))
+
+(define deepM
+  (let ((Rs '()) (Ns '()))
+    (lambda (n)
+      (if (member? n Ns)
+        (find n Ns Rs)
+        (let ((result (deep n)))
+          (set! Rs (cons result Rs))
+          (set! Ns (cons n Ns))
+          result)))))
+
+(deftest test-deepM-2
+  (is= '(((pizza))) (deepM 3))
+  (is= '((((((pizza)))))) (deepM 6))
+  (is= '((pizza)) (deepM 2)))
+
+
+(define deepM
+  (let ((Rs nil) (Ns nil))
+    (lambda (n)
+      (let ((found (find n Ns Rs)))
+        (if (null? found)
+          (let ((rslt (deep n)))
+            (set! Rs (cons rslt Rs))
+            (set! Ns (cons n Ns))
+            rslt)
+          found)))))
+
+(deftest test-deepM-3
+  (is= '(((pizza))) (deepM 3))
+  (is= '((((((pizza)))))) (deepM 6))
+  (is= '((pizza)) (deepM 2)))
+
+
+; /**
+;  * The Seventeenth Commandment: (final version)
+;  *
+;  * Use (set! x ...) for (let ((x ...) ...) only if there is at least
+;  * one (lambda ...) between it and the (let ...), of if the new value
+;  * for x is a function that refers to x.
+;  */
+(define length
+  (let ((h (lambda (l) 0)))
+    (set! h
+      (lambda (l)
+        (cond
+          ((null? l) 0)
+          (else (inc (h (cdr l)))))))
+    h))
+
+(deftest test-length-fn
+  (is= 0 (length '()))
+  (is= 1 (length '(1)))
+  (is= 2 (length '(2 3)))
+  (is= 3 (length '(1 2 3))))
+
+
+
+(defn L (length)
+  (lambda (l)
+    (cond
+      ((null? l) 0)
+      (else (inc (length (cdr l)))))))
+
+(define length
+  (let ((h (lambda (l) 0)))
+    (set! h (L (lambda (arg) (h arg))))
+    h))
+
+(deftest test-length-fn-L
+  (is= 0 (length '()))
+  (is= 1 (length '(1)))
+  (is= 2 (length '(2 3)))
+  (is= 3 (length '(1 2 3))))
+
+
+
+(defn Y! (f)
+  (let ((h (lambda (l) nil)))
+    (set! h (f (lambda (arg)
+                 ;(println "Y!")
+                 (h arg))))
+    h))
+
+(defn Y-bang (f)
+  (letrec ((h (f (lambda (arg) (h arg)))))
+    h))
+
+(define length
+  (Y! L))
+
+(deftest test-length-fn-L
+  (is= 0 (length '()))
+  (is= 1 (length '(1)))
+  (is= 2 (length '(2 3)))
+  (is= 3 (length '(1 2 3))))
+
+
+(defn D (f)
+  (lambda (s)
+    (cond
+      ((null? s) (println "null") 1)
+      ((atom? (car s)
+        ;(println "atom")
+        (f (cdr s))))
+      (else
+        (max
+          (inc (f (car s)))
+          (f (cdr s)))))))
+
+(define depth*
+  (Y! D))
+
+(deftest test-depth*-fn
+  ;(println "Start")
+  ; TODO fix this test
+  ;(is= 1 (depth* '()))
+  ;(is= 1 (depth* '(a)))
+  ;(is= 2 (depth* '((pickled) peppers (peppers pickled))))
+  ;(is= 4 (depth* '(margarine ((bitter butter) (makes) (batter (bitter))) butter)))
+  ;(is= 3 (depth* '(c (b (a b) a a))))
+  )
+

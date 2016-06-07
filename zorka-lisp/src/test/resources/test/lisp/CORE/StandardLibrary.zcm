@@ -1,0 +1,246 @@
+
+(deftest test-eq-predicates
+
+  ; Booleans
+  (is (eqv? #t #t))
+  (is (eq? #t #t))
+  (is (eqv? #f #f))
+  (is (eq? #f #f))
+  (isnt (eqv? #f #t))
+  (isnt (eqv? #t #f))
+
+  ; Symbols
+  (is (eqv? 'a 'a))
+  (isnt (eqv? 'a 'b))
+
+  ; Numbers
+  (is (eqv? 1 1))
+  (isnt (eqv? 1 1.0))
+  (isnt (eqv? 1 2))
+
+  ; Characters
+  (is (eqv? #\a #\a))
+  (is (eqv? #\( #\())
+  (is (eqv? #\) #\)))
+
+  ; Lists
+  (is (eqv? '() '()))
+
+  (define lst1 '(a b c))
+  (define lst2 '(a b c))
+  (define lst3 lst1)
+
+  (is (eqv? lst1 lst1))
+  (isnt (eqv? lst1 lst2))
+  (is (eqv? lst1 lst3))
+  (isnt (eqv? '() '(a b c)))
+  (is (equal? lst1 lst2))
+
+  ; Strings
+  (is (eqv? "a" "a"))
+  (isnt (eqv? "a" "b"))
+  (is (eqv? "AB" (str "A" "B")))
+  (isnt (eq? "AB" (str "A" "B")))
+  (is (equal? "AB" (str "A" "B")))
+
+  ; Procedures
+  (define proc1 (lambda (x) 10))
+  (define proc2 (lambda (x) 10))
+  (define proc3 proc1)
+
+  (is (eqv? proc1 proc1))
+  (isnt (eqv? proc1 proc2))
+  (is (eqv? proc1 proc3))
+)
+
+(deftest test-arith-operators
+  (is= 0 (+))
+  (is= 4 (+ 2 2))
+  (is= 8 (+ 2 2 2 2))
+  (is= 4L (+ 2 2L))
+  (is= 0 (+ nil))
+  (is= 4 (+ nil 2 nil 2 nil))
+  (is= 4.0 (+ 2 2.0))
+  (is= (to-byte 4) (+ (to-byte 2) (to-byte 2)))
+
+  (is= 0 (- 2 2))
+
+  (is= 4 (* 2 2))
+
+  (is= 1 (/ 2 2))
+
+  ; TODO this is propably too lax ...
+  (is= 2 (/ nil 4 nil nil 2 nil nil))
+)
+
+(deftest test-arith-cmp-operators
+  (is (= 2 2))
+  (is (>= 2 2))
+  (is (<= 2 2))
+  (isnt (< 2 2))
+  (isnt (> 2 2))
+  (isnt (= 1 2))
+  (isnt (>= 1 2))
+  (is (<= 1 2))
+  (is (< 1 2))
+  (isnt (> 1 2))
+  (isnt (= 2 1))
+  (is (>= 2 1))
+  (isnt (<= 2 1))
+  (isnt (< 2 1))
+  (is (> 2 1))
+)
+
+(deftest test-zero?
+  (is (zero? 0L))
+  (is (zero? 0))
+  (is (zero? (to-short 0)))
+  (is (zero? (to-byte 0)))
+  (is (zero? (to-float 0.0)))
+  (is (zero? (to-double 0.0)))
+
+  (isnt (zero? nil))
+  (isnt (zero? 10L))
+  (isnt (zero? 10))
+  (isnt (zero? (to-short 10)))
+  (isnt (zero? (to-byte 10)))
+  (isnt (zero? (to-double 10.0)))
+  (isnt (zero? (to-float 10.0)))
+)
+
+(deftest test-negative?
+  (is (positive? 5))
+  (isnt (positive? -1))
+  (is (negative? -2))
+  (isnt (negative? 8))
+)
+
+(deftest test-modulo-odd-even
+  (is= 1 (modulo 3 2))
+  (is (odd? 3))
+  (isnt (odd? 2))
+  (is (even? 2))
+  (isnt (even? 3))
+)
+
+(deftest test-abs
+  (is= 4 (abs 4))
+  (is= 2 (abs -2))
+)
+
+(deftest test-min-max
+  (is= 3 (max 1 2 3))
+  (is= 1 (min 1 2 3))
+  (is= 3 (max 1 nil 3))
+  (is= 1 (min 1 nil 3))
+  (is= 3 (max nil 1 nil 3))
+  (is= 1 (min nil 1 nil 3))
+  (is= nil (min))
+  (is= nil (max))
+  (is= nil (min nil nil))
+  (is= nil (max nil)))
+
+
+(deftest test-exact-inexact
+  (is (exact? 0L))
+  (is (exact? 0))
+  (is (exact? (to-short 0)))
+  (is (exact? (to-byte 0)))
+  (isnt (exact? (to-double 0)))
+  (isnt (exact? (to-float 0)))
+
+  (isnt (inexact? 0L))
+  (isnt (inexact? 0))
+  (isnt (inexact? (to-short 0)))
+  (isnt (inexact? (to-byte 0)))
+  (is (inexact? (to-float 0)))
+  (is (inexact? (to-double 0))))
+
+
+(deftest test-and-or
+  (is (and))
+  (is= 3 (and 1 2 3))
+  (isnt (and 1 nil 3))
+  (isnt (and 1 2 #f))
+  (isnt (and 1 2 nil))
+  (isnt (or))
+  (is= 1 (or 1 2 3))
+  (is= 3 (or #f nil 3)))
+
+
+(deftest test-eval
+  (is= 3 (eval '(length '(1 2 3)))))
+
+
+(deftest test-map
+  (is= '(3 4 5) (map (lambda (x) (+ 2 x)) '(1 2 3)))
+  (is= '((1) (2) (3)) (map list '(1 2 3)))
+  (is= '((1) (nil) (3)) (map list '(1 nil 3)))
+  (is= '((1) (#f) (2)) (map list '(1 #f 2))))
+
+
+(deftest test-map2
+  (is= '(3 5 7) (map (lambda (x y) (+ x y)) '(1 2 3) '(2 3 4))))
+
+
+(deftest test-apply
+  (is= 6 (apply + '(1 2 3))))
+
+
+(deftest test-let-bindings
+  (is= 5 (let ((x 2)(y 3)) (+ x y)))
+  (is= 6 (let* ((x 2) (y (+ x 2))) (+ x y))))
+
+
+(deftest test-macroexpand
+  (is=
+    '(define x (lambda (y) (+ y 1)))
+    (macroexpand '(defn x (y) (+ y 1))))
+  (is=
+    '(cond (a) (b))
+    (macroexpand '(or a b)))
+  (is=
+    '((lambda (x y) (+ x y)) 2 3)
+    (macroexpand '(let ((x 2)(y 3)) (+ x y))))
+)
+
+
+(deftest test-read-str
+  (is= 1 (read-str "1"))
+  (is= 1 (read-str "1 2 3"))
+  (is= '(a b c) (read-str "(a b c)")))
+
+
+(deftest test-reduce-fn
+  (is= nil (reduce + '()))
+  (is= 1 (reduce + '(1)))
+  (is= 6 (reduce + '(1 2 3))))
+
+
+(deftest test-get-fn
+  (is= 1 (get (hash-map :a 1 :b 2) :a))
+  (is= 3 (get (hash-map :a 1 :b 2) :c 3)))
+
+
+(deftest test-get->
+  (is= 42 (get-> 42))
+  (is= 1 (get-> (hash-map :a 1 :b 2) :a))
+  ;(is= nil (macroexpand '(get-> (hash-map :a (hash-map :b 2)) :a :b)))
+  (is= 2 (get-> (hash-map :a (hash-map :b 2)) :a :b)))
+
+
+(deftest test-letrec
+  (letrec ((x 1) (y 2))
+    (is= 1 x)
+    (is= 2 y)))
+
+; TODO some letrec sample with recursive lambda here
+
+
+(deftest test-callcc
+  (defn test (x)
+    (call-with-current-continuation
+      (lambda (hop)
+        (hop (+ x 2)))))
+  (is= 4 (test 2)))
+

@@ -1,0 +1,151 @@
+
+; Tests for basic evaluation
+
+(deftest test-eval-basic-types-and-constants
+  (is (null? nil))
+  (is (number? 1))
+  (is (symbol? (quote a)))
+  (is (keyword? :abc)))
+
+(deftest test-eval-if-stmt
+  (is= 1 (if #t 1 2))
+  (is= 2 (if #f 1 2))
+  (is= 1 (if 42 1 2))
+  (is= 2 (if nil 1 2))
+  (is= nil (if false 1)))
+
+(deftest test-begin-basic-block
+  (is= 3 (begin 1 2 3))
+  (is= nil (begin)))
+
+(deftest test-eval-pair-syntax
+  (is= '(1) '(1 . nil))
+  (is= '(1 2) '(1 . (2 . nil))))
+
+(define a 42)
+
+(deftest test-define-set!
+  (is= 42 a)
+  (is= 24 (define A 24))
+  (is= 48 (set! a 48))
+  (is= 48 a)
+  (is= 42 (define b (if false 33 42)))
+  (is= 42 b)
+  (is= 33 (set! b (if true 33 42)))
+  (is= 33 b))
+
+
+(deftest test-define-fn
+  (define (f x) (+ 2 x))
+  (is= 4 (f 2))
+  (define c 99)
+  (define f1 (lambda (c) c))
+  (define f2 (lambda (c) (f1 c)))
+  (is= 42 (f2 42)))
+
+
+(deftest test-define-call-lambda
+  (define f (lambda (x) (if x 1 2)))
+  (is= 1 (f true))
+  (is= 2 (f false)))
+
+
+(deftest test-macro-1
+  (define xand (macro (a b) (if a (if b b))))
+  (is= nil (xand true false))
+  (is= #t (xand true true)))
+
+
+(deftest test-macro-2
+  (define x 42)
+  (define y 24)
+  (define iff (macro (a b c) (if a b c)))
+  (is= 10 (iff true (set! x 10) (set! y 20)))
+  (is= 10 x)
+  (is= 24 y))
+
+
+(deftest test-macro-3
+  (define iff (macro (a b c) (if a b c)))
+  (define f (lambda (a b c) (iff a b c)))
+  (is= 10 (f true 10 20)))
+
+
+(deftest test-semiquote
+  (is= '(1 2 3) `(1 2 3))
+  (define a 2)
+  (is= 'a `a)
+  (is= 2 `,a)
+  (is= '(1 2 3) `(1 ,a 3))
+  (define l '(2 3))
+  (is= '(1 2 3 4) `(1 ,@l 4))
+  (is= '(1 (+ 2 2 3) 4 5) `(1 (+ ,a ,@l) 4 5)))
+
+
+(deftest test-variable-capture
+  (define adder (lambda (n) (lambda (m) (+ m n))))
+  (define add5 (adder 5))
+  (is= 10 (add5 5)))
+
+
+(deftest test-varargs-processing
+  (define test (lambda (x y . ks) ks))
+  (is= '() (test 1 2))
+  (is= '(3) (test 1 2 3))
+  (is= '(3 4) (test 1 2 3 4))
+  (is= '(3 4 5) (test 1 2 3 4 5)))
+
+
+(deftest test-closure-sole-varargs-processing
+  (define test (lambda ks (cdr ks)))
+  (is= '(1 2 3) (test 0 1 2 3)))
+
+(defn test-cond (x)
+  (cond
+    ((= x 1) 111)
+    ((= x 2) 222)
+    (else (+ 100 x))))
+
+(deftest test-cond
+  (is= 111 (test-cond 1))
+  (is= 222 (test-cond 2))
+  (is= 103 (test-cond 3)))
+
+(defn test-cond-2 (x)
+  (cond
+    ((= x 1))
+    ((= x 2))
+    (#f)))
+
+(deftest test-cond-2
+  (is (test-cond-2 1))
+  (is (test-cond-2 2))
+  (isnt (test-cond-2 3)))
+
+
+(defn test-cond-3 (x)
+  (cond
+    ((= x 1) => 111)
+    ((= x 2) => 222)
+    (else => (+ 100 x))))
+
+(deftest test-cond-3
+  (is= 111 (test-cond-3 1))
+  (is= 222 (test-cond-3 2))
+  (is= 103 (test-cond-3 3)))
+
+
+
+
+(defn test-cond-4 (x)
+  (cond
+    ((= x 1) 'xxx 111)
+    ((= x 2) 'xxx 222)
+    (else 'xxx (+ 100 x))))
+
+(deftest test-cond-4
+  (is= 111 (test-cond-4 1))
+  (is= 222 (test-cond-4 2))
+  (is= 103 (test-cond-4 3)))
+
+

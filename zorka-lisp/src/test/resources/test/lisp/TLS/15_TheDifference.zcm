@@ -1,0 +1,114 @@
+; /**
+;  * From book: The Seasoned Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 15: The Difference Between Men and Boys
+;  */
+
+(define x
+  (cons 'chicago (cons 'pizza '())))
+
+(set! x 'gone)
+
+(set! x 'skins)
+
+(defn gourmet (food)
+  (cons food (cons x '())))
+
+(deftest test-gourmet-1
+  (is= '(onion skins) (gourmet 'onion)))
+
+(set! x 'rings)
+
+(deftest test-gourmet-2
+  (is= '(onion rings) (gourmet 'onion)))
+
+(defn gourmand (food)
+  (set! x food)
+  (cons food (cons x '())))
+
+(deftest test-gourmand-1
+  (is= '(potato potato) (gourmand 'potato))
+  (is= x 'potato)
+  (is= '(rice rice) (gourmand 'rice)))
+
+
+(defn dinerR (food)
+  (set! x food)
+  (cons 'milkshake (cons food '())))
+
+(deftest test-dinerR-1
+  (is= '(milkshake onion) (dinerR 'onion))
+  (is= x 'onion)
+  (is= '(milkshake pecanpie) (dinerR 'pecanpie))
+  (is= x 'pecanpie)
+  (is= '(onion onion) (gourmand 'onion)))
+
+
+; /**
+;  * The Sixteenth Commandment:
+;  *
+;  * Use (set!...) only with names defined in (let...).
+;  */
+
+(define omnivore
+  (let ((x 'minestrone))
+    (lambda (food)
+      (set! x food)
+      (cons food (cons x '())))))
+
+(deftest test-omnivore
+  (is= '(bouillbaisse bouillbaisse) (omnivore 'bouillbaisse))
+  (is= '(milk milk) (omnivore 'milk)))
+
+
+(define gobbler
+  (let ((x 'minestrone))
+    (lambda (food)
+      (set! x food)
+      (cons food (cons x '())))))
+
+
+(deftest test-gobbler
+  (is= '(gumbo gumbo) (gobbler 'gumbo)))
+
+
+; /**
+;  * The Seventeenth Commandment: (preliminary version)
+;  *
+;  * Use (set!...x) for (let ((x...)) ...) only if there is
+;  * at least one (lambda... between it and the (let ((x ...
+;  */
+
+(define nibbler
+  (lambda (food)
+    (let ((x 'donut))
+      (set! x food)
+      (cons food (cons x '())))))
+
+(deftest test-nibbler
+  (is= '(cheerio cheerio) (nibbler 'cheerio)))
+
+
+(define food 'none)
+
+(defn glutton (x)
+  (set! food x)
+  (cons 'more (cons x (cons 'more (cons x nil)))))
+
+(define chez-nousbad
+  (lambda ()
+    (set! food x)
+    (set! x food)))
+
+
+; /**
+;  * The Eighteenth Commandment:
+;  *
+;  * Use (set! x ...) only when the value of that x refers to is no longer needed.
+
+(define ches-nous-good
+  (lambda ()
+    (let ((a food))
+      (set! food x)
+      (set! x a))))
+

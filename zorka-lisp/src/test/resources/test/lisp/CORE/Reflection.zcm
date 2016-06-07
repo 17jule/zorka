@@ -1,0 +1,6 @@
+
+(deftest test-call-java-static-methods
+  (is (fn? System/currentTimeMillis))
+  (is (long? (System/currentTimeMillis))))
+
+

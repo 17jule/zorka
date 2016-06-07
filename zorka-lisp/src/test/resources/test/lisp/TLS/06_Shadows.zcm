@@ -1,0 +1,131 @@
+
+; /**
+;  * From book: The Little Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 6: Shadows
+;  */
+
+
+(defn ^ (n m)
+  (cond
+    ((zero? m) 1)
+    (else (* n (^ n (- m 1))))))
+
+(defn numbered? (e)
+  (cond
+    ((atom? e) (number? e))
+    ((eq? (cadr e) '+)
+      (and (numbered? (car e)) (numbered? (caddr e))))
+    ((eq? (cadr e) '*)
+      (and (numbered? (car e)) (numbered? (caddr e))))
+    ((eq? (cadr e) '^)
+      (and (numbered? (car e)) (numbered? (caddr e))))
+    (else #f)))
+
+(deftest test-numbered?-fn
+  (is (numbered? 42))
+  (isnt (numbered? 'sausage))
+  (is (numbered? '(3 + (4 * 5))))
+  (isnt (numbered? '(2 * sausage))))
+
+
+
+; /**
+;  * The Seventh Commandment:
+;  *
+;  * Recur on the subparts that are of the same nature:
+;  * - on the sublists of a list;
+;  * - on the subexpressions of an arithmetic expression;
+;  */
+
+(defn value (e)
+  (cond
+    ((number? e) e)
+    ((eq? (cadr e) '+)
+      (+ (value (car e)) (value (caddr e))))
+    ((eq? (cadr e) '*)
+      (* (value (car e)) (value (caddr e))))
+    ((eq? (cadr e) '^)
+      (^ (value (car e)) (value (caddr e))))))
+
+(deftest test-value-fn
+  (is= 13 (value 13))
+  (is= 4 (value '(1 + 3)))
+  (is= 82 (value '(1 + (3 ^ 4)))))
+
+
+
+
+(defn value1 (e)
+  (cond
+    ((number? e) e)
+    ((eq? (car e) '+)
+      (+ (value1 (cadr e)) (value1 (caddr e))))
+    ((eq? (car e) '*)
+      (* (value1 (cadr e)) (value1 (caddr e))))
+    ((eq? (car e) '^)
+      (^ (value1 (cadr e)) (value1 (caddr e))))))
+
+(deftest test-value1-fn
+  (is= 13 (value1 13))
+  (is= 4 (value1 '(+ 1 3)))
+  (is= 82 (value1 '(+ 1 (^ 3 4)))))
+
+
+
+; /**
+;  * The Eigth Commandment:
+;  *
+;  * Use help functions to abstract from representations.
+;  */
+
+(defn value-fn (sym op arg1 arg2)
+  (lambda (e)
+    (cond
+      ((number? e) e)
+      ((eq? (op e) '+)
+        (+ ((eval sym) (arg1 e)) ((eval sym) (arg2 e))))      ; not good, we use eval because we have no recursion (yet)
+      ((eq? (op e) '*)
+        (* ((eval sym) (arg1 e)) ((eval sym) (arg2 e))))
+      ((eq? (op e) '^)
+        (^ ((eval sym) (arg1 e)) ((eval sym) (arg2 e)))))))
+
+
+(define a-value
+  (value-fn 'a-value cadr car caddr))
+
+(deftest test-a-value-fn
+  (is= 13 (a-value 13))
+  (is= 4 (a-value '(1 + 3)))
+  (is= 82 (a-value '(1 + (3 ^ 4)))))
+
+
+
+(define a-value1
+  (value-fn 'a-value1 car cadr caddr))
+
+(deftest test-a-value1-fn
+  (is= 13 (a-value1 13))
+  (is= 4 (a-value1 '(+ 1 3)))
+  (is= 82 (a-value1 '(+ 1 (^ 3 4)))))
+
+
+
+(defn sero? (n)
+  (null? n))
+
+(defn edd1 (n)
+  (cons '() n))
+
+(defn zub1 (n)
+  (cdr n))
+
+(defn pluz (n m)
+  (cond
+    ((sero? m) n)
+    (else (edd1 (pluz n (zub1 m))))))
+
+(deftest test-pluz-fn
+  (is= '(()()()) (pluz '(()) '(()()))))
+
+

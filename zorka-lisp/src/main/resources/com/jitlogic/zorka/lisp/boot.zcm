@@ -1,0 +1,115 @@
+
+; Some aliases to commonly used functions
+(define first car)
+(define second cadr)
+(define third caddr)
+(define rest cdr)
+
+(define nil? null?)
+
+(define defmacro
+  (macro (name args . body)
+    `(define ,name
+      (macro ,args ,@body))))
+
+
+(defmacro defn (name args . body)
+  `(define ,name
+    (lambda ,args ,@body)))
+
+
+(defmacro lazy-seq form
+  `(_lazy-seq (lambda () ,@form)))
+
+
+(defmacro if (icond ithen . ielse)
+  `(cond
+    (,icond ,ithen)
+    (else
+      ,(cond
+          ((null? ielse) 'nil)
+          (else `,@(car ielse))))))
+
+
+(defn any? (f coll)
+  (cond
+    ((null? coll) #f)
+    ((f (car coll)) #t)
+    (else (any? f (cdr coll)))))
+
+
+(defn map (f . cs)
+  (cond
+    ((null? (cdr cs))
+      (if (car cs)
+        (lazy-seq
+          (cons
+            (f (caar cs))
+            (map f (cdar cs))))))
+    (else
+      (cond
+        ((any? nil? cs) nil)
+        (lazy-seq
+          (cons
+            (apply f (map first cs))
+            (apply map f (map rest cs))))))))
+
+
+(defn reduce (f coll)
+  (cond
+    ((null? coll) nil)
+    ((null? (cdr coll)) (first coll))
+    (else
+      (reduce f
+        (cons
+          (f (first coll) (second coll))
+          (cddr coll))))))
+
+
+(defmacro or args
+  (if args `(cond ,@(map list args)) #f))
+
+
+(defmacro and args
+  (cond
+    ((null? args) #t)
+    ((null? (rest args)) `(cond (,(first args)) #f))
+    (else `(if ,(first args) (and ,@(rest args)) #f))))
+
+
+(defmacro let (bindings . body)
+  `((lambda ,(map first bindings) ,@body)
+    ,@(map second bindings)))
+
+
+(defmacro let* (bindings . body)
+  (if (null? bindings)
+    `((lambda () ,@body))
+    `(let (,(first bindings))
+      (let* ,(rest bindings) ,@body))))
+
+
+(defmacro letrec (bindings . body)
+  (let ((ks (map first bindings)) (vs (map second bindings)))
+    `(let ,(map (lambda (k) `(,k nil)) ks)
+      ,@(map (lambda (k v) `(set! ,k ,v)) ks vs)
+      ,@body)))
+
+
+(defmacro letcc (var . body)
+  `(call-with-current-continuation
+    (lambda (,var) ,@body)))
+
+
+(defn identity (x)
+  x)
+
+
+(defmacro get-> (obj . args)
+  (cond
+    ((null? args) obj)
+    ((null? (cdr args))
+      `(get ,obj ,(first args)))
+    (else
+      `(get-> (get ,obj ,(first args)) ,@(rest args)))))
+

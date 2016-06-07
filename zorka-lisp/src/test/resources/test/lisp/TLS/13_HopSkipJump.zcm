@@ -1,0 +1,210 @@
+; /**
+;  * From book: The Seasoned Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 13: Hop, Skip and Jump
+;  */
+
+
+(defn member? (a lat)
+  (letrec
+    ((yes? (lambda (l)
+      (cond
+        ((null? l) #f)
+        ((eq? (car l) a) #t)
+        (else (yes? (cdr l)))))))
+    (yes? lat)))
+
+(defn intersect (s1 s2)
+  (letrec
+    ((I (lambda (s)
+      (cond
+        ((null? s) '())
+        ((member? (car s) s2)
+         (cons (car s) (I (cdr s))))
+        (else (I (cdr s)))))))
+    (I s1)))
+
+(deftest test-intersect-fn
+  (is=
+    '(and macaroni)
+    (intersect '(stewed tomatoes and macaroni) '(macaroni and cheese))))
+
+
+
+(defn intersect-all (lset)
+  (letrec
+    ((A (lambda (l)
+          (cond
+            ((null? (cdr l)) (car l))
+            (else
+              (intersect (car l) (A (cdr l))))))))
+    (cond
+      ((null? lset) '())
+      (else (A lset)))))
+
+(deftest test-intersect-all-fn
+  (is= '(a) (intersect-all '((a b c)(c a d e)(e f g h a b))))
+  (is= '(3) (intersect-all '((3 mangos and) (3 kiwis and) (3 hamburgers))))
+  (is= '()  (intersect-all '((3 steaks and) (no food and) (three baked potatoes) (3 diet hamburgers))))
+  (is= '()  (intersect-all '((3 mangoes and) () (3 diet hamburgers)))))
+
+
+
+(defn intersect-all-2 (lset)
+  (call-with-current-continuation
+    (lambda (hop)
+      (letrec
+        ((A (lambda (lset)
+              (cond
+                ((null? (car lset)) (hop '()))
+                ((null? (cdr lset)) (car lset))
+                (else (intersect (car lset) (A (cdr lset))))))))
+        (cond
+          ((null? lset) '())
+          (else (A lset)))))))
+
+(deftest test-intersect-all-2-fn
+  (is= '(a) (intersect-all-2 '((a b c)(c a d e)(e f g h a b))))
+  (is= '(3) (intersect-all-2 '((3 mangos and) (3 kiwis and) (3 hamburgers))))
+  (is= '()  (intersect-all-2 '((3 steaks and) (no food and) (three baked potatoes) (3 diet hamburgers))))
+  (is= '()  (intersect-all-2 '((3 mangoes and) () (3 diet hamburgers)))))
+
+
+; /**
+;  * The Fourteenth Commandment
+;  *
+;  * Use (letcc...) to return values abruptly and promptly.
+;  */
+(defn intersect-all-3 (lset)
+  (letcc hop
+    (letrec
+      ((A (lambda (lset)
+            (cond
+              ((null? (car lset)) (hop '()))
+              ((null? (cdr lset)) (car lset))
+              (else (intersect (car lset) (A (cdr lset))))))))
+      (cond
+        ((null? lset) '())
+        (else (A lset))))))
+
+(deftest test-intersect-all-3-fn
+  (is= '(a) (intersect-all-3 '((a b c)(c a d e)(e f g h a b))))
+  (is= '(3) (intersect-all-3 '((3 mangos and) (3 kiwis and) (3 hamburgers))))
+  (is= '()  (intersect-all-3 '((3 steaks and) (no food and) (three baked potatoes) (3 diet hamburgers))))
+  (is= '()  (intersect-all-3 '((3 mangoes and) () (3 diet hamburgers)))))
+
+
+
+(defn intersect-all-4 (lset)
+  (letcc hop
+    (letrec
+      ((A (lambda (lset)
+        (cond
+          ((null? (car lset)) (hop '()))
+          ((null? (cdr lset)) (car lset))
+          (else (I (car lset) (A (cdr lset)))))))
+       (I (lambda (s1 s2)
+            (letrec
+              ((J (lambda (s)
+                    (cond
+                      ((null? s) '())
+                      ((member? (car s) s2) (cons (car s) (J (cdr s))))
+                      (else (J (cdr s)))))))
+              (cond
+                ((null? s2) (hop '()))
+                (else (J s1)))))))
+      (cond
+        ((null? lset) '())
+        (else (A lset))))))
+
+(deftest test-intersect-all-4-fn
+  (is= '(a) (intersect-all-4 '((a b c)(c a d e)(e f g h a b))))
+  (is= '(3) (intersect-all-4 '((3 mangos and) (3 kiwis and) (3 hamburgers))))
+  (is= '()  (intersect-all-4 '((3 steaks and) (no food and) (three baked potatoes) (3 diet hamburgers))))
+  (is= '()  (intersect-all-4 '((3 mangoes and) () (3 diet hamburgers)))))
+
+
+
+(defn rember (a lat)
+  (letrec
+    ((R (lambda (l)
+          (cond
+            ((null? l) '())
+            ((eq? a (car l)) (cdr l))
+            (else (cons (car l) (R (cdr l))))))))
+    (R lat)))
+
+(deftest test-rember
+  (is=
+    '(lamb chops and jelly)
+    (rember 'mint '(lamb chops and mint jelly)))
+  (is=
+    '(lamb chops and flavored mint jelly)
+    (rember 'mint '(lamb chops and mint flavored mint jelly)))
+  (is=
+    '(coffe tea cup and hick cup)
+    (rember 'cup '(coffe cup tea cup and hick cup)))
+  (is=
+    '(bacon lettuce and tomato)
+    (rember 'toast '(bacon lettuce and tomato)))
+  (is=
+    '(lettuce and tomato)
+    (rember 'bacon '(bacon lettuce and tomato)))
+  (is=
+    '(bacon lettuce tomato)
+    (rember 'and '(bacon lettuce and tomato)))
+  (is=
+    '(soy and tomato sauce)
+    (rember 'sauce '(soy sauce and tomato sauce))))
+
+
+
+(defn rember-beyond-first (a lat)
+  (letrec
+    ((R (lambda (l)
+          (cond
+            ((null? l) '())
+            ((eq? a (car l)) '())
+            (else (cons (car l) (R (cdr l))))))))
+    (R lat)))
+
+(deftest rember-beyond-first-test
+  (is=
+    '(noodles spaghetti spatzle bean-thread)
+    (rember-beyond-first 'roots '(noodles spaghetti spatzle bean-thread roots potatoes yam others rice)))
+  (is=
+    '(noodles spaghetti spatzle bean-thread roots potatoes yam)
+    (rember-beyond-first 'others '(noodles spaghetti spatzle bean-thread roots potatoes yam others rice)))
+  (is=
+    '(noodles spaghetti spatzle bean-thread roots potatoes yam others rice)
+    (rember-beyond-first 'sweetthing '(noodles spaghetti spatzle bean-thread roots potatoes yam others rice))))
+
+
+
+(defn rember-upto-last (a lat)
+  (letcc skip
+    (letrec
+      ((R (lambda (lat)
+            (cond
+              ((null? lat) '())
+              ((eq? (car lat) a)
+               (skip (R (cdr lat))))
+              (else
+                (cons
+                  (car lat)
+                  (R (cdr lat))))))))
+      (R lat))))
+
+(deftest test-rember-upto-last
+  (is=
+    '(potatoes yam others rice)
+    (rember-upto-last 'roots '(noodles spaghetti spatzle bean-thread roots potatoes yam others rice)))
+  (is=
+    '(noodles spaghetti spatzle bean-thread roots potatoes yam others rice)
+    (rember-upto-last 'sweetthing '(noodles spaghetti spatzle bean-thread roots potatoes yam others rice)))
+  (is=
+    '(gingerbreadman chocolate chip brownies)
+    (rember-upto-last 'cookies '(cookies chocolate mints caramel delight ginger snaps desserts cocolate mousse
+                                 vanilla ice cream German chocolate cake more cookies
+                                 gingerbreadman chocolate chip brownies))))
+

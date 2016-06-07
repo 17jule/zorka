@@ -1,0 +1,230 @@
+
+; /**
+; * From book: The Little Schemer, by Daniel P. Friedman and Matthias Felleisen.
+; *
+; * Chapter 2: Do It, Do It Again, and Again, and Again...
+; */
+
+
+; /**
+;  * The Second Commandment:
+;  *
+;  * Use cons to build lists.
+;  */
+
+
+(defn rember-old1 (a lat)
+  (cond
+    ((null? lat) '())
+    (else
+      (cond
+        ((eq? (car lat) a) (cdr lat))
+        (else (cons (car lat) (rember a (cdr lat))))))))
+
+
+(defn rember (a lat)
+  (cond
+    ((null? lat) '())
+    ((eq? (car lat) a) (cdr lat))
+    (else (cons (car lat)
+                (rember a (cdr lat))))))
+
+
+(deftest test-rember
+  (is=
+    '(lamb chops and jelly)
+    (rember 'mint '(lamb chops and mint jelly)))
+  (is=
+    '(lamb chops and flavored mint jelly)
+    (rember 'mint '(lamb chops and mint flavored mint jelly)))
+  (is=
+    '(coffe tea cup and hick cup)
+    (rember 'cup '(coffe cup tea cup and hick cup)))
+  (is=
+    '(bacon lettuce and tomato)
+    (rember 'toast '(bacon lettuce and tomato)))
+  (is=
+    '(lettuce and tomato)
+    (rember 'bacon '(bacon lettuce and tomato)))
+  (is=
+    '(bacon lettuce tomato)
+    (rember 'and '(bacon lettuce and tomato)))
+  (is=
+    '(soy and tomato sauce)
+    (rember 'sauce '(soy sauce and tomato sauce))))
+
+
+
+;    /**
+;     * The Third Commandment:
+;     *
+;     * When building a list, describe the first typical element,
+;     * and then cons it onto the natural recursion.
+;     */
+
+
+(defn firsts (l)
+  (cond
+    ((null? l) '())
+    (else (cons
+            (first (car l))        ; <-- This is typical element.
+            (firsts (cdr l))       ; <-- This is natural recursion.
+    ))))
+
+(deftest test-firsts
+  (is=
+    '(apple plum grape bean)
+    (firsts
+      '((apple peach pumpkin)
+        (plum pear cherry)
+        (grape raisin pea)
+        (bean carrot eggplant))))
+  (is= '(a c e) (firsts '((a b)(c d)(e f))))
+  (is= '() (firsts '()))
+  (is=
+    '(five four eleven)
+    (firsts
+      '((five plums)
+        (four)
+        (eleven green oranges))))
+  (is=
+    '((five plums) eleven (no))
+    (firsts
+      '(((five plums) four)
+        (eleven green oranges)
+        ((no) more)))))
+
+
+(defn seconds (l)
+  (cond
+    ((null? l) '())
+    (else (cons (second (car l))
+                (seconds (cdr l))))))
+
+(deftest test-seconds
+  (is= '(b d f) (seconds '((a b)(c d)(e f)))))
+
+
+
+(defn insertR (new old lat)
+  (cond
+    ((null? lat) '())
+    ((eq? (car lat) old) (cons old (cons new (cdr lat))))
+    (else (cons (car lat) (insertR new old (cdr lat))))))
+
+(deftest test-insertR
+  (is=
+    '(ice cream with fudge topping for dessert)
+    (insertR 'topping 'fudge '(ice cream with fudge for dessert)))
+  (is=
+    '(tacos tamales and jalapeno salsa)
+    (insertR 'jalapeno 'and '(tacos tamales and salsa)))
+  (is=
+    '(a b c d e f g d h)
+    (insertR 'e 'd '(a b c d f g d h))))
+
+
+(defn insertL (new old lat)
+  (cond
+    ((null? lat) '())
+    ((eq? (car lat) old) (cons new lat))
+    (else (cons (car lat) (insertL new old (cdr lat))))))
+
+(deftest test-insertL
+  (is=
+    '(a b c e d f g d h)
+    (insertL 'e 'd '(a b c d f g d h))))
+
+
+(defn subst (new old lat)
+  (cond
+    ((null? lat) '())
+    ((eq? (car lat) old) (cons new (cdr lat)))
+    (else (cons (car lat) (subst new old (cdr lat))))))
+
+(deftest test-subst
+  (is=
+    '(a b c e f g d h)
+    (subst 'e 'd '(a b c d f g d h)))
+  (is=
+    '(ice cream with topping for dessert)
+    (subst 'topping 'fudge '(ice cream with fudge for dessert))))
+
+
+(defn subst2 (new o1 o2 lat)
+  (cond
+    ((null? lat) '())
+    ((or (eq? (car lat) o1) (eq? (car lat) o2)) (cons new (cdr lat)))
+    (else (cons (car lat) (subst new o1 o2 (cdr lat))))))
+
+(deftest test-subst2
+  (is=
+    '(vanilla ice cream with chocolate topping)
+    (subst2 'vanilla 'chocolate 'banana '(banana ice cream with chocolate topping))))
+
+
+(defn multirember (a lat)
+  (cond
+    ((null? lat) '())
+    ((eq? (car lat) a) (multirember a (cdr lat)))
+    (else (cons (car lat) (multirember a (cdr lat))))))
+
+(deftest test-multirember
+  (is=
+    '(coffe tea and hick)
+    (multirember 'cup '(coffe cup tea cup and hick cup))))
+
+
+
+;    /**
+;     * The Fourth Commandment: (preliminary)
+;     *
+;     * Always change at least one argument while recurring.
+;     * It must be changed to be closer to termination.
+;     * The changing argument must be tested in the termination condition:
+;     * when using cdr, test termination with null?
+;     */
+
+
+(defn multiinsertR (new old lat)
+  (cond
+    ((null? lat) '())
+    ((eq? (car lat) old) (cons old (cons new (multiinsertR new old (cdr lat)))))
+    (else (cons (car lat) (multiinsertR new old (cdr lat))))))
+
+(deftest test-multiinsertR
+  (is=
+    '(a x b c a x d e a x)
+    (multiinsertR 'x 'a '(a b c a d e a)))
+  (is=
+    '(a x b c a x d e)
+    (multiinsertR 'x 'a '(a b c a d e))))
+
+
+(defn multiinsertL (new old lat)
+  (cond
+    ((null? lat) '())
+    ((eq? (car lat) old) (cons new (cons old (multiinsertL new old (cdr lat)))))
+    (else (cons (car lat) (multiinsertL new old (cdr lat))))))
+
+(deftest test-multiinsertL
+  (is=
+    '(x a b c x a d e x a)
+    (multiinsertL 'x 'a '(a b c a d e a)))
+  (is=
+    '(x a b c x a d e)
+    (multiinsertL 'x 'a '(a b c a d e))))
+
+
+(defn multisubst (new old lat)
+  (cond
+    ((null? lat) '())
+    ((eq? (car lat) old) (cons new (multisubst new old (cdr lat))))
+    (else (cons (car lat) (multisubst new old (cdr lat))))))
+
+(deftest test-multisubst
+  (is=
+    '(x b c x d x)
+    (multisubst 'x 'a '(a b c a d a))))
+
+

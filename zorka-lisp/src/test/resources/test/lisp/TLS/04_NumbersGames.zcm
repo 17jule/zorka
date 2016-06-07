@@ -1,0 +1,236 @@
+
+; /**
+;  * From book: The Little Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 4: Numbers Games
+;  */
+
+
+(defn add1 (n)
+  (+ n 1))
+
+
+(defn sub1 (n)
+  (- n 1))
+
+(deftest test-number-basics
+  (is (number? 14))
+  (is (number? -3))
+  (is (number? 3.14159))
+  (is (add1 67))
+  (is (zero? 0)))
+
+
+; /**
+;  * The First Commandment: (first revision)
+;  *
+;  * When recurring on a list of atoms, lat, ask two questions about it: (null? lat) and else
+;  * When recurring on a number, n, ask two questions about it: (zero? n) and else
+;  */
+
+(defn o+ (n m)
+  (cond
+    ((zero? m) n)
+    (else (add1 (o+ n (sub1 m))))))
+
+(defn o- (n m)
+  (cond
+    ((zero? m) n)
+    (else (sub1 (- n (sub1 m))))))
+
+(deftest test-o+-
+  (is= 58 (o+ 46 12))
+  (is= 11 (o- 14 3))
+  (is= 8 (o- 17 9))
+  (is= -7 (o- 18 25)))
+
+
+(defn tup? (tup)
+  (cond
+    ((null? tup) #t)
+    ((not (number? (car tup))) #f)
+    (else (tup? (cdr tup)))))
+
+(deftest test-tup
+  (is (tup? '(2 11 3 79 47 6)))
+  (is (tup? '(8 55 5 555)))
+  (isnt (tup? '(1 2 8 apple 4 3)))
+  (isnt (tup? '(3 (7 4) 13 9))))
+
+
+(defn addtup (tup)
+  (cond
+    ((null? tup) 0)
+    (else (+ (car tup) (addtup (cdr tup))))))
+
+(deftest test-addtup
+  (is= 18 (addtup '(3 5 2 8)))
+  (is= 43 (addtup '(15 6 7 12 3))))
+
+
+; /**
+;  * The Fourth Commandment: (first revision)
+;  *
+;  * Always change at least one argument while recurring.
+;  * It must be changed to be closer to termination.
+;  * The changeing argument must be tested in the termination condition:
+;  * - when using cdr, test termination with null?
+;  * - when using sub1, test termination with zero?
+;  */
+
+(defn o* (n m)
+  (cond
+    ((zero? m) 0)
+    (else (o+ n (o* n (sub1 m))))))
+
+(deftest test-op*
+  (is= 15 (o* 5 3))
+  (is= 52 (o* 13 4))
+  (is= 36 (o* 12 3)))
+
+
+; /**
+;  * The Fifth Commandment:
+;  *
+;  * When building a value with + always use 0 for the value of the terminating line,
+;  * for adding 0 does not change the value of an addition.
+;  *
+;  * When building value with * alwaus use 1 for the value of the terminating line,
+;  * for multiplying by 1 does not change the value of multiplication.
+;  *
+;  * When building a value with cons always consider () for then falue of terminating line.
+;  */
+
+(defn tup+ (tup1 tup2)
+  (cond
+    ((null? tup1) tup2)
+    ((null? tup2) tup1)
+    (else (cons (o+ (car tup1) (car tup2)) (tup+ (cdr tup1) (cdr tup2))))))
+
+(deftest test-tup+
+  (is= '(11 11 11 11 11) (tup+ '(3 6 9 11 4) '(8 5 2 0 7)))
+  (is= '(6 9) (tup+ '(2 3) '(4 6)))
+  (is= '(7 13) (tup+ '(3 7) '(4 6)))
+  (is= '(7 13 8 1) (tup+ '(3 7) '(4 6 8 1)))
+  (is= '(7 13 8 1) (tup+ '(3 7 8 1) '(4 6))))
+
+
+(defn o> (n m)
+  (cond
+    ((zero? n) #f)
+    ((zero? m) #t)
+    (else (o> (sub1 n) (sub1 m)))))
+
+(deftest test-op>
+  (isnt (o> 12 133))
+  (is (o> 120 11))
+  (isnt (o> 3 3)))
+
+
+(defn o< (n m)
+  (cond
+    ((zero? m) #f)
+    ((zero? n) #t)
+    (else (o< (sub1 n) (sub1 m)))))
+
+(deftest test-op<
+  (is (o< 4 6))
+  (isnt (o< 8 3))
+  (isnt (o< 6 6)))
+
+
+(defn oo= (n m)
+  (cond
+    ((zero? m) (zero? n))
+    ((zero? n) #f)
+    (else (oo= (sub1 n) (sub1 m)))))
+
+(deftest test-op=
+  (is (oo= 2 2))
+  (isnt (oo= 2 3)))
+
+
+(defn o= (n m)
+  (cond
+    ((o< n m) #f)
+    ((o> n m) #f)
+    (else #t)))
+
+
+(defn o^ (n m)
+  (cond
+   ((zero? m) 1)
+   (else (o* n (o^ n (sub1 m))))))
+
+(deftest test-op^
+  (is= 1 (o^ 1 1))
+  (is= 8 (o^ 2 3))
+  (is= 125 (o^ 5 3)))
+
+
+(defn o/ (n m)
+  (cond
+   ((o< n m) 0)
+   (else (add1 (o/ (o- n m) m)))))
+
+(deftest test-op/
+  (is= 5 (o/ 15 3))
+  (is= 3 (o/ 15 4)))
+
+
+(defn len (lat)
+  (cond
+    ((null? lat) 0)
+    (else (add1 (len (cdr lat))))))
+
+(deftest test-len
+  (is= 6 (len '(hotdogs with mustard sauerkraut and pickles)))
+  (is= 5 (len '(ham and cheese on rye))))
+
+
+(defn pick (n lat)
+  (cond
+    ((zero? (sub1 n)) (car lat))
+    (else (pick (sub1 n) (cdr lat)))))
+
+(deftest test-pick
+  (is= 'macaroni (pick 4 '(lasagna spaghetti ravioli macaroni meatball))))
+
+
+(defn rempick (n lat)
+  (cond
+    ((zero? (sub1 n)) (cdr lat))
+    (else (cons (car lat) (rempick (sub1 n) (cdr lat))))))
+
+(deftest test-rempick
+  (is= '(hotdogs with mustard) (rempick 3 '(hotdogs with hot mustard))))
+
+
+(defn no-nums (lat)
+  (cond
+    ((null? lat) '())
+    ((number? (car lat)) (no-nums (cdr lat)))
+    (else (cons (car lat) (no-nums (cdr lat))))))
+
+(deftest test-nonums
+   (is= '(pears prunes dates) (no-nums '(5 pears 6 prunes 9 dates))))
+
+
+(defn all-nums (lat)
+  (cond
+    ((null? lat) '())
+    ((number? (car lat)) (cons (car lat) (all-nums (cdr lat))))
+    (else (all-nums (cdr lat)))))
+
+(deftest test-all-nums
+  (is= '(5 6 9) (all-nums '(5 pears 6 prunes 9 dates))))
+
+
+(defn occur (a lat)
+  (cond
+    ((null? lat) 0)
+    ((eq? a (car lat)) (add1 (occur a (cdr lat))))
+    (else (occur a (cdr lat)))))
+
+(deftest test-occur
+  (is= 4 (occur 'the '(the lasagna the spaghetti the ravioli the macaroni a meatball))))

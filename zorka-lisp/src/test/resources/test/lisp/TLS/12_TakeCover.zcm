@@ -1,0 +1,195 @@
+; /**
+;  * From book: The Seasoned Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 12: Take Cover
+;  */
+
+
+; /**
+;  * The Twelth Commandment:
+;  *
+;  * Use (letrec...) to remove arguments that do not change for recursive applications.
+;  */
+
+(defn multirember (a lat)
+  ((letrec
+    ((mr (lambda (lat)
+      (cond
+        ((null? lat) nil)
+        ((eq? a (car lat)) (mr (cdr lat)))
+        (else (cons (car lat) (mr (cdr lat))))))))
+      mr)
+    lat))
+
+
+(deftest test-multirember
+  (is=
+    '(coffe tea and hick)
+    (multirember 'cup '(coffe cup tea cup and hick cup)))
+  (is=
+    '(apple custard linzer torte)
+    (multirember 'pie '(apple custard pie linzer pie torte))))
+
+
+
+(defn member? (a lat)
+  (letrec
+    ((yes? (lambda (l)
+      (cond
+        ((null? l) #f)
+        ((eq? (car l) a) #t)
+        (else (yes? (cdr l)))))))
+    (yes? lat)))
+
+(deftest test-member-fn
+  (is= #f (member? 'ice '(salad greens with pears brie cheese frozen yoghurt)))
+  (is= #t (member? 'brie '(salad greens with pears brie cheese frozen yoghurt))))
+
+
+
+(defn union-1 (set1 set2)
+  (letrec
+    ((U (lambda (s)
+      (cond
+        ((null? s) set2)
+        ((member? (car s) set2) (U (cdr s)))
+        (else (cons (car s) (U (cdr s))))))))
+    (U set1)))
+
+
+(deftest test-union-1-fn
+  (is=
+    '(tomatoes casserole macaroni and cheese)
+    (union-1 '(tomatoes and macaroni casserole) '(macaroni and cheese))))
+
+
+; /**
+;  * The Thirteenth Commandment:
+;  *
+;  * Use (letrec ...) to hide and to protect functions.
+;  */
+
+(defn union-2 (s1 s2)
+  (letrec
+    ((U (lambda (s)
+      (cond
+        ((null? s) s2)
+        ((M? (car s) s2) (U (cdr s)))
+        (else (cons (car s) (U (cdr s)))))))
+    (M? (lambda (a lat)
+          (cond
+            ((null? lat) #f)
+            ((eq? a (car lat)) #t)
+            (else (M? a (cdr lat)))))))
+    (U s1)))
+
+
+(deftest test-union-2-fn
+  (is=
+    '(tomatoes casserole macaroni and cheese)
+    (union-2 '(tomatoes and macaroni casserole) '(macaroni and cheese))))
+
+
+(defn union-3 (s1 s2)
+  (letrec
+    ((U (lambda (s)
+          (cond
+            ((null? s) s2)
+            ((M? (car s) s2) (U (cdr s)))
+            (else (cons (car s) (U (cdr s)))))))
+    (M? (lambda (a lat)
+          (letrec
+            ((N?
+              (lambda (lat)
+                (cond
+                  ((null? lat) #f)
+                  ((eq? (car lat) a) #t)
+                  (else (N? (cdr lat)))))))
+            (N? lat)))))
+    (U s1)))
+
+(deftest test-union-3-fn
+  (is=
+    '(tomatoes casserole macaroni and cheese)
+    (union-3 '(tomatoes and macaroni casserole) '(macaroni and cheese))))
+
+
+
+(defn two-in-a-row? (l)
+  (letrec
+    ((W (lambda (a l)
+          (cond
+            ((null? l) #f)
+            ((eq? a (car l)) #t)
+            (else (W (car l) (cdr l)))))))
+    (cond
+      ((null? l) #f)
+      (else (W (car l) (cdr l))))))
+
+(deftest test-two-in-a-row?
+  (is (two-in-a-row? '(how many wood chuck chuck woodchuck)))
+  (isnt (two-in-a-row? '(how many wood chuck woodchuck))))
+
+
+
+(define two-in-a-row-2?
+  (letrec
+    ((W (lambda (a l)
+          (cond
+            ((null? l) #f)
+            ((eq? a (car l)) #t)
+            (else (W (car l) (cdr l)))))))
+    (lambda (l)
+      (cond
+        ((null? l) #f)
+        (else (W (car l) (cdr l)))))))
+
+(deftest test-two-in-a-row?
+  (is (two-in-a-row? '(how many wood chuck chuck woodchuck)))
+  (isnt (two-in-a-row? '(how many wood chuck woodchuck))))
+
+
+
+(defn sum-of-prefixes (t)
+  (letrec
+    ((S (lambda (s t)
+          (cond
+            ((null? t) nil)
+            (else
+              (cons
+                (+ s (car t))
+                (S (+ s (car t)) (cdr t))))))))
+    (S 0 t)))
+
+(deftest test-sum-of-prefixes
+  (is= '(1 2 3 4 5) (sum-of-prefixes '(1 1 1 1 1))))
+
+
+(defn pick (n lat)
+  (cond
+    ((null? lat) nil)
+    ((= n 1) (car lat))
+    (else (pick (dec n) (cdr lat)))))
+
+
+(defn scramble (tup)
+  (letrec
+    ((P (lambda (tup rp)
+          (cond
+            ((null? tup) nil)
+            (else
+              (cons
+                (pick (car tup) (cons (car tup) rp))
+                (P (cdr tup) (cons (car tup) rp))))))))
+    (P tup nil)))
+
+(deftest test-scramble
+  (is=
+    '(1 1 1 1 1 4 1 1 1 9)
+    (scramble '(1 1 1 3 4 2 1 1 9 2)))
+  (is=
+    '(1 1 1 1 1 1 1 1 1)
+    (scramble '(1 2 3 4 5 6 7 8 9)))
+  (is=
+    '(1 1 1 1 1 1 1 1 2 8 2)
+    (scramble '(1 2 3 1 2 3 4 1 8 2 10))))

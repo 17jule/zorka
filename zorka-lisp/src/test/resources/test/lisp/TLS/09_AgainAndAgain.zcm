@@ -1,0 +1,157 @@
+; /**
+;  * From book: The Little Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 9: Lambda The Ultimate
+;  */
+
+(defn add1 (n)
+  (+ n 1))
+
+(defn sub1 (n)
+  (- n 1))
+
+
+(defn pick (n lat)
+  (cond
+    ((zero? (sub1 n)) (car lat))
+    (else (pick (sub1 n) (cdr lat)))))
+
+
+(defn keep-looking (a n lat)
+  (cond
+    ((number? n) (keep-looking a (pick n lat) lat))
+    (else (eq? a n))))
+
+
+(defn looking (a lat)
+  (keep-looking a (pick 1 lat) lat))
+
+(deftest test-looking-fn
+  (is (looking 'caviar '(6 2 4 caviar 5 7 3)))
+  (isnt (looking 'caviar '(6 2 grits caviar 5 7 3))))
+
+
+(defn eternity (x)
+  (eternity x))
+
+
+(defn build (s1 s2)
+  (cons s1 (cons s2 (quote ()))))
+
+
+(defn shift (p)
+  (build (first (first p))
+    (build (second (first p))
+      (second p))))
+
+(deftest test-shift-fn
+  (is= '(a (b c)) (shift '((a b) c)))
+  (is= '(a (b (c d))) (shift '((a b) (c d)))))
+
+
+(defn a-pair? (p)
+  (cond
+    ((or (atom? p) (null? p) (null? (cdr p))) #f)
+    (else (null? (cddr p)))))
+
+
+(defn align (pora)
+  (cond
+    ((atom? pora) pora)
+    ((a-pair? (first pora))
+      (align (shift pora)))
+    (else
+      (build (first pora)
+      (align (second pora))))))
+
+(deftest test-align-fn
+  (is= '(a (b (c d))) (align '((a b) (c d)))))
+
+
+(defn length* (pora)
+  (cond
+    ((atom? pora) 1)
+    (else
+      (+
+        (length* (first pora))
+        (length* (second pora))))))
+
+(deftest test-length*-fn
+  (is= 4 (length* '((a b) (c d))))
+  (is= 4 (length* '(a (b (c d))))))
+
+
+(defn weight* (p)
+  (cond
+    ((atom? p) 1)
+    (else
+      (+
+        (* (weight* (first p)) 2)
+        (weight* (second p))))))
+
+(deftest test-weight-fn
+  (is= 7 (weight* '((a b) c)))
+  (is= 5 (weight* '(a (b c)))))
+
+
+
+(defn revpair (p)
+  (build (second p) (first p)))
+
+
+(defn shuffle (pora)
+  (cond
+    ((atom? pora) pora)
+    ((a-pair? (first pora))
+      (shuffle (revpair pora)))
+    (else
+      (build
+        (first pora)
+        (shuffle (second pora))))))
+
+(deftest test-shuffle-fn
+  (is= '(a (b c)) (shuffle '(a (b c))))
+  (is= '(a b) (shuffle '(a b))))
+
+
+
+(defn A (n m)
+  (cond
+    ((zero? n) (add1 m))
+    ((zero? m) (A (sub1 n) 1))
+    (else (A (sub1 n) (A n (sub1 m))))))
+
+(deftest test-A-fn
+  (is= 2 (A 1 0))
+  (is= 3 (A 1 1))
+  (is= 7 (A 2 2)))
+
+
+
+(define length1
+  ((lambda (mklength) (mklength mklength))
+    (lambda (mklength)
+      (lambda (l)
+        (cond
+          ((null? l) 0)
+          (else
+            (inc ((mklength mklength) (cdr l)))))))))
+
+(deftest test-length1-fn
+  (is= 3 (length1 '(a b c))))
+
+
+;(define length2
+;  ((lambda (mklength) (mklength mklength))
+;    (lambda (mklength)
+;      ((lambda (length)
+;        (lambda (l)
+;          (cond
+;            ((null? l) 0)
+;            (else (inc (length (cdr l)))))))
+;      (mklength mklength)))) )
+
+; TODO will this work at all ?
+;(deftest test-length2-fn
+;  (is= 3 (length2 '(a b c))))
+

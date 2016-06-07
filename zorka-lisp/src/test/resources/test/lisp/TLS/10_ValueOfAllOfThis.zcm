@@ -1,0 +1,240 @@
+; /**
+;  * From book: The Little Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 10: What Is The Value Of All Of This ?
+;  */
+
+(defn lookup-in-entry-helper (n ns vs f)
+  (cond
+    ((null? ns) (f n))
+    ((eq? (car ns) n) (car vs))
+    (else (lookup-in-entry-helper n (cdr ns) (cdr vs) f))))
+
+(defn lookup-in-entry (n e f)
+  (lookup-in-entry-helper n (first e) (second e) f))
+
+(deftest test-lookup-in-entry-fn
+  (is=
+    'tastes
+    (lookup-in-entry 'entree
+      '((appetizer entree beverage) (food tastes good))
+      (lambda (x) nil)))
+  (is= nil
+    (lookup-in-entry 'dessert
+      '((appetizer entree beverage) (food      tastes good))
+      (lambda (x) nil))))
+
+
+
+(define extend-table cons)
+
+
+(defn lookup-in-table (name table table-f)
+  (cond
+    ((null? table) (table-f name))
+    (else
+      (lookup-in-entry name (car table)
+        (lambda (name)
+          (lookup-in-table name (cdr table) table-f))))))
+
+(deftest test-lookup-in-table-fn
+  (is= 'spaghetti
+    (lookup-in-table 'entree
+      '(((entree dessert) (spaghetti spumoni)) ((appetizer entree beverage) (food tastes good)))
+      (lambda (name) nil))))
+
+
+(defn build (s1 s2)
+  (cons s1 (cons s2 (quote ()))))
+
+
+(defn *const (e table)
+  (cond
+    ((number? e) e)
+    ((eq? e #t) #t)
+    ((eq? e #f) #f)
+    (else
+      (build (quote primitive) e))))
+
+
+(define text-of second)
+
+
+(defn *quote (e table)
+  (text-of e))
+
+
+(defn initial-table (name)
+  (car (quote ())))
+
+
+(defn *identifier (e table)
+  (lookup-in-table e table initial-table))
+
+
+(defn *lambda (e table)
+  (build
+    (quote non-primitive)
+    (cons table (cdr e))))
+
+
+(define table-of first)
+
+
+(define formals-of second)
+
+
+(define body-if third)
+
+
+(defn else? (x)
+  (cond
+    ((atom? x) (eq? x (quote else)))
+    (else #f)))
+
+
+(define question-of first)
+
+
+(define answer-of second)
+
+
+(defn evcon (lines table)
+  (cond
+    ((else? (question-of (car lines)))
+     (meaning (answer-of (car lines)) table)
+    ((meaning (question-of (car lines)) table)
+     (meaning (answer-of (car lines)) table))
+    (else (evcon (cdr lines) table)))))
+
+
+(define cond-lines-of cdr)
+
+
+(defn *cond (e table)
+  (evcon (cond-lines-of e) table))
+
+
+(defn evlis
+  (lambda (args table)
+    (cond
+      ((null? args) (quote ()))
+      (else
+        (cons
+          (meaning (car args) table)
+          (evlis (cdr args) table))))))
+
+
+(defn apply (fun vals)
+  (cond
+    ((primitive? fun)
+     (apply-primitive (second fun) vals))
+    ((non-primitive? fun)
+     (apply-closure (second fun) vals))))
+
+
+(defn apply-closure (closure vals)
+  (meaning
+    (body-of closure)
+    (extend-table
+      (new-entry (formals-of closure) vals)
+      (table-of closure))))
+
+
+(define function-of car)
+
+
+(define arguments-of cdr)
+
+
+(defn primitive? (l)
+  (eq? (first l) (quote primitive)))
+
+
+(defn non-primitive? (l)
+  (eq? (first l) (quote non-primitive)))
+
+
+(defn _atom? (x)
+  (cond
+    ((atom? x) #t)
+    ((null? x) #f)
+    ((eq? (car x) (quote primitive)) #t)
+    ((eq? (car x) (quote non-primitive)) #t)
+    (else #f)))
+
+
+(defn apply-primitive (name vals)
+  (cond
+    ((eq? name 'cons) (cons (first vals) (second vals)))
+    ((eq? name 'car) (car (first vals)))
+    ((eq? name 'cdr) (cdr (first vals)))
+    ((eq? name 'null?) (null? (first vals)))
+    ((eq? name 'eq?) (eq? (first vals) (second vals)))
+    ((eq? name 'atom?) (_atom? (first vals)))
+    ((eq? name 'zero?) (zero? (first vals)))
+    ((eq? name 'add1) (add1 (first vals)))
+    ((eq? name 'sub1) (sub1 (first vals)))
+    ((eq? name 'number?) (number? (first vals)))
+  ))
+
+
+(defn *application (e table)
+  (apply
+    (meaning (function-of e) table)
+    (evlis (arguments-of e) table)))
+
+
+(defn atom-to-action (e)
+  (cond
+    ((number? e) *const)
+    ((eq? e #t) *const)
+    ((eq? e #t) *const)
+    ((eq? e 'cons) *const)
+    ((eq? e 'car) *const)
+    ((eq? e 'cdr) *const)
+    ((eq? e 'null?) *const)
+    ((eq? e 'eq?) *const)
+    ((eq? e 'atom?) *const)
+    ((eq? e 'zero?) *const)
+    ((eq? e 'add1) *const)
+    ((eq? e 'sub1) *const)
+    ((eq? e 'number?) *const)
+    (else *identifier)))
+
+
+(defn list-to-action (e)
+  (cond
+    ((atom? (car e))
+     (cond
+       ((eq? (car e) 'quote) *quote)
+       ((eq? (car e) 'lambda) *lambda)
+       ((eq? (car e) 'cond) *cond)
+       (else *application))
+    (else *application))))
+
+
+(defn expression-to-action (e)
+  (cond
+    ((atom? e) (atom-to-action e))
+    (else (list-to-action e))))
+
+
+(defn meaning (e table)
+  ((expression-to-action e) e table))
+
+
+; This is interpreter function - (eval ...)
+(defn value (e)
+  (meaning e (quote ())))
+
+
+(deftest test-meaning-fn
+  (is= #t (meaning 'coffee '(((coffee) (#t)) ((klatsch party) (5 (6))))))
+  (is= 5 (meaning 'klatsch '(((coffee) (#t)) ((klatsch party) (5 (6))))))
+  (is= nil (meaning 'grog '(((coffee) (#t)) ((klatsch party) (5 (6)))))))
+
+
+(deftest test-value-fn
+  (is= 1 (value 1)))
+

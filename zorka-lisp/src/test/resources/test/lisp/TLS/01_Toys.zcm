@@ -1,0 +1,117 @@
+
+
+; /**
+;  * From book: The Little Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 1: Toys.
+;  */
+
+
+(deftest atom-fun
+  (is (atom? 'atom))    ; This is an atom because it begins with the letter 'a'.
+  (is (atom? 'turkey))  ; This is an atom because it begins with a letter.
+  (is (atom? 1492))     ; This is an atom because it is a string of digits.
+  (is (atom? 'u))       ; .. and so on. No more comments. Go and read the book.
+  (is (atom? '*abc$))
+  (isnt (atom? ()))
+  (isnt (atom? '(Harry had a heap of apples)))
+  (is (atom? (car '(Harry had a heap of apples))))
+  (isnt (atom? (cdr '(Harry had a heap of apples))))
+  (isnt (atom? (cdr '(Harry))))
+  (is (atom? (car (cdr '(swing low sweet cherry oat)))))
+  (isnt (atom? (car (cdr '(swing (low sweet) cherry oat)))))
+)
+
+(deftest list-fun
+  (is (list? '(atom)))
+  (is (list? '(atom turkey or)))
+  (is (list? '((atom turkey) or)))
+  (is (list? '(how are you going so far)))
+  (is= 6 (length '(how are you going so far)))
+  (is (list? '(((how) are) ((you) (doing so)) far)))
+  (is= 3 (length '(((how) are) ((you) (doing so)) far)))
+  (is (list? ()))
+  (is (list? '(()()()())))
+)
+
+
+; /**
+;  * The Law of Car: The primitive 'car' is defined only for non-empty lists.
+;  */
+(deftest car-fun
+  (is= 'a (car '(a b c)))
+  (is= '(a b c) (car '((a b c) x y z)))
+  (is= nil (car 'hotdog))
+  (is= nil (car '()))
+  (is= '((hotdogs)) (car '(((hotdogs)) (and) (pickle) relish)))
+  (is= '(hotdogs) (car (car '(((hotdogs)) (and)))))
+)
+
+
+; /**
+;  * The Law of Cdr: The primitive 'cdr' is defined only for non-empty lists.
+;  *                 The 'cdr' of any non-empty list is always another list.
+;  */
+(deftest cider-fun
+  (is= '(b c) (cdr '(a b c)))
+  (is= '(x y z) (cdr '((a b c) x y z)))
+  (is= nil (cdr '(hamburger)))
+  (is= nil (cdr 'hotdogs))
+  (is= nil (cdr '()))
+  (is= '(x y) (car (cdr '((b) (x y) ((c))))))
+  (is= '(((c))) (cdr (cdr '((b) (x y) ((c))))))
+  (is= nil (cdr (car '(a (b (c)) d))))
+)
+
+
+; /**
+;  * The Law of Cons: The primitive 'cons' takes two arguments.
+;  *                  The second argument to 'cons' must be a list.
+;  *                  The result is a list.
+;  */
+(deftest cons-fun
+  (is=
+    '(peanut butter and jelly)
+    (cons 'peanut '(butter and jelly)))
+  (is=
+    '((banana and) peanut butter and jelly)
+    (cons '(banana and) '(peanut butter and jelly)))
+  (is=
+    '(((help) this) is very ((hard) to learn))
+    (cons '((help) this) '(is very ((hard) to learn))))
+  (is=
+    '((a b (c)))
+    (cons '(a b (c)) nil))
+  (is= '(a) (cons 'a nil))
+  (is= '(a b) (cons 'a (car '((b) c d))))
+  (is= '(a c d) (cons 'a (cdr '((b) c d))))
+)
+
+
+; /**
+;  * The Law of Null: The primitive 'null?' is defined only for lists.
+;  */
+(deftest null-fun
+  (is (null? ()))
+  (is (null? nil))
+  (is (null? (quote ())))
+  (isnt (null? '(a b c)))
+  (isnt (null? 'spaghetti))
+)
+
+
+; /**
+;  * The Law of Eq: The primitive 'eq?' takes two arguments.
+;  *                Each must be a non-numeric atom.
+;  */
+(deftest eq-fun
+  (is (eq? 'Harry 'Harry))
+  (isnt (eq? 'margarine 'butter))
+  (isnt (eq? () '(strawberry)))
+  (isnt (eq? 6 7))    ; Undefined result as numbers are illegal arguments of eq?
+  (is (eq? (car '(Mary)) 'Mary))
+  (isnt (eq? (cdr '(soured milk)) 'milk))
+  (define l '(beans beans we need jelly beans))
+  (is (eq? (car l) (car (cdr l))))
+)
+

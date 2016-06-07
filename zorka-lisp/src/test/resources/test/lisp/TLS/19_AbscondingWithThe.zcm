@@ -1,0 +1,187 @@
+; /**
+;  * From book: The Seasoned Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 19: Absconding with the Jewels
+;  */
+
+(defn deep (m)
+  (cond
+    ((zero? m) 'pizza)
+    (else (cons (deep (dec m)) nil))))
+
+(deftest test-deep-fn
+  (is= '(((pizza))) (deep 3)))
+
+
+
+(define toppings)
+
+(defn deepB (m)
+  (cond
+    ((zero? m)
+     (letcc jump
+       (set! toppings jump)
+       'pizza))
+    (else
+      (cons (deepB (dec m)) nil))))
+
+(deftest test-deepB-toppings
+  (is= '((((((pizza)))))) (deepB 6))
+  ; TODO fix continuation, change expression stack management, implement proper scheme recursion (peephole optimization etc.)
+  ;(is= '((((((mozarella)))))) (toppings 'mozarella))
+  )
+
+
+(defn deep-co (m k)
+  (cond
+    ((zero? m)
+      (k 'pizza))
+    (else
+      (deep-co
+        (dec m)
+        (lambda (x) (k (cons x '())))))))
+
+
+(deftest test-deep-co
+  (is= '(((pizza))) (deep-co 3 identity)))
+
+
+(defn deep-co-2 (m k)
+  (cond
+    ((zero? m)
+      (set! toppings k)
+      (k 'pizza))
+    (else
+      (deep-co-2
+        (dec m)
+        (lambda (x) (k (cons x '())))))))
+
+(deftest test-deep-co-2
+  (is= '(((pizza))) (deep-co-2 3 identity))
+  (is= '(((cake))) (toppings 'cake))
+  (is= '((((cake)))(((mozarella)))(((pizza))))
+       (cons (toppings 'cake)
+         (cons (toppings 'mozarella)
+           (cons (toppings 'pizza) nil)))))
+
+
+(defn leftmost (l)
+   (letcc skip
+     (letrec
+       ((lm (lambda (l)
+              (cond
+                ((null? l) nil)
+                ((atom? (car l)) (skip (car l)))
+                (else (lm (car l)) (lm (cdr l)))))))
+       (lm l))))
+
+
+(define leave)
+
+(defn walk (l)
+  (cond
+    ((null? l) nil)
+    ((atom? (car l)) (leave (car l)))
+    (else
+      (walk (car l))
+      (walk (cdr l)))))
+
+(defn start-it (l)
+  (letcc here
+    (set! leave here)
+    (walk l)))
+
+(deftest test-walk
+  (is= 'potato (start-it '((potato) (chips (chips (with))) fish))))
+
+
+
+(define fill)
+
+(defn waddle (l)
+  (cond
+    ((null? l) nil)
+    ((atom? (car l))
+      (letcc rest
+        (set! fill rest)
+        (leave (car l)))
+      (waddle (cdr l)))
+    (else
+      (waddle (car l))
+      (waddle (cdr l)))))
+
+(defn start-it-2 (l)
+  (letcc here
+    (set! leave here)
+    (waddle l)))
+
+
+(deftest test-waddle
+  (is= 'donuts (start-it-2 '((donuts) (cheerios (cheerios (spaghettios))) donits))))
+
+
+(defn get-next (x)
+  (letcc here-again
+    (set! leave here-again)
+    (fill 'go)))
+
+; TODO won't work until continuation model decouples from standard java stack-based flow control model;
+;(deftest test-get-next
+;  (is= 'cheerios (get-next 'go)))
+
+
+(defn rest2
+  (lambda (x)
+    (waddle l2)))
+
+(defn get-first (l)
+  (letcc here
+    (set! leave here)
+    (waddle l)
+    (leave nil)))
+
+(defn two-in-a-row*? (l)
+  (let ((fst (get-first l)))
+    (if (atom? fst)
+      (two-in-a-row-b*? fst)
+      #f)))
+
+(defn two-in-a-row-b*? (a)
+  (let ((n (get-next 'go)))
+    (if (atom? n)
+      (or (eq? n a) (two-in-a-row-b*? n))
+      #f)))
+
+(define two-in-a-row-x*
+  (letrec
+    ((T? (lambda (a)
+           (let ((n (get-next 0)))
+             (if (atom? n) (or (eq? n a) (T? n)) #f))))
+     (get-next
+       (lambda (x)
+         (letcc here-again
+           (set! leave here-again)
+           (fill 'go))))
+     (fill
+       (lambda (x) x))
+     (waddle
+       (lambda (l)
+         (cond
+           ((null? l) '())
+           ((atom? (car l))
+             (letcc rec
+               (set! fill rest)
+               (leave (car l)))
+             (waddle (cdr l)))
+           (else
+             (waddle (car l))
+             (waddle (cdr l)))))))
+    (lambda (l)
+      (let ((fst (letcc here (set! leave here) (waddle l) (leave nil))))
+        (if (atom? fst) (T? fst) #f)))))
+
+(deftest test-two-in-a-row-x*
+  ; TODO won't work until continuation model decouples from standard java stack-based flow control model;
+  ;(is (two-in-a-row-x* '(((food) ()) (((food))))))
+  )
+

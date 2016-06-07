@@ -1,0 +1,225 @@
+; /**
+;  * From book: The Seasoned Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 14: Let There Be Names
+;  */
+
+
+(defn leftmost (l)
+  (cond
+    ((null? l) nil)
+    ((atom? (car l)) (car l))
+    (else
+      (let ((a (leftmost (car l))))
+        (cond
+          ((atom? a) a)
+          (else (leftmost (cdr l))))))))
+
+(deftest test-leftmost-fn
+  (is= 'a (leftmost '(((a) b) (c d))))
+  (is= 'a (leftmost '(((a) ()) () (e))))
+  (is= 'a (leftmost '(((() a) ())))))
+
+
+
+; /**
+;  * The Fifteenth Commandment: (preliminary version)
+;  *
+;  * Use (let ...) to name the values of repeated expressions.
+;  */
+
+(defn rember1* (a l)
+  (letrec
+    ((R (lambda (l)
+          (cond
+            ((null? l) nil)
+            ((atom? (car l))
+              (cond
+                ((eq? (car l) a) (cdr l))
+                (else (cons (car l) (R (cdr l))))))
+            (else
+              (let ((av (R (car l))))
+                (cond
+                  ((equal? av (car l))
+                    (cons (car l) (R (cdr l))))
+                  (else
+                    (cons av (cdr l))))))))))
+    (R l)))
+
+(deftest test-rember1*-fn
+  (is=
+    '((Swedish rye) (French (mustard turkey)) salad)
+    (rember1* 'salad '((Swedish rye) (French (mustard salad turkey)) salad)))
+  (is=
+    '((pasta) pasta (noodles meat sauce) meat tomatoes)
+    (rember1* 'meat '((pasta meat) pasta (noodles meat sauce) meat tomatoes))))
+
+
+
+(defn depth* (l)
+  (cond
+    ((null? l) 1)
+    ((atom? (car l)) (depth* (cdr l)))
+    (else
+      (cond
+        ((> (depth* (cdr l)) (inc (depth* (car l))))
+          (depth* (cdr l)))
+        (else
+          (inc (depth* (car l))))))))
+
+(deftest test-depth*-fn
+  (is= 2 (depth* '((pickled) peppers (peppers pickled))))
+  (is= 4 (depth* '(margarine ((bitter butter) (makes) (batter (bitter))) butter)))
+  (is= 3 (depth* '(c (b (a b) a a)))))
+
+
+(defn depth*-2 (l)
+  (let ((a (inc (depth* (car l))))
+        (d (depth* (cdr l))))
+    (cond
+      ((null? l) 1)
+      ((atom? (car l)) d)
+      (else (if (> d a) d a)))))
+
+(deftest test-depth*-2-fn
+  (is= 2 (depth*-2 '((pickled) peppers (peppers pickled))))
+  (is= 4 (depth*-2 '(margarine ((bitter butter) (makes) (batter (bitter))) butter)))
+  (is= 3 (depth*-2 '(c (b (a b) a a)))))
+
+
+
+; /**
+;  * The Fifteenth Commandment: (revised version)
+;  *
+;  * Use (let ...) to name the values of repeated expressions
+;  * in a function definition if they may be evaluated twice
+;  * for one and the same use of the function.
+;  */
+(defn depth*-3 (l)
+  (cond
+    ((null? l) 1)
+    ((atom? (car l))
+      (depth* (cdr l)))
+    (else
+      (let ((a (inc (depth* (car l))))
+            (d (depth* (cdr l))))
+        (if (> d a) d a)))))
+
+(deftest test-depth*-3-fn
+  (is= 2 (depth*-3 '((pickled) peppers (peppers pickled))))
+  (is= 4 (depth*-3 '(margarine ((bitter butter) (makes) (batter (bitter))) butter)))
+  (is= 3 (depth*-3 '(c (b (a b) a a)))))
+
+
+(defn depth*-4 (l)
+  (cond
+    ((null? l) 1)
+    ((atom? (car l))
+      (depth* (cdr l)))
+    (else
+      (max
+        (inc (depth* (car l)))
+        (depth* (cdr l))))))
+
+(deftest test-depth*-4-fn
+  (is= 2 (depth*-4 '((pickled) peppers (peppers pickled))))
+  (is= 4 (depth*-4 '(margarine ((bitter butter) (makes) (batter (bitter))) butter)))
+  (is= 3 (depth*-4 '(c (b (a b) a a)))))
+
+
+(defn pick (n lat)
+  (cond
+    ((null? lat) nil)
+    ((= n 1) (car lat))
+    (else (pick (dec n) (cdr lat)))))
+
+(defn scramble (tup)
+  (letrec
+    ((P (lambda (tup rp)
+          (cond
+            ((null? tup) nil)
+            (else
+              (let ((rp (cons (car tup) rp)))
+                (cons
+                  (pick (car tup) rp)
+                  (P (cdr tup) rp))))))))
+    (P tup nil)))
+
+(deftest test-scramble
+  (is=
+    '(1 1 1 1 1 4 1 1 1 9)
+    (scramble '(1 1 1 3 4 2 1 1 9 2)))
+  (is=
+    '(1 1 1 1 1 1 1 1 1)
+    (scramble '(1 2 3 4 5 6 7 8 9)))
+  (is=
+    '(1 1 1 1 1 1 1 1 2 8 2)
+    (scramble '(1 2 3 1 2 3 4 1 8 2 10))))
+
+
+
+(defn lm (l out)
+  (cond
+    ((null? l) '())
+    ((atom? (car l)) (out (car l)))
+    (else
+      (let ()
+        (lm (car l) out)
+        (lm (cdr l) out)))))
+
+(defn leftmost1 (l)
+  (letcc skip
+    (lm l skip)))
+
+(deftest test-leftmost1-fn
+  (is= 'a (leftmost1 '(((a) b) (c d))))
+  (is= 'a (leftmost1 '(((a) ()) () (e))))
+  (is= 'a (leftmost1 '(((() a) ())))))
+
+
+
+(defn leftmost2 (l)
+  (letcc skip
+    (letrec
+      ((lm (lambda (l)
+        (cond
+          ((null? l) nil)
+          ((atom? (car l)) (skip (car l)))
+          (else
+            (begin
+              (lm (car l))
+              (lm (cdr l))))))))
+      (lm l))))
+
+(deftest test-leftmost2-fn
+  (is= 'a (leftmost2 '(((a) b) (c d))))
+  (is= 'a (leftmost2 '(((a) ()) () (e))))
+  (is= 'a (leftmost2 '(((() a) ())))))
+
+
+(defn rm (a l oh)
+  (cond
+    ((null? l) (oh 'no))
+    ((atom? (car l))
+      (if (eq? (car l) a)
+        (cdr l)
+        (cons (car l) (rm a (cdr l) oh))))
+    (else
+      (if (atom? (letcc oh (rm a (car l) oh)))
+        (cons (car l) (rm a (cdr l) oh))
+        (cons (rm a (car l) nil) (cdr l))))))
+
+(defn rember1*-2 (a l)
+  (if (atom? (letcc oh (rm a l oh))) l (rm a l nil)))
+
+
+(deftest test-rember1*-2-fn
+  (is=
+    '((Swedish rye) (French (mustard turkey)) salad)
+    (rember1*-2 'salad '((Swedish rye) (French (mustard salad turkey)) salad)))
+  (is=
+    '((pasta) pasta (noodles meat sauce) meat tomatoes)
+    (rember1*-2 'meat '((pasta meat) pasta (noodles meat sauce) meat tomatoes))))
+
+; TODO (try...) macro - decide if implementing it in form of continuation is necessary ...
+

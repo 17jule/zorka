@@ -1,0 +1,49 @@
+
+
+; /**
+;  * From book: The Little Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 2: Do It, Do It Again, and Again, and Again...
+;  */
+
+
+; /**
+;  * The First Commandment: (preliminary)
+;  *
+;  * Always ask null? as the first question in expressing any function.
+;  */
+
+
+(defn lat? (l)
+  (cond
+    ((null? l) #t)
+    ((atom? (car l)) (lat? (cdr l)))
+    (else #f)))
+
+
+(deftest test-lat-fn
+  (is (lat? '(Jack Sprat could eat no chicken fat)))
+  (isnt (lat? '((Jack) Sprat could eat no chicken fat)))
+  (isnt (lat? '(Jack (Sprat could) eat no chicken fat)))
+  (is (lat? '())))
+
+
+(defn member? (a lat)
+  (cond
+    ((null? lat) #f)
+    (else (or (eq? (car lat) a)
+              (member? a (cdr lat))))))
+
+
+(deftest test-or-macro
+  (is (or (null? '()) (atom? '(d e f g))))
+  (is (or (null? '(a b c)) (null? '())))
+  (isnt (or (null? '(a b c)) (null? '(atom)))))
+
+
+(deftest test-member-fn
+  (is (member? 'tea '(coffe tea or milk)))
+  (isnt (member? 'poached '(fried eggs and scrambled eggs)))
+  (is (member? 'meat '(mashed potatoes and meat gavy)))
+  (isnt (member? 'liver '(bagels and lox))))
+

@@ -1,0 +1,266 @@
+
+; /**
+;  * From book: The Little Schemer, by Daniel P. Friedman and Matthias Felleisen.
+;  *
+;  * Chapter 7: Friends and Relations
+;  */
+
+(defn member? (a lat)
+  (cond
+    ((null? lat) #f)
+    (else (or (equal? (car lat) a)
+              (member? a (cdr lat))))))
+
+(defn multirember (a lat)
+  (cond
+    ((null? lat) '())
+    ((equal? (car lat) a) (multirember a (cdr lat)))
+    (else (cons (car lat) (multirember a (cdr lat))))))
+
+(defn set? (s)
+  (cond
+    ((null? s) #t)
+    ((member? (car s) (cdr s)) #f)
+    (else (set? (cdr s)))))
+
+(deftest test-set?-fn
+  (is (set? '(apple peaches pears plum)))
+  (isnt (set? '(apple peaches apple plum)))
+  (isnt (set? '(apple 3 pear 4 9 apple 3 4))))
+
+
+
+(defn makeset (s)
+  (cond
+    ((null? s) '())
+    ((member? (car s) (cdr s))
+      (makeset (cdr s)))
+    (else (cons (car s) (makeset (cdr s))))))
+
+(defn makeset1 (s)
+  (cond
+    ((null? s) '())
+    (else
+      (cons
+        (car s)
+        (makeset1 (multirember (car s) (cdr s)))))))
+
+(deftest test-makeset-fn
+  (is=
+    '(pear plum apple lemon peach)
+    (makeset '(apple peach pear peach plum apple lemon peach)))
+  (is=
+    '(apple peach pear plum lemon)
+    (makeset1 '(apple peach pear peach plum apple lemon peach))))
+
+
+
+(defn subset? (s1 s2)
+  (cond
+    ((null? s1) #t)
+    ((member? (car s1) s2)
+      (subset? (cdr s1) s2))
+    (else #f)))
+
+(defn subset1? (s1 s2)
+  (or
+    (null? s1)
+    (and
+      (member? (car s1) s2)
+      (subset? (cdr s1) s2))))
+
+(deftest test-subset1?-fn
+  (is (subset? '(5 chicken wings) '(5 hamburgers 2 pieces fried chicken and light duckling wings)))
+  (isnt (subset? '(4 pounds of horseradish) '(four pounds chicken and 5 ounces horseradish)))
+  (is (subset1? '(5 chicken wings) '(5 hamburgers 2 pieces fried chicken and light duckling wings)))
+  (isnt (subset1? '(4 pounds of horseradish) '(four pounds chicken and 5 ounces horseradish))))
+
+
+
+(defn eqset? (s1 s2)
+  (and
+    (subset? s1 s2)
+    (subset? s2 s1)))
+
+(deftest test-eqset?-fn
+  (is (eqset? '(6 large chickens with wings) '(6 chickens with large wings))))
+
+
+
+(defn intersect? (s1 s2)
+  (cond
+    ((null? s1) #f)
+    ((member? (car s1) s2) #t)
+    (else (intersect? (cdr s1) s2))))
+
+(defn intersect1? (s1 s2)
+  (cond
+    ((null? s1) #f)
+    (else (or
+      (member? (car s1) s2)
+      (intersect? (cdr s1) s2)))))
+
+(deftest test-intersect?-fn
+  (is (intersect? '(stewed tomatoes and macaroni) '(macaroni and cheese)))
+  (is (intersect1? '(stewed tomatoes and macaroni) '(macaroni and cheese))))
+
+
+
+(defn intersect (s1 s2)
+  (cond
+    ((null? s1) '())
+    ((member? (car s1) s2) (cons (car s1) (intersect (cdr s1) s2)))
+    (else (intersect (cdr s1) s2))))
+
+(deftest test-intersect-fn
+  (is=
+    '(and macaroni)
+    (intersect '(stewed tomatoes and macaroni) '(macaroni and cheese))))
+
+
+
+(defn union (s1 s2)
+  (cond
+    ((null? s1) s2)
+    ((member? (car s1) s2) (union (cdr s1) s2))
+    (else (cons (car s1) (union (cdr s1) s2)))))
+
+(deftest test-union-fn
+  (is=
+    '(stewed tomatoes casserole macaroni and cheese)
+    (union '(stewed tomatoes and macaroni casserole) '(macaroni and cheese))))
+
+
+
+(defn diff (s1 s2)
+  (cond
+    ((null? s1) nil)
+    ((member? (car s1) s2) (diff (cdr s1) s2))
+    (else (cons (car s1) (diff (cdr s1) s2)))))
+
+(deftest test-test-diff-fn
+  (is=
+    '(stewed tomatoes casserole)
+    (diff '(stewed tomatoes and macaroni casserole) '(macaroni and cheese))))
+
+
+
+(defn intersect-all (ls)
+  (cond
+    ((null? (cdr ls)) (car ls))
+    (else (intersect (car ls) (intersect-all (cdr ls))))))
+
+(deftest test-intersect-all-fn
+  (is= '(a) (intersect-all '((a b c)(c a d e)(e f g h a b)))))
+
+
+
+(defn a-pair-old? (p)
+  (cond
+    ((atom? p) #f)
+    ((null? p) #f)
+    ((null? (cdr p)) #f)
+    ((null? (cddr p)) #t)
+    (else #f)))
+
+
+(defn a-pair? (p)
+  (cond
+    ((or (atom? p) (null? p) (null? (cdr p))) #f)
+    (else (null? (cddr p)))))
+
+(deftest test-a-pair-fn
+  (is (a-pair? '(pear pear)))
+  (is (a-pair? '(3 7)))
+  (is (a-pair? '((2) (pair))))
+  (is (a-pair? '(full (house)))))
+
+
+(defn first (p)
+  (cond
+    (else (car p))))
+
+
+(defn second (p)
+  (cond
+    (else (car (cdr p)))))
+
+
+(defn build (s1 s2)
+  (cons s1 (cons s2 (quote ()))))
+
+
+(defn third (p)
+  (car (cdr (cdr p))))
+
+
+(defn rel? (l)
+  (cond
+    ((null? l) #t)
+    ((a-pair? (car l)) (rel? (cdr l)))
+    (else #f)))
+
+(deftest test-rel?-fn
+  (is (rel? '((apples peaches) (pumpkin pie))))
+  (is (rel? '((4 3) (4 2) (7 6) (6 2) (3 4)))))
+
+
+
+(defn firsts (l)
+  (map first l))
+
+
+(defn fun? (l)
+  (set? (firsts l)))
+
+(deftest test-fun?-fn
+  (is (fun? '((1 2) (3 4) (5 6))))
+  (isnt (fun? '((1 2) (3 4) (5 6) (1 5)))))
+
+
+
+(defn revrel (l)
+  (cond
+    ((null? l) '())
+    (else
+      (cons
+        (build (second (car l)) (first (car l)))
+        (revrel (cdr l))))))
+
+(defn revpair (p)
+  (build (second p) (first p)))
+
+(defn revrel1 (l)
+  (cond
+    ((null? l) '())
+    (else (cons (revpair (car l)) (revrel (cdr l))))))
+
+(defn revrel2 (l)
+  (map revpair l))
+
+(deftest test-revrel-fn
+  (is=
+    '((a 8) (pie pumpkin) (sick got))
+    (revrel '((8 a) (pumpkin pie) (got sick))))
+  (is=
+    '((a 8) (pie pumpkin) (sick got))
+    (revrel1 '((8 a) (pumpkin pie) (got sick))))
+  (is=
+    '((a 8) (pie pumpkin) (sick got))
+    (revrel2 '((8 a) (pumpkin pie) (got sick)))))
+
+
+
+(defn fullfun? (l)
+  (set? (map second l)))
+
+(deftest test-fullfun-fn
+  (isnt (fullfun? '((8 3) (4 2) (7 6) (6 2) (3 4))))
+  (is (fullfun? '((8 3) (4 8) (7 6) (6 2) (3 4))))
+  (isnt (fullfun? '((grape raisin) (plum prune) (stewed prune))))
+  (is (fullfun? '((grape raisin) (plum prune) (stewed grape)))))
+
+
+(defn one-to-one (l)
+  (fun? (revrel2 l)))
+
