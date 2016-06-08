@@ -31,17 +31,18 @@ public class CBORReader {
     private InputStream in;
 
     private TagProcessor tagProcessor;
+    private SimpleValResolver simpleValResolver;
 
     byte[] buf = new byte[16];
-
 
     public CBORReader(InputStream in) throws IOException {
         this.in = in;
     }
 
-    public CBORReader(InputStream in, TagProcessor tagProcessor) {
+    public CBORReader(InputStream in, TagProcessor tagProcessor, SimpleValResolver simpleValResolver) {
         this.in = in;
         this.tagProcessor = tagProcessor;
+        this.simpleValResolver = simpleValResolver;
     }
 
 
@@ -156,7 +157,7 @@ public class CBORReader {
             }
             return map;
         } else if (i == MAP_VCODE) {
-            Map<Object, Object> m = new HashMap<Object,Object>();
+            Map<Object, Object> m = new HashMap<Object, Object>();
             for (Object k = read(); k != BREAK; k = read()) {
                 Object v = read();
                 if (v == BREAK) {
@@ -165,6 +166,20 @@ public class CBORReader {
                 m.put(k, v);
             }
             return m;
+        } else if (i < TAG_CODE8) {
+            int tag = readUInt(i);
+            Object obj = read();
+            return tagProcessor != null ? tagProcessor.process(tag, obj) : obj;
+        } else if (i == NULL_CODE) {
+            return null;
+        } else if (i == TRUE_CODE) {
+            return true;
+        } else if (i == FALSE_CODE) {
+            return false;
+        } else if (i == UNKNOWN_CODE) {
+            return UNKNOWN;
+        } else if (i < SIMPLE_END) {
+            return simpleValResolver.resolve(readUInt(i));
         } else if (i == FLOAT_BASE2) {
             return fromHalfFloat(((in.read() & 0xff) << 8) | ((in.read() & 0xff)));
         } else if (i == FLOAT_BASE4) {
@@ -185,14 +200,6 @@ public class CBORReader {
                     | (((long) buf[5] & 0xff) << 16)
                     | (((long) buf[6] & 0xff) << 8)
                     | (((long) buf[7] & 0xff)));
-        } else if (i == NULL_CORE) {
-            return null;
-        } else if (i == TRUE_CODE) {
-            return true;
-        } else if (i == FALSE_CODE) {
-            return false;
-        } else if (i == UNKNOWN_CODE) {
-            return UNKNOWN;
         } else if (i == BREAK_CODE) {
             return BREAK;
         }

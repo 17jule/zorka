@@ -35,7 +35,7 @@ public class CBORWriter {
 
     public void write(Object obj) throws IOException {
         if (obj == null) {
-            os.write(NULL_CORE);
+            os.write(NULL_CODE);
             return;
         }
         Class<?> c = obj.getClass();

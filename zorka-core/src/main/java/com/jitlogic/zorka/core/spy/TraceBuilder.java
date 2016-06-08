@@ -32,7 +32,7 @@ import com.jitlogic.zorka.common.util.ZorkaLogger;
  *
  * @author rafal.lewczuk@jitlogic.com
  */
-public class TraceBuilder {
+public class TraceBuilder implements TraceHandler {
 
     private final static ZorkaLog log = ZorkaLogger.getLog(TraceBuilder.class);
 
@@ -68,6 +68,7 @@ public class TraceBuilder {
     }
 
 
+    @Override
     public void traceBegin(int traceId, long clock, int flags) {
 
         if (ttop == null) {
@@ -192,6 +193,7 @@ public class TraceBuilder {
     }
 
 
+    @Override
     public Object getAttr(int attrId) {
         return realTop().getAttr(attrId);
     }
@@ -206,6 +208,7 @@ public class TraceBuilder {
      * @param attrId  attribute ID
      * @return  attribute value
      */
+    @Override
     public Object getAttr(int traceId, int attrId) {
         TraceRecord tr = realTop();
         while (tr != null) {
@@ -228,6 +231,7 @@ public class TraceBuilder {
      * @param attrId  attribute ID
      * @param attrVal attribute value
      */
+    @Override
     public void newAttr(int traceId, int attrId, Object attrVal) {
         TraceRecord tr = realTop();
 
@@ -242,11 +246,13 @@ public class TraceBuilder {
     }
 
 
+    @Override
     public void disable() {
         disabled = true;
     }
 
 
+    @Override
     public void enable() {
         disabled = false;
     }
@@ -366,6 +372,7 @@ public class TraceBuilder {
      *
      * @param minimumTraceTime (in nanoseconds)
      */
+    @Override
     public void setMinimumTraceTime(long minimumTraceTime) {
         TraceRecord top = realTop();
         if (top.inTrace()) {
@@ -374,6 +381,7 @@ public class TraceBuilder {
     }
 
 
+    @Override
     public void markTraceFlags(int traceId, int flag) {
         for (TraceRecord tr = realTop(); tr != null; tr = tr.getParent()) {
             TraceMarker tm = tr.getMarker();
@@ -385,6 +393,7 @@ public class TraceBuilder {
     }
 
 
+    @Override
     public boolean isInTrace(int traceId) {
         for (TraceRecord tr = realTop(); tr != null; tr = tr.getParent()) {
             TraceMarker tm = tr.getMarker();
