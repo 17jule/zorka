@@ -36,13 +36,13 @@ public class TraceTaggerProcessor implements SpyProcessor {
 
     public TraceTaggerProcessor(SymbolRegistry symbolRegistry, Tracer tracer, String attrName, String attrTag, String... traceTags) {
         this.tracer = tracer;
-        this.attrNameId = symbolRegistry.symbolId(attrName);
-        this.attrTagId = symbolRegistry.symbolId(attrTag);
+        this.attrNameId = symbolRegistry.stringId(attrName);
+        this.attrTagId = symbolRegistry.stringId(attrTag);
 
         traceTagIds = new HashSet<Integer>(traceTags.length);
 
         for (String traceTag : traceTags) {
-            traceTagIds.add(symbolRegistry.symbolId(traceTag));
+            traceTagIds.add(symbolRegistry.stringId(traceTag));
         }
     }
 
@@ -50,10 +50,17 @@ public class TraceTaggerProcessor implements SpyProcessor {
     @Override
     public Map<String, Object> process(Map<String, Object> record) {
 
+
+        if (tracer.isUsingRecorder()) {
+            // TODO this tagger is deprecated, not applicable for streaming tracer
+            return record;
+        }
+
         Object tagObj = tracer.getHandler().getAttr(attrNameId);
 
         if (tagObj == null) {
             tagObj = new TaggedValue(attrTagId, new HashSet<Integer>());
+
             tracer.getHandler().newAttr(-1, attrNameId, tagObj);
         }
 

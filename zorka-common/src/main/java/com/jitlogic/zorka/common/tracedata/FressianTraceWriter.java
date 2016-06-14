@@ -92,7 +92,7 @@ public class FressianTraceWriter implements MetadataChecker, TraceWriter {
     public int checkSymbol(int id, Object parent) throws IOException {
         checkOutput();
         if (!symbolsSent.get(id)) {
-            String sym = symbols.symbolName(id);
+            String sym = symbols.stringContent(id);
             log.debug(ZorkaLogger.ZTR_SYMBOL_ENRICHMENT, "Enriching output stream with symbol '%s', id=%s", sym, id);
             writer.writeObject(new Symbol(id, sym));
             symbolsSent.set(id);

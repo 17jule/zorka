@@ -126,17 +126,17 @@ public class ErrorDetailView extends JPanel {
 
 
     private String printException(SymbolRegistry symbols, SymbolicException ex, SymbolicException cause, StringBuilder sb) {
-        sb.append(symbols.symbolName(ex.getClassId()));
+        sb.append(symbols.stringContent(ex.getClassId()));
         sb.append(": ");
         sb.append(ex.getMessage());
         sb.append("\n");
         for (SymbolicStackElement sse : ex.getStackTrace()) {
             sb.append("    at ");
-            sb.append(symbols.symbolName(sse.getClassId()));
+            sb.append(symbols.stringContent(sse.getClassId()));
             sb.append(".");
-            sb.append(symbols.symbolName(sse.getMethodId()));
+            sb.append(symbols.stringContent(sse.getMethodId()));
             sb.append("(): ");
-            sb.append(symbols.symbolName(sse.getFileId()));
+            sb.append(symbols.stringContent(sse.getFileId()));
             sb.append(":");
             sb.append(sse.getLineNum());
             sb.append("\n");

@@ -60,12 +60,12 @@ public class FressianTraceFormatUnitTest {
     }
 
     private int sid(String symbol) {
-        return symbols.symbolId(symbol);
+        return symbols.stringId(symbol);
     }
 
 
     private Symbol sym(String name) {
-        return new Symbol(symbols.symbolId(name), name);
+        return new Symbol(symbols.stringId(name), name);
     }
 
 
@@ -82,7 +82,7 @@ public class FressianTraceFormatUnitTest {
 
     @Test
     public void testReadWriteSimpleSymbol() throws Exception {
-        symbols.put(10, "oja!");
+        symbols.putString(10, "oja!");
         writer.checkSymbol(10, null);
 
         assertThat(reader().readObject()).isEqualTo(new Symbol(10, "oja!"));
@@ -226,7 +226,7 @@ public class FressianTraceFormatUnitTest {
         assertThat(tm2.getClock()).isEqualTo(100L);
         assertThat(tm2.getTraceId()).isEqualTo(sid("TRACE"));
 
-        assertThat(ids.size()).isEqualTo(symbols.size());
+        assertThat(ids.size()).isEqualTo(symbols.stringCount());
 
     }
 

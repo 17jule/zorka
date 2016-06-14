@@ -81,6 +81,11 @@ public class TracerLib {
     }
 
 
+    public void traceBufOutput(TraceBufOutput bufOutput) {
+        tracer.setBufOutput(bufOutput);
+    }
+
+
     public void clearOutputs() {
         tracer.shutdown();
     }
@@ -183,18 +188,18 @@ public class TracerLib {
 
     public void traceBegin(String name, long minimumTraceTime, int flags) {
         TraceBuilder traceBuilder = tracer.getHandler();
-        traceBuilder.traceBegin(symbolRegistry.symbolId(name), System.currentTimeMillis(), flags);
+        traceBuilder.traceBegin(symbolRegistry.stringId(name), System.currentTimeMillis(), flags);
         traceBuilder.setMinimumTraceTime(minimumTraceTime);
     }
 
 
     public SpyProcessor inTrace(String traceName) {
-        return new TraceCheckerProcessor(tracer, symbolRegistry.symbolId(traceName));
+        return new TraceCheckerProcessor(tracer, symbolRegistry.stringId(traceName));
     }
 
 
     public boolean isInTrace(String traceName) {
-        return tracer.getHandler().isInTrace(symbolRegistry.symbolId(traceName));
+        return tracer.getHandler().isInTrace(symbolRegistry.stringId(traceName));
     }
 
 
@@ -236,8 +241,8 @@ public class TracerLib {
      */
     public SpyProcessor getTraceAttr(String dstField, String traceName, String attrName) {
         return new TraceAttrGetterProcessor(tracer, dstField,
-            traceName != null ? symbolRegistry.symbolId(traceName) : 0,
-            symbolRegistry.symbolId(attrName));
+            traceName != null ? symbolRegistry.stringId(traceName) : 0,
+            symbolRegistry.stringId(attrName));
     }
 
     /**
@@ -304,7 +309,7 @@ public class TracerLib {
      * @param value    attribute value
      */
     public void newAttr(String attrName, Object value) {
-        tracer.getHandler().newAttr(-1, symbolRegistry.symbolId(attrName), value);
+        tracer.getHandler().newAttr(-1, symbolRegistry.stringId(attrName), value);
     }
 
 
@@ -314,7 +319,7 @@ public class TracerLib {
      * @param value
      */
     public void newTraceAttr(String traceName, String attrName, Object value) {
-        tracer.getHandler().newAttr(symbolRegistry.symbolId(traceName), symbolRegistry.symbolId(attrName), value);
+        tracer.getHandler().newAttr(symbolRegistry.stringId(traceName), symbolRegistry.stringId(attrName), value);
     }
 
     /**
@@ -324,7 +329,7 @@ public class TracerLib {
      * @param value    attribute value
      */
     public void newAttr(String attrName, String tag, Object value) {
-        tracer.getHandler().newAttr(-1, symbolRegistry.symbolId(attrName), new TaggedValue(symbolRegistry.symbolId(tag), value));
+        tracer.getHandler().newAttr(-1, symbolRegistry.stringId(attrName), new TaggedValue(symbolRegistry.stringId(tag), value));
     }
 
 
@@ -336,8 +341,8 @@ public class TracerLib {
      */
     public void newTraceAttr(String traceName, String attrName, String tag, Object value) {
         tracer.getHandler().newAttr(
-                symbolRegistry.symbolId(traceName), symbolRegistry.symbolId(attrName),
-                new TaggedValue(symbolRegistry.symbolId(tag), value));
+                symbolRegistry.stringId(traceName), symbolRegistry.stringId(attrName),
+                new TaggedValue(symbolRegistry.stringId(tag), value));
     }
 
     public SpyProcessor markError() {
@@ -356,7 +361,7 @@ public class TracerLib {
 
 
     public SpyProcessor traceFlags(String traceName, int flags) {
-        return new TraceFlagsProcessor(tracer, null, symbolRegistry.symbolId(traceName), flags);
+        return new TraceFlagsProcessor(tracer, null, symbolRegistry.stringId(traceName), flags);
     }
 
 
@@ -378,7 +383,7 @@ public class TracerLib {
 
 
     public SpyProcessor traceFlags(String srcField, String traceName, int flags) {
-        return new TraceFlagsProcessor(tracer, srcField, symbolRegistry.symbolId(traceName), flags);
+        return new TraceFlagsProcessor(tracer, srcField, symbolRegistry.stringId(traceName), flags);
     }
 
     /**

@@ -70,7 +70,7 @@ public class TraceOutputJmxScanner extends JmxScanner implements Runnable {
 
         this.output = output;
         this.name = name;
-        this.id = symbols.symbolId(name);
+        this.id = symbols.stringId(name);
     }
 
 

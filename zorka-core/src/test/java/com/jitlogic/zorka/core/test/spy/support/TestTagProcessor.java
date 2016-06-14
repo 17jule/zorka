@@ -101,8 +101,12 @@ public class TestTagProcessor implements TagProcessor {
             rec.put("trace", lst.get(1));
             return rec;
         } else if (tag == TAG_TRACE_ATTR) {
-            Map<Object,Object> rec = (Map)obj;
+            Map<Object, Object> rec = (Map) obj;
             rec.put("_", "A");
+            return rec;
+        } else if (tag == TAG_TRACE_UP_ATTR) {
+            Map<Object, Object> rec = (Map) obj;
+            rec.put("_", "a");
             return rec;
         } else if (tag == TAG_EXCEPTION) {
             List<Object> lst = (List<Object>)obj;

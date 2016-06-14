@@ -118,7 +118,7 @@ public class JmxScanner {
             if (template.getDynamicAttrs().size() > 0) {
                 HashMap<String, Integer> dynamicAttrs = new HashMap<String, Integer>();
                 for (String attr : template.getDynamicAttrs()) {
-                    dynamicAttrs.put(attr, symbols.symbolId(attr));
+                    dynamicAttrs.put(attr, symbols.stringId(attr));
                 }
                 metric.setDynamicAttrs(dynamicAttrs);
             }

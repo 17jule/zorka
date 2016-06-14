@@ -58,42 +58,22 @@ public class Tracer implements ZorkaSubmitter<SymbolicRecord>, ZorkaService {
      */
     private SymbolRegistry symbolRegistry;
 
+    /**
+     * Buffer manager for streaming tracer.
+     */
+    private TraceBufManager bufManager;
+
+    /**
+     * Buffer output for streaming tracer.
+     */
+    private TraceBufOutput bufOutput;
 
     /**
      * If true, methods instrumented by SPY will also be traced by default.
      */
     private boolean traceSpyMethods = true;
 
-
-    public static long getMinMethodTime() {
-        return minMethodTime;
-    }
-
-
-    public static void setMinMethodTime(long methodTime) {
-        minMethodTime = methodTime;
-    }
-
-
-    public static int getMaxTraceRecords() {
-        return maxTraceRecords;
-    }
-
-
-    public static void setMaxTraceRecords(int traceSize) {
-        maxTraceRecords = traceSize;
-    }
-
-
-    public boolean isTraceSpyMethods() {
-        return traceSpyMethods;
-    }
-
-
-    public void setTraceSpyMethods(boolean traceSpyMethods) {
-        this.traceSpyMethods = traceSpyMethods;
-    }
-
+    private boolean usingRecorder = true;
 
     /**
      * Thread local serving trace builder objects for application threads
@@ -106,9 +86,22 @@ public class Tracer implements ZorkaSubmitter<SymbolicRecord>, ZorkaService {
             };
 
 
-    public Tracer(SpyMatcherSet matcherSet, SymbolRegistry symbolRegistry) {
+    /**
+     * Thread local serving streaming tracer objects for application threads.
+     */
+    private ThreadLocal<TraceRecorder> localRecorders =
+        new ThreadLocal<TraceRecorder>() {
+            public TraceRecorder initialValue() {
+                TraceRecorder recorder = new TraceRecorder(bufManager, symbolRegistry, bufOutput);
+                recorder.setMinimumMethodTime(minMethodTime >> 16);
+                return recorder;
+            }
+        };
+
+    public Tracer(SpyMatcherSet matcherSet, SymbolRegistry symbolRegistry, TraceBufManager bufManager) {
         this.matcherSet = matcherSet;
         this.symbolRegistry = symbolRegistry;
+        this.bufManager = bufManager;
     }
 
 
@@ -121,6 +114,9 @@ public class Tracer implements ZorkaSubmitter<SymbolicRecord>, ZorkaService {
         return localHandlers.get();
     }
 
+    public TraceRecorder getRecorder() {
+        return localRecorders.get();
+    }
 
     /**
      * Adds new matcher that includes (or excludes) classes and method to be traced.
@@ -188,4 +184,45 @@ public class Tracer implements ZorkaSubmitter<SymbolicRecord>, ZorkaService {
         this.matcherSet = matcherSet;
     }
 
+
+    public void setBufOutput(TraceBufOutput bufOutput) {
+        this.bufOutput = bufOutput;
+    }
+
+    public static long getMinMethodTime() {
+        return minMethodTime;
+    }
+
+
+    public static void setMinMethodTime(long methodTime) {
+        minMethodTime = methodTime;
+    }
+
+
+    public static int getMaxTraceRecords() {
+        return maxTraceRecords;
+    }
+
+
+    public static void setMaxTraceRecords(int traceSize) {
+        maxTraceRecords = traceSize;
+    }
+
+
+    public boolean isTraceSpyMethods() {
+        return traceSpyMethods;
+    }
+
+
+    public void setTraceSpyMethods(boolean traceSpyMethods) {
+        this.traceSpyMethods = traceSpyMethods;
+    }
+
+    public void setUsingRecorder(boolean usingRecorder) {
+        this.usingRecorder = usingRecorder;
+    }
+
+    public boolean isUsingRecorder() {
+        return usingRecorder;
+    }
 }

@@ -113,7 +113,7 @@ public class QueryResult {
     public int getComponentId(SymbolRegistry symbols) {
         String path = getAttrPath();
 
-        return symbols.symbolId(path);
+        return symbols.stringId(path);
     }
 
 

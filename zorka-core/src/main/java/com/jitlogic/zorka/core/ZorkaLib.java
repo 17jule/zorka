@@ -438,7 +438,7 @@ public class ZorkaLib implements ZorkaService {
 
     /**
      * Creates zorka dynamic MBean. Such mbean object can be populated with attributes
-     * using put() or setAttr() methods.
+     * using putString() or setAttr() methods.
      *
      * @param mbs  mbean server at which bean will register
      * @param name object name

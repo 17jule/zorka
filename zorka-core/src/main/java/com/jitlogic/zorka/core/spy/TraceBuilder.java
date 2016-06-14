@@ -97,7 +97,7 @@ public class TraceBuilder implements TraceHandler {
             if (ZorkaLogger.isLogMask(ZorkaLogger.ZTR_TRACE_CALLS) ||
                     (ttop.inTrace() && ttop.getMarker().hasFlag(TraceMarker.TRACE_CALLS))) {
                 log.trace(ZorkaLogger.ZTR_TRACER_DBG, "traceEnter("
-                        + symbols.symbolName(classId) + "." + symbols.symbolName(methodId) + ")");
+                        + symbols.stringContent(classId) + "." + symbols.stringContent(methodId) + ")");
             }
         }
 
@@ -140,7 +140,7 @@ public class TraceBuilder implements TraceHandler {
                     tr = tr.getParent();
                 }
                 log.trace(ZorkaLogger.ZTR_TRACER_DBG, "traceReturn("
-                        + symbols.symbolName(tr.getClassId()) + "." + symbols.symbolName(tr.getMethodId()) + ")");
+                        + symbols.stringContent(tr.getClassId()) + "." + symbols.stringContent(tr.getMethodId()) + ")");
             }
         }
 
@@ -167,8 +167,8 @@ public class TraceBuilder implements TraceHandler {
                 if (tr.getClassId() == 0 && tr.getParent() != null) {
                     tr = tr.getParent();
                 }
-                log.trace(ZorkaLogger.ZTR_TRACER_DBG, "traceError(" + symbols.symbolName(tr.getClassId()) +
-                        "." + symbols.symbolName(tr.getMethodId()) + ")", (Throwable) exception);
+                log.trace(ZorkaLogger.ZTR_TRACER_DBG, "traceError(" + symbols.stringContent(tr.getClassId()) +
+                        "." + symbols.stringContent(tr.getMethodId()) + ")", (Throwable) exception);
             }
         }
 

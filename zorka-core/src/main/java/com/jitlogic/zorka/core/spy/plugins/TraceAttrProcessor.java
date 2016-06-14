@@ -96,8 +96,8 @@ public class TraceAttrProcessor implements SpyProcessor {
         this.symbolRegistry = symbolRegistry;
         this.type = type;
         this.traceId = -1;
-        this.attrId = symbolRegistry.symbolId(attrName);
-        this.attrTagId = attrTag != null ? symbolRegistry.symbolId(attrTag) : null;
+        this.attrId = symbolRegistry.stringId(attrName);
+        this.attrTagId = attrTag != null ? symbolRegistry.stringId(attrTag) : null;
     }
 
     /**
@@ -112,7 +112,7 @@ public class TraceAttrProcessor implements SpyProcessor {
     public TraceAttrProcessor(SymbolRegistry symbolRegistry, Tracer tracer, int type,
                               String srcVal, String traceName, String attrName, String attrTag) {
         this(symbolRegistry, tracer, type, srcVal, attrName, attrTag);
-        this.traceId = traceName == null ? 0 : symbolRegistry.symbolId(traceName);
+        this.traceId = traceName == null ? 0 : symbolRegistry.stringId(traceName);
     }
 
 
@@ -126,10 +126,17 @@ public class TraceAttrProcessor implements SpyProcessor {
             if (ZorkaLogger.isLogMask(ZorkaLogger.ZSP_ARGPROC)) {
                 TraceRecord top = tracer.getHandler().realTop();
                 log.debug(ZorkaLogger.ZSP_ARGPROC, "Value: '" + val + "' stored as trace attribute "
-                        + symbolRegistry.symbolName(attrId) + " (classId= " + top.getClassId() + " methodId=" + top.getMethodId()
+                        + symbolRegistry.stringContent(attrId) + " (classId= " + top.getClassId() + " methodId=" + top.getMethodId()
                         + " signatureId=" + top.getSignatureId() + ")");
             }
-            tracer.getHandler().newAttr(traceId, attrId, attrTagId != null ? new TaggedValue(attrTagId, val) : val);
+            // TODO clean it up after removing old tracer
+            if (tracer.isUsingRecorder()) {
+                tracer.getRecorder().newAttr(traceId, attrId,
+                    attrTagId != null ? new TaggedValue(attrTagId, val) : val);
+            } else {
+                tracer.getHandler().newAttr(traceId, attrId,
+                    attrTagId != null ? new TaggedValue(attrTagId, val) : val);
+            }
         } else {
             if (ZorkaLogger.isLogMask(ZorkaLogger.ZSP_ARGPROC)) {
                 log.debug(ZorkaLogger.ZSP_ARGPROC, "Null value received. ");

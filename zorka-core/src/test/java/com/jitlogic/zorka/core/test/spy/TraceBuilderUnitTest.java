@@ -48,15 +48,15 @@ public class TraceBuilderUnitTest extends ZorkaFixture {
 
     private static final int MS = 1000000;
 
-    private int c1 = symbols.symbolId("some.Class");
-    private int m1 = symbols.symbolId("someMethod");
-    private int m2 = symbols.symbolId("otherMethod");
-    private int m3 = symbols.symbolId("anotherMethod");
-    private int s1 = symbols.symbolId("()V");
-    private int t1 = symbols.symbolId("TRACE1");
-    private int t2 = symbols.symbolId("TRACE2");
-    private int a1 = symbols.symbolId("ATTR1");
-    private int a2 = symbols.symbolId("ATTR2");
+    private int c1 = symbols.stringId("some.Class");
+    private int m1 = symbols.stringId("someMethod");
+    private int m2 = symbols.stringId("otherMethod");
+    private int m3 = symbols.stringId("anotherMethod");
+    private int s1 = symbols.stringId("()V");
+    private int t1 = symbols.stringId("TRACE1");
+    private int t2 = symbols.stringId("TRACE2");
+    private int a1 = symbols.stringId("ATTR1");
+    private int a2 = symbols.stringId("ATTR2");
 
     @After
     public void tearDown() {

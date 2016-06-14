@@ -13,31 +13,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this software. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jitlogic.zorka.core.spy.plugins;
 
+package com.jitlogic.zorka.core.spy;
 
-import com.jitlogic.zorka.core.spy.SpyProcessor;
-import com.jitlogic.zorka.core.spy.Tracer;
+public class HttpBufOutput implements TraceBufOutput {
 
-import java.util.Map;
+    public HttpBufOutput(String url, String clientId, String clientAuth) {
 
-public class TraceCheckerProcessor implements SpyProcessor {
-
-    private int traceId;
-
-    private Tracer tracer;
-
-    public TraceCheckerProcessor(Tracer tracer, int traceId) {
-        this.tracer = tracer;
-        this.traceId = traceId;
     }
 
     @Override
-    public Map<String, Object> process(Map<String, Object> record) {
-        if (tracer.isUsingRecorder()) {
-            return tracer.getHandler().isInTrace(traceId) ? record : null;
-        } else {
-            return tracer.getRecorder().isInTrace(traceId) ? record : null;
-        }
+    public void process(Object source, TraceBufChunk chunks) {
+
     }
 }

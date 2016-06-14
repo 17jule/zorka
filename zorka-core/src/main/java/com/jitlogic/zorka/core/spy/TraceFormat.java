@@ -38,6 +38,7 @@ public class TraceFormat {
     public static final int TAG_TRACE_BEGIN    = 0x21;
     public static final int TAG_EXCEPTION      = 0x22;
     public static final int TAG_EXCEPTION_REF  = 0x23;
+    public static final int TAG_TRACE_UP_ATTR  = 0x24;
 
     //
     public static final int TRACE_DROP_TOKEN   = 0xe0; /* TRACE DROP is encoded as simple value. */

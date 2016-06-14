@@ -95,11 +95,11 @@ public class ViewerTraceRecord extends TraceRecord {
 
 
     public String sym(long id) {
-        return symbols.symbolName((int) id);
+        return symbols.stringContent((int) id);
     }
 
     public String sym(int id) {
-        return symbols.symbolName(id);
+        return symbols.stringContent(id);
     }
 
 

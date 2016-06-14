@@ -31,7 +31,7 @@ import static com.jitlogic.zorka.common.util.ZorkaUnsafe.*;
  *
  * @author Rafal Lewczuk
  */
-public class TraceRecorder extends TraceBuffer implements TraceHandler {
+public class TraceRecorder extends TraceBuffer implements TraceHandler { // TODO rename as TraceStreamer
 
 
     public static final int STACK_DEFAULT_SIZE = 256;
@@ -214,7 +214,7 @@ public class TraceRecorder extends TraceBuffer implements TraceHandler {
             // Class name (as string ref)
             if (bufLen - bufPos < 1) nextChunk();
             buffer[bufPos++] = (byte) (CBORConstants.TAG_CODE0 + TraceFormat.TAG_STRING_REF);
-            writeUInt(CBORConstants.UINT_CODE0, symbols.symbolId(e.getClass().getName()));
+            writeUInt(CBORConstants.UINT_CODE0, symbols.stringId(e.getClass().getName()));
 
             // Message
             writeString(e.getMessage());
@@ -290,14 +290,15 @@ public class TraceRecorder extends TraceBuffer implements TraceHandler {
     public void newAttr(int traceId, int attrId, Object attrVal) {
         if (disabled) return;
 
-        if (bufLen - bufPos < 4) nextChunk();
-
-        buffer[bufPos++] = (byte) (CBORConstants.TAG_CODE0 + TraceFormat.TAG_TRACE_ATTR);
-        if (traceId != 0) {
+        writeUInt(CBORConstants.TAG_CODE0, TraceFormat.TAG_TRACE_ATTR);
+        if (traceId >= 0) {
+            writeUInt(CBORConstants.TAG_BASE, TraceFormat.TAG_TRACE_UP_ATTR);
+            if (bufLen - bufPos < 1) nextChunk();
             buffer[bufPos++] = (byte) (CBORConstants.MAP_CODE0+1);
-            writeUInt(0,traceId);
+            writeInt(traceId);
             if (bufLen - bufPos < 4) nextChunk();
         }
+        if (bufLen - bufPos < 1) nextChunk();
         buffer[bufPos++] = (byte) (CBORConstants.MAP_CODE0+1);
         stack[stackPos-2] |= TF_SUBMIT_METHOD;
 
@@ -325,14 +326,20 @@ public class TraceRecorder extends TraceBuffer implements TraceHandler {
     }
 
 
+    public void setMinimumMethodTime(long minMethodTime) {
+        this.minMethodTime = minMethodTime;
+    }
+
+
     @Override
     public void markTraceFlags(int traceId, int flag) {
-
+        // TODO implement this function
     }
 
 
     @Override
     public boolean isInTrace(int traceId) {
+        // TODO implement this function
         return false;
     }
 
@@ -360,7 +367,7 @@ public class TraceRecorder extends TraceBuffer implements TraceHandler {
 
     protected void writeStringRef(String s) {
         writeUInt(CBORConstants.TAG_BASE, TraceFormat.TAG_STRING_REF);
-        writeUInt(CBORConstants.UINT_BASE, symbols.symbolId(s));
+        writeUInt(CBORConstants.UINT_BASE, symbols.stringId(s));
     }
 
 

@@ -70,7 +70,7 @@ public class TraceDataSet {
             for (Object obj = r.readObject(); obj != null; obj = r.readObject()) {
                 if (obj instanceof Symbol) {
                     Symbol sym = (Symbol) obj;
-                    symbols.put(sym.getId(), sym.getName());
+                    symbols.putString(sym.getId(), sym.getName());
                 } else if (obj instanceof ViewerTraceRecord) {
                     ((ViewerTraceRecord) obj).fixup();
                     traceRecords.add((ViewerTraceRecord) obj);

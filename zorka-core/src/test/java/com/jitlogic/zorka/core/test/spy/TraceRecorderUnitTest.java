@@ -22,7 +22,7 @@ import com.jitlogic.zorka.common.util.ZorkaUnsafe;
 import com.jitlogic.zorka.common.util.ZorkaUtil;
 import com.jitlogic.zorka.core.spy.TraceBufChunk;
 import com.jitlogic.zorka.core.spy.TraceBufManager;
-import com.jitlogic.zorka.core.spy.TraceBufOutput;
+import com.jitlogic.zorka.core.test.spy.support.TestTraceBufOutput;
 import com.jitlogic.zorka.core.test.spy.support.TestTraceRecorder;
 import com.jitlogic.zorka.core.test.support.ZorkaFixture;
 import org.junit.After;
@@ -53,14 +53,8 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
 
     private TraceBufManager bm = new TraceBufManager(128, 4);
 
-    private TraceBufChunk cs = null;
 
-    private TraceBufOutput o = new TraceBufOutput() {
-        @Override
-        public void process(Object source, TraceBufChunk chunks) {
-            TraceRecorderUnitTest.this.cs = chunks;
-        }
-    };
+    private TestTraceBufOutput o = new TestTraceBufOutput();
 
     private TestTraceRecorder r = new TestTraceRecorder(bm,symbols,o);
 
@@ -78,7 +72,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
         r.t = 1; r.traceEnter(10);
         r.t = 3; r.traceReturn();
 
-        assertNull(cs);
+        assertNull(o.getChunks());
 
         assertEquals(1, bm.getNGets());
         assertEquals(0, bm.getNputs());
@@ -89,7 +83,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
         r.t = 1; r.traceEnter(10);
         r.t = 9; r.traceReturn();
 
-        assertNull(cs);
+        assertNull(o.getChunks());
 
         assertEquals(1, bm.getNGets());
         assertEquals(0, bm.getNputs());
@@ -104,11 +98,11 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
         r.t = 2; r.traceBegin(1, 11, 0);
         r.t = 9; r.traceReturn();
 
-        assertEquals(1, chunksCount(cs));
+        assertEquals(1, chunksCount(o.getChunks()));
 
         assertEquals(m(
             "_", "T", "method", 10L, "tstart", 1L, "tstop", 9L, "calls", 1L,
-            "begin", m("_", "B", "clock", 11, "trace", 1)), decodeTrace(cs));
+            "begin", m("_", "B", "clock", 11, "trace", 1)), decodeTrace(o.getChunks()));
     }
 
     @Test
@@ -126,7 +120,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
             "_", "T", "method", 10L, "tstart", 1L, "tstop", 9L, "calls", 2L,
             "begin", m("_", "B", "clock", 11, "trace", 1),
             "children", l(m("_", "T", "method", 12L, "tstart", 3L, "tstop", 8L, "calls", 1L))
-        ), decodeTrace(cs));
+        ), decodeTrace(o.getChunks()));
     }
 
 
@@ -143,7 +137,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
         assertEquals(m(
             "_", "T", "method", 10L, "tstart", 1L, "tstop", 9L, "calls", 2L,
             "begin", m("_", "B", "clock", 11, "trace", 1)
-        ), decodeTrace(cs));
+        ), decodeTrace(o.getChunks()));
     }
 
     @Test
@@ -152,14 +146,14 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
 
         r.t = 1; r.traceEnter(10);
         r.t = 2; r.traceBegin(1, 11, 0);
-        r.t = 3; r.newAttr(0, 99, "OJAAA!");
+        r.t = 3; r.newAttr(-1, 99, "OJAAA!");
         r.t = 9; r.traceReturn();
 
         assertEquals(m(
             "_", "T", "method", 10L, "tstart", 1L, "tstop", 9L, "calls", 1L,
             "begin", m("_", "B", "clock", 11, "trace", 1),
             "attrs", m(99, "OJAAA!")),
-            decodeTrace(cs));
+            decodeTrace(o.getChunks()));
     }
 
     @Test
@@ -169,7 +163,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
         r.t = 1; r.traceEnter(10);
         r.t = 2; r.traceBegin(1, 11, 0);
         r.t = 3; r.traceEnter(12);
-        r.t = 3; r.newAttr(0, 99, "OJAAA!");
+        r.t = 3; r.newAttr(-1, 99, "OJAAA!");
         r.t = 8; r.traceReturn();
         r.t = 9; r.traceReturn();
 
@@ -178,7 +172,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
             "begin", m("_", "B", "clock", 11, "trace", 1),
             "children", l(m("_", "T", "method", 12L, "tstart", 3L, "tstop", 8L,
                             "calls", 1L, "attrs", m(99, "OJAAA!")))
-        ), decodeTrace(cs));
+        ), decodeTrace(o.getChunks()));
     }
 
 
@@ -190,7 +184,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
         r.t = 2; r.traceBegin(1, 11, 0);
         r.t = 3; r.traceEnter(12);
         r.t = 4; r.traceEnter(14);
-        r.t = 4; r.newAttr(0, 99, "OJAAA!");
+        r.t = 4; r.newAttr(-1, 99, "OJAAA!");
         r.t = 9; r.traceReturn();
         r.t = 10; r.traceReturn();
         r.t = 11; r.traceReturn();
@@ -201,7 +195,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
             "children", l(m("_", "T", "method", 12L, "tstart", 3L, "tstop", 10L, "calls", 2L,
                 "children", l(m("_", "T", "method", 14L, "tstart", 4L, "tstop", 9L, "calls", 1L,
                     "attrs", m(99, "OJAAA!")))))
-        ), decodeTrace(cs));
+        ), decodeTrace(o.getChunks()));
     }
 
 
@@ -210,15 +204,15 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
         for (int i = 0; i < e.getStackTrace().length; i++) {
             StackTraceElement se = e.getStackTrace()[i];
             stack.add(l(
-                symbols.symbolId(se.getClassName()),
-                symbols.symbolId(se.getMethodName()),
-                symbols.symbolId(se.getFileName()),
+                symbols.stringId(se.getClassName()),
+                symbols.stringId(se.getMethodName()),
+                symbols.stringId(se.getFileName()),
                 se.getLineNumber()));
         }
         return m(
             "_", "E",
             "id", System.identityHashCode(e),
-            "class", symbols.symbolId(e.getClass().getName()),
+            "class", symbols.stringId(e.getClass().getName()),
             "message", e.getMessage(), "stack", stack);
     }
 
@@ -236,7 +230,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
             m("_", "T", "method", 10L, "tstart", 1L, "tstop", 8L, "calls", 1L,
                 "begin", m("_", "B", "clock", 11, "trace", 1),
                 "error", errorToMap(e)),
-            decodeTrace(cs));
+            decodeTrace(o.getChunks()));
     }
 
 
@@ -259,7 +253,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
             "children", l(m("_", "T", "method", 12L, "tstart", 3L, "tstop", 10L, "calls", 2L,
                 "children", l(m("_", "T", "method", 14L, "tstart", 4L, "tstop", 9L, "calls", 1L,
                     "error", errorToMap(e)))))),
-            decodeTrace(cs));
+            decodeTrace(o.getChunks()));
     }
 
 
@@ -272,7 +266,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
         r.t = 2; r.traceBegin(1, 11, 0);
         r.t = 3; r.traceEnter(12);
         r.t = 4; r.traceEnter(14);
-        r.t = 4; r.newAttr(0, 99, "OJAAA!");
+        r.t = 4; r.newAttr(-1, 99, "OJAAA!");
         r.t = 9; r.traceError(e);
         r.t = 10; r.traceReturn();
         r.t = 11; r.traceReturn();
@@ -283,7 +277,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
             "children", l(m("_", "T", "method", 12L, "tstart", 3L, "tstop", 10L, "calls", 2L,
                 "children", l(m("_", "T", "method", 14L, "tstart", 4L, "tstop", 9L, "calls", 1L,
                     "error", errorToMap(e), "attrs", m(99, "OJAAA!")))))
-        ), decodeTrace(cs));
+        ), decodeTrace(o.getChunks()));
     }
 
 
@@ -308,7 +302,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
                 "error", m("_", "E", "id", id),
                 "children", l(m("_", "T", "method", 14L, "tstart", 4L, "tstop", 9L, "calls", 1L,
                     "error", errorToMap(e)))))
-        ), decodeTrace(cs));
+        ), decodeTrace(o.getChunks()));
     }
 
 
@@ -342,7 +336,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
                 "error", em2,
                 "children", l(m("_", "T", "method", 14L, "tstart", 4L, "tstop", 9L, "calls", 1L,
                     "error",em1))))
-        ), decodeTrace(cs));
+        ), decodeTrace(o.getChunks()));
     }
 
     @Test
@@ -357,12 +351,12 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
         r.t = 8; r.enable();
         r.t = 9; r.traceReturn();
 
-        assertEquals(1, chunksCount(cs));
+        assertEquals(1, chunksCount(o.getChunks()));
 
         assertEquals(m(
             "_", "T", "method", 10L, "tstart", 1L, "tstop", 9L, "calls", 1L,
             "begin", m("_", "B", "clock", 11, "trace", 1)),
-            decodeTrace(cs));
+            decodeTrace(o.getChunks()));
 
     }
 
@@ -377,7 +371,7 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
         r.t = 2;
         r.t = 3; r.traceEnter(12);
         assertEquals(1, chunksCount((TraceBufChunk)ObjectInspector.getField(r, "chunk")));
-        r.newAttr(0, 1, s);
+        r.newAttr(-1, 1, s);
         assertEquals(2, chunksCount((TraceBufChunk)ObjectInspector.getField(r, "chunk")));
         r.t = 6; r.traceReturn();
         r.t = 9; r.traceReturn();
@@ -386,10 +380,10 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
             "_", "T", "method", 10L, "tstart", 1L, "tstop", 9L, "calls", 2L,
             "begin", m("_", "B", "clock", 11, "trace", 1),
             "children", l(m("_", "T", "method", 12L, "calls", 1L, "tstart", 3L, "tstop", 6L, "attrs", m(1, s)))
-        ), decodeTrace(cs));
+        ), decodeTrace(o.getChunks()));
     }
 
-
+    // TODO test embedded trace with and without automatic flush
 
     // TODO test forced trace submission;
 
@@ -409,7 +403,9 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
 
     // TODO test assigning attributes to specific traces;
 
+    // TODO test for automatic flush after selected timeout - triggered from instrumentation;
 
+    // TODO test for automatic flush after selected timeout - triggered from external thread;
 
 
     public void slowLongWriter(byte[] b, long v) {

@@ -333,9 +333,18 @@ public class AgentInstance implements ZorkaService {
         return scheduledExecutor;
     }
 
+    private TraceBufManager bufManager;
+
+    private synchronized TraceBufManager getBufManager() {
+        if (bufManager == null) {
+            bufManager = new TraceBufManager(65536, 16);
+        }
+        return bufManager;
+    }
+
     public synchronized Tracer getTracer() {
         if (tracer == null) {
-            tracer = new Tracer(getTracerMatcherSet(), getSymbolRegistry());
+            tracer = new Tracer(getTracerMatcherSet(), getSymbolRegistry(), getBufManager());
             MainSubmitter.setTracer(getTracer());
         }
         return tracer;

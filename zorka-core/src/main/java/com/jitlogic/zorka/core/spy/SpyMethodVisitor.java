@@ -59,6 +59,13 @@ public class SpyMethodVisitor extends MethodVisitor {
     private static final String ERROR_METHOD = "traceError";
     private static final String ERROR_SIGNATURE = "(Ljava/lang/Throwable;)V";
 
+    private static final String ENTER_R_METHOD = "traceEnterR";
+    private static final String ENTER_R_SIGNATURE = "(I)V";
+    private static final String RETURN_R_METHOD = "traceReturnR";
+    private static final String RETURN_R_SIGNATURE = "()V";
+    private static final String ERROR_R_METHOD = "traceErrorR";
+    private static final String ERROR_R_SIGNATURE = "(Ljava/lang/Throwable;)V";
+
     /**
      * Access flags of (instrumented) method
      */
@@ -126,6 +133,8 @@ public class SpyMethodVisitor extends MethodVisitor {
      */
     private boolean matches = false;
 
+    private boolean usingRecorder = false;
+
     /**
      * Boolean flag indicating if tracer code should be injected.
      */
@@ -152,12 +161,13 @@ public class SpyMethodVisitor extends MethodVisitor {
      * @param mv              method visitor (next in processing chain)
      *                        TODO add explicit doTrace argument
      */
-    public SpyMethodVisitor(boolean matches, SymbolRegistry symbolRegistry,
+    public SpyMethodVisitor(boolean matches, boolean usingRecorder, SymbolRegistry symbolRegistry,
                             String className, List<String> classAnnotations, List<String> classInterfaces,
                             int access, String methodName, String methodSignature,
                             List<SpyContext> ctxs, MethodVisitor mv) {
         super(Opcodes.ASM4, mv);
         this.matches = matches;
+        this.usingRecorder = usingRecorder;
         this.symbolRegistry = symbolRegistry;
         this.className = className;
         this.classAnnotations = classAnnotations;
@@ -230,12 +240,17 @@ public class SpyMethodVisitor extends MethodVisitor {
 
 
         // Emit trace probe if required
-        if (symbolRegistry != null) {
+        if (symbolRegistry != null) { // TODO checking symbolsRegistry is NOT a good way to determine if method should be traced
             log.debug(ZorkaLogger.ZTR_INSTRUMENT_METHOD, "Will trace method: %s.%s", className, methodName);
-            stackDelta = max(stackDelta, emitTraceEnter(
-                    symbolRegistry.symbolId(className),
-                    symbolRegistry.symbolId(methodName),
-                    symbolRegistry.symbolId(methodSignature)));
+            if (usingRecorder) {
+                stackDelta = max(stackDelta, emitTraceEnterR(
+                    symbolRegistry.methodId(className, methodName, methodSignature)));
+            } else {
+                stackDelta = max(stackDelta, emitTraceEnter(
+                    symbolRegistry.stringId(className),
+                    symbolRegistry.stringId(methodName),
+                    symbolRegistry.stringId(methodSignature)));
+            }
         }
 
 
@@ -337,7 +352,6 @@ public class SpyMethodVisitor extends MethodVisitor {
      * @return
      */
     public static int getSubmitFlags(SpyDefinition sdef, int stage) {
-
         if (stage == ON_ENTER) {
             return (sdef.getProbes(ON_RETURN).size() == 0
                     && sdef.getProcessors(ON_RETURN).size() == 0
@@ -397,6 +411,18 @@ public class SpyMethodVisitor extends MethodVisitor {
         return 3;
     }
 
+    /**
+     * Emits tracer code on method entry.
+     *
+     * @param methodId    method id (mapped triple of classname, method name, method description)
+     * @return number of JVM stack slots consumed
+     */
+    private int emitTraceEnterR(int methodId) {
+        emitLoadInt(methodId);
+        mv.visitMethodInsn(INVOKESTATIC, SUBMIT_CLASS, ENTER_R_METHOD, ENTER_R_SIGNATURE, false);
+        tracerProbesEmitted++;
+        return 1;
+    }
 
     /**
      * Emits tracer code on method return.
@@ -404,13 +430,14 @@ public class SpyMethodVisitor extends MethodVisitor {
      * @return number of JVM stack slots consumed
      */
     private int emitTraceReturn() {
-        mv.visitMethodInsn(INVOKESTATIC, SUBMIT_CLASS, RETURN_METHOD, RETURN_SIGNATURE);
+        mv.visitMethodInsn(INVOKESTATIC, SUBMIT_CLASS,
+            usingRecorder ? RETURN_R_METHOD : RETURN_METHOD,
+            RETURN_SIGNATURE);
 
         tracerProbesEmitted++;
 
         return 0;
     }
-
 
     /**
      * Emits tracer code on method error
@@ -419,7 +446,9 @@ public class SpyMethodVisitor extends MethodVisitor {
      */
     private int emitTraceError() {
         mv.visitInsn(DUP);
-        mv.visitMethodInsn(INVOKESTATIC, SUBMIT_CLASS, ERROR_METHOD, ERROR_SIGNATURE);
+        mv.visitMethodInsn(INVOKESTATIC, SUBMIT_CLASS,
+            usingRecorder ? ERROR_R_METHOD : ERROR_METHOD,
+            ERROR_SIGNATURE);
 
         tracerProbesEmitted++;
 

@@ -92,7 +92,7 @@ public class SymbolicException implements SymbolicRecord, Serializable {
     }
 
     private void init(Throwable exception, SymbolRegistry symbols) {
-        this.classId = symbols.symbolId(exception.getClass().getName());
+        this.classId = symbols.stringId(exception.getClass().getName());
         this.message = exception.getMessage();
 
         StackTraceElement[] orig = exception.getStackTrace();

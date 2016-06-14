@@ -159,15 +159,15 @@ public class TraceBuffer extends OutputStream {
             writeUInt(base, (int)l);
         } else {
             if (bufLen - bufPos < 9) nextChunk();
-            buffer[bufPos+1] = (byte) (base+CBORConstants.UINT_CODE8);
-            buffer[bufPos+2] = (byte) ((l >> 56) & 0xff);
-            buffer[bufPos+3] = (byte) ((l >> 48) & 0xff);
-            buffer[bufPos+4] = (byte) ((l >> 40) & 0xff);
-            buffer[bufPos+5] = (byte) ((l >> 32) & 0xff);
-            buffer[bufPos+6] = (byte) ((l >> 24) & 0xff);
-            buffer[bufPos+7] = (byte) ((l >> 16) & 0xff);
-            buffer[bufPos+8] = (byte) ((l >> 8) & 0xff);
-            buffer[bufPos+9] = (byte)  (l & 0xff);
+            buffer[bufPos] = (byte) (base+CBORConstants.UINT_CODE8);
+            buffer[bufPos+1] = (byte) ((l >> 56) & 0xff);
+            buffer[bufPos+2] = (byte) ((l >> 48) & 0xff);
+            buffer[bufPos+3] = (byte) ((l >> 40) & 0xff);
+            buffer[bufPos+4] = (byte) ((l >> 32) & 0xff);
+            buffer[bufPos+5] = (byte) ((l >> 24) & 0xff);
+            buffer[bufPos+6] = (byte) ((l >> 16) & 0xff);
+            buffer[bufPos+7] = (byte) ((l >> 8) & 0xff);
+            buffer[bufPos+8] = (byte)  (l & 0xff);
             bufPos += 9;
         }
     }

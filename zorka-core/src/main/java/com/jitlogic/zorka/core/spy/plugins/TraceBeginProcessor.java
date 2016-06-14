@@ -20,6 +20,7 @@ import com.jitlogic.zorka.common.tracedata.SymbolRegistry;
 import com.jitlogic.zorka.common.util.ObjectInspector;
 import com.jitlogic.zorka.core.spy.SpyProcessor;
 import com.jitlogic.zorka.core.spy.TraceBuilder;
+import com.jitlogic.zorka.core.spy.TraceRecorder;
 import com.jitlogic.zorka.core.spy.Tracer;
 
 import java.util.Map;
@@ -74,12 +75,22 @@ public class TraceBeginProcessor implements SpyProcessor {
 
     @Override
     public Map<String, Object> process(Map<String, Object> record) {
-        TraceBuilder traceBuilder = tracer.getHandler();
-        int traceId = symbolRegistry.symbolId(ObjectInspector.substitute(traceName, record));
-        traceBuilder.traceBegin(traceId, System.currentTimeMillis(), flags);
+        // TODO clean it up when removing old tracer
+        if (tracer.isUsingRecorder()) {
+            TraceRecorder recorder = tracer.getRecorder();
+            int traceId = symbolRegistry.stringId(ObjectInspector.substitute(traceName, record));
+            recorder.traceBegin(traceId, System.currentTimeMillis(), flags);
+            if (minimumTraceTime >= 0) {
+                recorder.setMinimumTraceTime(minimumTraceTime);
+            }
+        } else {
+            TraceBuilder traceBuilder = tracer.getHandler();
+            int traceId = symbolRegistry.stringId(ObjectInspector.substitute(traceName, record));
+            traceBuilder.traceBegin(traceId, System.currentTimeMillis(), flags);
 
-        if (minimumTraceTime >= 0) {
-            traceBuilder.setMinimumTraceTime(minimumTraceTime);
+            if (minimumTraceTime >= 0) {
+                traceBuilder.setMinimumTraceTime(minimumTraceTime);
+            }
         }
 
         return record;

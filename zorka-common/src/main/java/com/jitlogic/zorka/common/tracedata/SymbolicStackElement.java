@@ -54,9 +54,9 @@ public class SymbolicStackElement implements SymbolicRecord, Serializable {
      * @param symbols symbol registry
      */
     public SymbolicStackElement(StackTraceElement ste, SymbolRegistry symbols) {
-        this.classId = symbols.symbolId(ste.getClassName());
-        this.methodId = symbols.symbolId(ste.getMethodName());
-        this.fileId = symbols.symbolId(ste.getFileName());
+        this.classId = symbols.stringId(ste.getClassName());
+        this.methodId = symbols.stringId(ste.getMethodName());
+        this.fileId = symbols.stringId(ste.getFileName());
         this.lineNum = ste.getLineNumber();
     }
 

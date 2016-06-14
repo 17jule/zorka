@@ -54,7 +54,11 @@ public class TraceFlagsProcessor implements SpyProcessor {
     public Map<String, Object> process(Map<String, Object> record) {
 
         if (checkField == null || record.get(checkField) != null) {
-            tracer.getHandler().markTraceFlags(traceId, flags);
+            if (tracer.isUsingRecorder()) {
+                tracer.getRecorder().markTraceFlags(traceId, flags);
+            } else {
+                tracer.getHandler().markTraceFlags(traceId, flags);
+            }
         }
 
         return record;

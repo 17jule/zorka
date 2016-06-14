@@ -320,7 +320,7 @@ public class ZabbixTraceOutput extends ZorkaAsyncThread<SymbolicRecord> implemen
 		/* Finding Record's key */
 		if (traceRecord.getAttrs() != null) {
 			for (Map.Entry<Integer, Object> entry : traceRecord.getAttrs().entrySet()) {
-				String attrName = symbolRegistry.symbolName(entry.getKey());
+				String attrName = symbolRegistry.stringContent(entry.getKey());
 				
 				if (attrName.equals("URI")) {
 					keySuffix = "frontends." + String.valueOf(entry.getValue());
@@ -329,8 +329,8 @@ public class ZabbixTraceOutput extends ZorkaAsyncThread<SymbolicRecord> implemen
 		}
 
 		if (keySuffix == null) {
-			String className = symbolRegistry.symbolName(traceRecord.getClassId()).replace(".", "_");
-			String methodName = symbolRegistry.symbolName(traceRecord.getMethodId()).replace(".", "_");
+			String className = symbolRegistry.stringContent(traceRecord.getClassId()).replace(".", "_");
+			String methodName = symbolRegistry.stringContent(traceRecord.getMethodId()).replace(".", "_");
 			keySuffix = className + "_" + methodName;
 		}
 		

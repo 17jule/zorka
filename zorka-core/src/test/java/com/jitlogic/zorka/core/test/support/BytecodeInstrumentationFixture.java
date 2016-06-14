@@ -45,6 +45,7 @@ public class BytecodeInstrumentationFixture extends ZorkaFixture {
     public SymbolRegistry symbols;
     public TestSubmitter submitter;
     public TestTraceBuilder traceBuilder;
+    public TraceBufManager bufManager;
     public Tracer tracerObj;
 
     @Before
@@ -54,8 +55,9 @@ public class BytecodeInstrumentationFixture extends ZorkaFixture {
         submitter = new TestSubmitter();
         MainSubmitter.setSubmitter(submitter);
         traceBuilder = new TestTraceBuilder();
+        bufManager = new TraceBufManager(8192, 4);
         tracerObj = new Tracer(agentInstance.getTracerMatcherSet(),
-                agentInstance.getSymbolRegistry()) {
+                agentInstance.getSymbolRegistry(), bufManager) {
             public TraceBuilder getHandler() {
                 return traceBuilder;
             }

@@ -25,22 +25,34 @@ public class SymbolRegistry {
     /**
      * ID of last symbol added to registry.
      */
-    protected AtomicInteger lastSymbolId;
+    protected AtomicInteger lastStringId;
 
     /**
      * Symbol name to ID map
      */
-    protected ConcurrentMap<String, Integer> symbolIds;
+    protected ConcurrentMap<String, Integer> stringIds;
 
     /**
      * Symbol ID to name map
      */
-    protected ConcurrentMap<Integer, String> symbolNames;
+    protected ConcurrentMap<Integer, String> stringContents;
+
+
+    protected AtomicInteger lastMethodId;
+
+    protected ConcurrentMap<Long, Integer> methodIds;
+
+    protected ConcurrentMap<Integer, Long> methodDefs;
+
 
     public SymbolRegistry() {
-        lastSymbolId = new AtomicInteger(0);
-        symbolIds = new ConcurrentHashMap<String, Integer>();
-        symbolNames = new ConcurrentHashMap<Integer, String>();
+        lastStringId = new AtomicInteger(0);
+        stringIds = new ConcurrentHashMap<String, Integer>();
+        stringContents = new ConcurrentHashMap<Integer, String>();
+
+        lastMethodId = new AtomicInteger(0);
+        methodIds = new ConcurrentHashMap<Long, Integer>();
+        methodDefs = new ConcurrentHashMap<Integer, Long>();
     }
 
     /**
@@ -50,20 +62,20 @@ public class SymbolRegistry {
      * @param symbol symbol name
      * @return symbol ID (integer)
      */
-    public int symbolId(String symbol) {
+    public int stringId(String symbol) {
 
         if (symbol == null) {
             return 0;
         }
 
-        Integer id = symbolIds.get(symbol);
+        Integer id = stringIds.get(symbol);
 
         if (id == null) {
-            int newid = lastSymbolId.incrementAndGet();
+            int newid = lastStringId.incrementAndGet();
 
-            id = symbolIds.putIfAbsent(symbol, newid);
+            id = stringIds.putIfAbsent(symbol, newid);
             if (id == null) {
-                symbolNames.put(newid, symbol);
+                stringContents.put(newid, symbol);
                 persist(newid, symbol);
                 id = newid;
             }
@@ -72,13 +84,13 @@ public class SymbolRegistry {
         return id;
     }
 
-    public int trySymbolId(String symbol) {
+    public int tryStringId(String symbol) {
 
         if (symbol == null) {
             return 0;
         }
 
-        Integer sym = symbolIds.get(symbol);
+        Integer sym = stringIds.get(symbol);
         return sym != null ? sym : 0;
     }
 
@@ -88,11 +100,11 @@ public class SymbolRegistry {
      * @param symbolId symbol ID
      * @return symbol name
      */
-    public String symbolName(int symbolId) {
+    public String stringContent(int symbolId) {
         if (symbolId == 0) {
             return "<null>";
         }
-        String sym = symbolNames.get(symbolId);
+        String sym = stringContents.get(symbolId);
 
         return sym != null ? sym : "<?>";
     }
@@ -104,23 +116,89 @@ public class SymbolRegistry {
      * @param symbolId symbol ID
      * @param symbol   symbol name
      */
-    public void put(int symbolId, String symbol) {
+    public void putString(int symbolId, String symbol) {
 
-        symbolIds.put(symbol, symbolId);
-        symbolNames.put(symbolId, symbol);
+        stringIds.put(symbol, symbolId);
+        stringContents.put(symbolId, symbol);
 
-        if (symbolId > lastSymbolId.get()) {
-            lastSymbolId.set(symbolId);
+        if (symbolId > lastStringId.get()) {
+            lastStringId.set(symbolId);
         }
 
         persist(symbolId, symbol);
     }
 
+    private final static long MDEF_MASK = 0x00000000001FFFFFL;
+
+
+    public int methodId(String className, String methodName, String methodDescription) {
+        return methodId(stringId(className), stringId(methodName), stringId(methodDescription));
+    }
+
+
+    public int methodId(int className, int methodName, int methodDescription) {
+        long mdef = (className & MDEF_MASK)
+            | ((methodName & MDEF_MASK) << 21)
+            | ((methodDescription & MDEF_MASK) << 42);
+        Integer id = methodIds.get(mdef);
+        if (id == null) {
+            int newid = lastMethodId.incrementAndGet();
+            id = methodIds.putIfAbsent(mdef, newid);
+            if (id == null) {
+                methodDefs.put(newid, mdef);
+                id = newid;
+            }
+        }
+        return id;
+    }
+
+
+    public int[] methodDef(int methodId) {
+        Long mdef = methodDefs.get(methodId);
+        return mdef != null ? new int[]{
+            (int)(mdef & MDEF_MASK),
+            (int)((mdef >> 21) & MDEF_MASK),
+            (int)((mdef >> 42) & MDEF_MASK) }
+            : null;
+    }
+
+
+    public void putMethod(int methodId, String className, String methodName, String methodDescription) {
+        putMethod(methodId, stringId(className), stringId(methodName), stringId(methodDescription));
+    }
+
+
+    public void putMethod(int methodId, int className, int methodName, int methodDescription) {
+        long mdef = (className & MDEF_MASK)
+            | ((methodName & MDEF_MASK) << 21)
+            | ((methodDescription & MDEF_MASK) << 42);
+        methodIds.put(mdef, methodId);
+        methodDefs.put(methodId, mdef);
+        if (methodId > lastMethodId.get()) {
+            lastMethodId.set(methodId);
+        }
+    }
+
+
     protected void persist(int id, String name) {
     }
 
-    public int size() {
-        return symbolIds.size();
+
+    public int stringCount() {
+        return stringIds.size();
+    }
+
+
+    public int methodCount() { return methodIds.size(); }
+
+
+    public int lastStringId() {
+        return lastStringId.get();
+    }
+
+
+    public int lastMethodId() {
+        return lastMethodId.get();
     }
 
 }
