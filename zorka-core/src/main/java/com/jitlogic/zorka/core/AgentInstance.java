@@ -28,8 +28,6 @@ import com.jitlogic.zorka.core.integ.zabbix.ZabbixAgent;
 import com.jitlogic.zorka.core.integ.zabbix.ZabbixLib;
 import com.jitlogic.zorka.core.integ.zabbix.ZabbixQueryTranslator;
 import com.jitlogic.zorka.core.mbeans.AttrGetter;
-import com.jitlogic.zorka.common.tracedata.MetricsRegistry;
-import com.jitlogic.zorka.core.perfmon.PerfMonLib;
 import com.jitlogic.zorka.core.spy.*;
 import com.jitlogic.zorka.common.tracedata.SymbolRegistry;
 import com.jitlogic.zorka.core.integ.*;
@@ -138,11 +136,6 @@ public class AgentInstance implements ZorkaService {
      */
     private NormLib normLib;
 
-    /**
-     * Reference to ranking and metrics processing library.
-     */
-    private PerfMonLib perfMonLib;
-
     private MethodCallStatistics stats = new MethodCallStatistics();
 
     /**
@@ -197,8 +190,6 @@ public class AgentInstance implements ZorkaService {
             getZorkaAgent().put("spy", getSpyLib());
             getZorkaAgent().put("tracer", getTracerLib());
         }
-
-        getZorkaAgent().put("perfmon", getPerfMonLib());
 
         if (config.boolCfg("zabbix.active", false)) {
         	log.info(ZorkaLogger.ZAG_CONFIG, "Enabling ZABBIX Active Agent subsystem ...");
@@ -281,16 +272,6 @@ public class AgentInstance implements ZorkaService {
             tracerMatcherSet = new SpyMatcherSet();
         }
         return tracerMatcherSet;
-    }
-
-
-    private MetricsRegistry metricsRegistry;
-
-    public synchronized MetricsRegistry getMetricsRegistry() {
-        if (metricsRegistry == null) {
-            metricsRegistry = new MetricsRegistry();
-        }
-        return metricsRegistry;
     }
 
 
@@ -469,7 +450,7 @@ public class AgentInstance implements ZorkaService {
     public synchronized TracerLib getTracerLib() {
 
         if (tracerLib == null) {
-            tracerLib = new TracerLib(getSymbolRegistry(), getMetricsRegistry(), getTracer(), config);
+            tracerLib = new TracerLib(getSymbolRegistry(), getTracer(), config);
         }
 
         return tracerLib;
@@ -508,21 +489,6 @@ public class AgentInstance implements ZorkaService {
         }
 
         return snmpLib;
-    }
-
-
-    /**
-     * Returns reference to rank processing & metrics library
-     *
-     * @return instance of perfmon library
-     */
-    public synchronized PerfMonLib getPerfMonLib() {
-
-        if (perfMonLib == null) {
-            perfMonLib = new PerfMonLib(getSymbolRegistry(), getMetricsRegistry(), getTracer(), getMBeanServerRegistry());
-        }
-
-        return perfMonLib;
     }
 
 

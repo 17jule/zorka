@@ -201,7 +201,7 @@ public class SpyClassVisitor extends ClassVisitor {
 
         if (ctxs.size() > 0 || doTrace) {
             bytecodeWasModified = true;
-            return new SpyMethodVisitor(m, tracer.isUsingRecorder(), doTrace ? symbolRegistry : null, className,
+            return new SpyMethodVisitor(m, doTrace ? symbolRegistry : null, className,
                     classAnnotations, classInterfaces, access, methodName, methodDesc, ctxs, mv);
         }
 

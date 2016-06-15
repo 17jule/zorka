@@ -24,15 +24,16 @@ import javax.management.*;
 
 import com.jitlogic.zorka.common.ZorkaService;
 import com.jitlogic.zorka.common.stats.AgentDiagnostics;
+import com.jitlogic.zorka.common.stats.MethodCallStatistic;
 import com.jitlogic.zorka.common.util.*;
 import com.jitlogic.zorka.common.util.FileTrapper;
 import com.jitlogic.zorka.core.integ.QueryTranslator;
+import com.jitlogic.zorka.core.perfmon.*;
 import com.jitlogic.zorka.core.spy.SpyClassTransformer;
 import com.jitlogic.zorka.core.spy.SpyDefinition;
 import com.jitlogic.zorka.core.spy.SpyMatcherSet;
 import com.jitlogic.zorka.core.util.*;
 import com.jitlogic.zorka.core.mbeans.MBeanServerRegistry;
-import com.jitlogic.zorka.core.perfmon.*;
 import com.jitlogic.zorka.core.mbeans.AttrGetter;
 import com.jitlogic.zorka.common.stats.ValGetter;
 import com.jitlogic.zorka.core.mbeans.ZorkaMappedMBean;
@@ -698,57 +699,6 @@ public class ZorkaLib implements ZorkaService {
 
 
     /**
-     * Creates JMX lister object that can be used to create rankings
-     *
-     * @param mbsName mbean server name
-     * @param onMask  object name (or mask)
-     * @param <T>     wrapped object type (if any)
-     * @return JMX rank lister object
-     */
-    public <T extends Rankable<?>> RankLister<T> jmxLister(String mbsName, String onMask) {
-        JmxAggregatingLister<T> lister = new JmxAggregatingLister<T>(mbsRegistry, mbsName, onMask);
-        return lister;
-    }
-
-
-    /**
-     * Thread rank lister (if it has been created)
-     */
-    private ThreadRankLister threadRankLister;
-
-
-    /**
-     * Returns thread rank lister. Creates and starts a new one if none has been creater (yet).
-     * As thread lister causes some stress on JVM, it is a singleton object and it is created in lazy manner.
-     *
-     * @return thread rank lister object
-     */
-    public synchronized ThreadRankLister threadRankLister() {
-        if (threadRankLister == null) {
-            threadRankLister = new ThreadRankLister(mbsRegistry);
-            scheduler.schedule(threadRankLister, 15000, 0);
-        }
-
-        return threadRankLister;
-    }
-
-    /**
-     * Creates EJB rank lister object that can be used to create rankings.
-     * It will list EJB statistics from selected mbeans.
-     *
-     * @param mbsName  mbean server name
-     * @param objNames object names
-     * @param attr     attribute name
-     * @return EJB rank lister object
-     */
-    public EjbRankLister ejbRankLister(String mbsName, String objNames, String attr) {
-        EjbRankLister lister = new EjbRankLister(mbsRegistry, mbsName, objNames, attr);
-        scheduler.schedule(lister, 15000, 0);
-        return lister;
-    }
-
-
-    /**
      * Looks for file trapper and returns if trapper exists.
      *
      * @param id trapper ID
@@ -987,6 +937,42 @@ public class ZorkaLib implements ZorkaService {
         for (String func : funcs) {
             translator.allow(func);
         }
+    }
+
+
+    public HiccupMeter cpuHiccup(String mbsName, String mbeanName, String attr) {
+        return cpuHiccup(mbsName, mbeanName, attr, 10, 30000);
+    }
+
+
+    public HiccupMeter cpuHiccup(String mbsName, String mbeanName, String attr, long resolution, long delay) {
+        MethodCallStatistic mcs = mbsRegistry.getOrRegister(mbsName, mbeanName, attr, new MethodCallStatistic("cpuHiccup"));
+        HiccupMeter meter = HiccupMeter.cpuMeter(resolution, delay, mcs);
+        return meter;
+    }
+
+
+    public HiccupMeter memHiccup(String mbsName, String mbeanName, String attr) {
+        return memHiccup(mbsName, mbeanName, attr, 10, 30000);
+    }
+
+
+    public HiccupMeter memHiccup(String mbsName, String mbeanName, String attr, long resolution, long delay) {
+        MethodCallStatistic mcs = mbsRegistry.getOrRegister(mbsName, mbeanName, attr, new MethodCallStatistic("memHiccup"));
+        HiccupMeter meter = HiccupMeter.memMeter(resolution, delay, mcs);
+        return meter;
+    }
+
+
+    public HiccupMeter dskHiccup(String mbsName, String mbeanName, String attr, String path) {
+        return dskHiccup(mbsName, mbeanName, attr, 1000, 30000, path);
+    }
+
+
+    public HiccupMeter dskHiccup(String mbsName, String mbeanName, String attr, long resolution, long delay, String path) {
+        MethodCallStatistic mcs = mbsRegistry.getOrRegister(mbsName, mbeanName, attr, new MethodCallStatistic("dskHiccup"));
+        HiccupMeter meter = HiccupMeter.dskMeter(resolution, delay, path, mcs);
+        return meter;
     }
 
 }

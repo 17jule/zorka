@@ -16,7 +16,6 @@
 
 package com.jitlogic.zorka.core.spy.plugins;
 
-import com.jitlogic.zorka.common.tracedata.TraceMarker;
 import com.jitlogic.zorka.common.util.ZorkaLog;
 import com.jitlogic.zorka.common.util.ZorkaLogger;
 import com.jitlogic.zorka.core.spy.SpyProcessor;
@@ -57,13 +56,8 @@ public class TraceFilterProcessor implements SpyProcessor {
 
         Boolean rslt = decide(val);
 
-        if (rslt != null) {
-            if (tracer.isUsingRecorder()) {
-                tracer.getRecorder().markTraceFlags(0, rslt ? TraceMarker.SUBMIT_TRACE : TraceMarker.DROP_TRACE);
-            } else {
-                tracer.getHandler().markTraceFlags(0, rslt ? TraceMarker.SUBMIT_TRACE : TraceMarker.DROP_TRACE);
-            }
-        }
+        // TODO force submitting and dropping traces here
+        //tracer.getRecorder().markTraceFlags(0, rslt ? TraceMarker.SUBMIT_TRACE : TraceMarker.DROP_TRACE);
 
         return record;
     }

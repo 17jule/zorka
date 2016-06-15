@@ -21,10 +21,8 @@ import com.jitlogic.zorka.common.tracedata.SymbolRegistry;
 import com.jitlogic.zorka.core.spy.*;
 import com.jitlogic.zorka.core.test.spy.support.TestSpyTransformer;
 import com.jitlogic.zorka.core.test.spy.support.TestSubmitter;
-import com.jitlogic.zorka.core.test.spy.support.TestTraceBuilder;
 import org.junit.After;
 import org.junit.Before;
-import org.objectweb.asm.ClassWriter;
 
 public class BytecodeInstrumentationFixture extends ZorkaFixture {
 
@@ -44,7 +42,6 @@ public class BytecodeInstrumentationFixture extends ZorkaFixture {
     public TestSpyTransformer engine;
     public SymbolRegistry symbols;
     public TestSubmitter submitter;
-    public TestTraceBuilder traceBuilder;
     public TraceBufManager bufManager;
     public Tracer tracerObj;
 
@@ -54,13 +51,9 @@ public class BytecodeInstrumentationFixture extends ZorkaFixture {
                 agentInstance.getTracer(), agentInstance.getRetransformer());
         submitter = new TestSubmitter();
         MainSubmitter.setSubmitter(submitter);
-        traceBuilder = new TestTraceBuilder();
         bufManager = new TraceBufManager(8192, 4);
         tracerObj = new Tracer(agentInstance.getTracerMatcherSet(),
                 agentInstance.getSymbolRegistry(), bufManager) {
-            public TraceBuilder getHandler() {
-                return traceBuilder;
-            }
         };
         MainSubmitter.setTracer(tracerObj);
         symbols = agentInstance.getSymbolRegistry();

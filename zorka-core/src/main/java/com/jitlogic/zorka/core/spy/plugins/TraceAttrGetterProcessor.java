@@ -45,10 +45,7 @@ public class TraceAttrGetterProcessor  implements SpyProcessor {
     @Override
     public Map<String, Object> process(Map<String, Object> record) {
 
-        record.put(dstField,
-            tracer.isUsingRecorder()
-                ? tracer.getHandler().getAttr(traceId, attrId)
-                : tracer.getRecorder().getAttr(traceId, attrId));
+        record.put(dstField, tracer.getRecorder().getAttr(traceId, attrId));
 
         return record;
     }

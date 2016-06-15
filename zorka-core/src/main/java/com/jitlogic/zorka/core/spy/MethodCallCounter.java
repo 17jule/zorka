@@ -16,11 +16,6 @@
 package com.jitlogic.zorka.core.spy;
 
 
-import com.jitlogic.zorka.common.tracedata.MethodCallCounterRecord;
-
-import java.util.ArrayList;
-import java.util.List;
-
 public class MethodCallCounter {
 
     private static final int INITIAL_SIZE = 64;
@@ -69,19 +64,6 @@ public class MethodCallCounter {
         }
     }
 
-
-    public List<MethodCallCounterRecord> getRecords() {
-        List<MethodCallCounterRecord> ret = new ArrayList<MethodCallCounterRecord>();
-
-        for (int i = 0; i < keys.length; i++) {
-            long key = keys[i];
-            if (key != FREE) {
-                ret.add(new MethodCallCounterRecord((int) (key & MASK), (int) ((key >> 21) & MASK), (int) ((key >> 42) & MASK), vals[i]));
-            }
-        }
-
-        return ret;
-    }
 
 
     public void sum(MethodCallCounter mcc) {
@@ -141,10 +123,6 @@ public class MethodCallCounter {
 
         int hash = lhash(key);
         int i = hash % length;
-
-        if (i < 0) {
-            System.out.println("kurwa!");
-        }
 
         while (keys[i] != FREE && keys[i] != key) {
             i = (i > 0) ? i - 1 : length - 1;

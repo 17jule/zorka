@@ -17,22 +17,14 @@
 package com.jitlogic.zorka.core.spy;
 
 import com.jitlogic.zorka.common.ZorkaService;
-import com.jitlogic.zorka.common.ZorkaSubmitter;
 import com.jitlogic.zorka.common.tracedata.SymbolRegistry;
-import com.jitlogic.zorka.common.tracedata.SymbolicRecord;
-import com.jitlogic.zorka.common.util.ZorkaAsyncThread;
-import com.jitlogic.zorka.common.util.ZorkaUtil;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Groups all tracer engine components and global settings.
  *
  * @author rafal.lewczuk@jitlogic.com
  */
-public class Tracer implements ZorkaSubmitter<SymbolicRecord>, ZorkaService {
+public class Tracer implements ZorkaService {
 
     /**
      * Minimum default method execution time required to attach method to trace.
@@ -44,9 +36,7 @@ public class Tracer implements ZorkaSubmitter<SymbolicRecord>, ZorkaService {
      */
     private static int maxTraceRecords = 4096;
 
-
-    private AtomicReference<List<ZorkaSubmitter<SymbolicRecord>>> outputs
-            = new AtomicReference<List<ZorkaSubmitter<SymbolicRecord>>>(new ArrayList<ZorkaSubmitter<SymbolicRecord>>());
+    private static long minTraceTime = 1000000000L;
 
     /**
      * Defines which classes and methods should be traced.
@@ -73,19 +63,6 @@ public class Tracer implements ZorkaSubmitter<SymbolicRecord>, ZorkaService {
      */
     private boolean traceSpyMethods = true;
 
-    private boolean usingRecorder = true;
-
-    /**
-     * Thread local serving trace builder objects for application threads
-     */
-    private ThreadLocal<TraceBuilder> localHandlers =
-            new ThreadLocal<TraceBuilder>() {
-                public TraceBuilder initialValue() {
-                    return new TraceBuilder(Tracer.this, symbolRegistry);
-                }
-            };
-
-
     /**
      * Thread local serving streaming tracer objects for application threads.
      */
@@ -104,15 +81,6 @@ public class Tracer implements ZorkaSubmitter<SymbolicRecord>, ZorkaService {
         this.bufManager = bufManager;
     }
 
-
-    /**
-     * Returns trace even handler receiving events from local application thread.
-     *
-     * @return trace event handler (trace builder object)
-     */
-    public TraceBuilder getHandler() {
-        return localHandlers.get();
-    }
 
     public TraceRecorder getRecorder() {
         return localRecorders.get();
@@ -135,43 +103,7 @@ public class Tracer implements ZorkaSubmitter<SymbolicRecord>, ZorkaService {
 
 
     @Override
-    public boolean submit(SymbolicRecord record) {
-        boolean submitted = false;
-        for (ZorkaSubmitter<SymbolicRecord> output : outputs.get()) {
-            submitted |= output.submit(record);
-        }
-        return submitted;
-    }
-
-    @Override
     public synchronized void shutdown() {
-        List<ZorkaSubmitter<SymbolicRecord>> old = outputs.get();
-        outputs.set(new ArrayList<ZorkaSubmitter<SymbolicRecord>>());
-
-        for (ZorkaSubmitter<SymbolicRecord> output : old) {
-            if (output instanceof ZorkaService) {
-                ((ZorkaService)output).shutdown();
-            }
-        }
-
-        if (old.size() > 0) {
-            ZorkaUtil.sleep(100);
-        }
-    }
-
-
-    /**
-     * Sets output trace event handler tracer will submit completed traces to.
-     * Note that submit() method of supplied handler is called from application
-     * threads, so it must be thread safe.
-     *
-     * @param output trace event handler
-     */
-    public synchronized void addOutput(ZorkaSubmitter<SymbolicRecord> output) {
-        List<ZorkaSubmitter<SymbolicRecord>> newOutputs = new ArrayList<ZorkaSubmitter<SymbolicRecord>>();
-        newOutputs.addAll(outputs.get());
-        newOutputs.add(output);
-        outputs.set(newOutputs);
     }
 
 
@@ -218,11 +150,7 @@ public class Tracer implements ZorkaSubmitter<SymbolicRecord>, ZorkaService {
         this.traceSpyMethods = traceSpyMethods;
     }
 
-    public void setUsingRecorder(boolean usingRecorder) {
-        this.usingRecorder = usingRecorder;
-    }
+    public static void setMinTraceTime(long traceTime) { Tracer.minTraceTime = traceTime; }
 
-    public boolean isUsingRecorder() {
-        return usingRecorder;
-    }
+    public static long getMinTraceTime() { return Tracer.minTraceTime; }
 }

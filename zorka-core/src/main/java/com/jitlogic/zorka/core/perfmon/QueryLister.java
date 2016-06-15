@@ -21,7 +21,6 @@ import com.jitlogic.zorka.common.util.ObjectInspector;
 import com.jitlogic.zorka.common.util.ZorkaLog;
 import com.jitlogic.zorka.common.util.ZorkaLogger;
 import com.jitlogic.zorka.core.mbeans.MBeanServerRegistry;
-import com.jitlogic.zorka.common.tracedata.MetricTemplate;
 
 import javax.management.*;
 import java.util.ArrayList;
@@ -200,9 +199,5 @@ public class QueryLister {
         }
 
         return results;
-    }
-
-    public MetricTemplate getMetricTemplate() {
-        return query.getMetricTemplate();
     }
 }

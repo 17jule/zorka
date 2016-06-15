@@ -96,11 +96,6 @@ public class NagiosLib {
     }
 
 
-    public NagiosJmxCommand jmxscan(QueryDef...qdefs) {
-        return new NagiosJmxCommand(mBeanServerRegistry, qdefs);
-    }
-
-
     public void defcmd(String id, NagiosCommand cmd) {
 
         if (commands.containsKey(id)) {

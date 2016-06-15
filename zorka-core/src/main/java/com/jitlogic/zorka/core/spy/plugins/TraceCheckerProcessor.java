@@ -34,10 +34,6 @@ public class TraceCheckerProcessor implements SpyProcessor {
 
     @Override
     public Map<String, Object> process(Map<String, Object> record) {
-        if (tracer.isUsingRecorder()) {
-            return tracer.getHandler().isInTrace(traceId) ? record : null;
-        } else {
-            return tracer.getRecorder().isInTrace(traceId) ? record : null;
-        }
+        return tracer.getRecorder().isInTrace(traceId) ? record : null;
     }
 }

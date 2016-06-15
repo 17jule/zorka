@@ -16,18 +16,12 @@
 
 package com.jitlogic.zorka.core.spy;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Set;
 
-import com.jitlogic.zorka.common.ZorkaSubmitter;
 import com.jitlogic.zorka.common.tracedata.*;
-import com.jitlogic.zorka.common.util.ZorkaAsyncThread;
 import com.jitlogic.zorka.common.util.ZorkaConfig;
 import com.jitlogic.zorka.common.util.ZorkaLog;
 import com.jitlogic.zorka.common.util.ZorkaLogger;
-import com.jitlogic.zorka.core.integ.zabbix.ZabbixTraceOutput;
-import com.jitlogic.zorka.common.zico.ZicoTraceOutput;
 import com.jitlogic.zorka.core.spy.plugins.*;
 import com.jitlogic.zorka.core.util.OverlayClassLoader;
 
@@ -40,44 +34,23 @@ public class TracerLib {
 
     public static final ZorkaLog log = ZorkaLogger.getLog(TracerLib.class);
 
-    public static final int SUBMIT_TRACE = TraceMarker.SUBMIT_TRACE;
-    public static final int ALL_METHODS = TraceMarker.ALL_METHODS;
-    public static final int DROP_INTERIM = TraceMarker.DROP_INTERIM;
-    public static final int TRACE_CALLS = TraceMarker.TRACE_CALLS;
-    public static final int ERROR_MARK = TraceMarker.ERROR_MARK;
 
     private Tracer tracer;
 
     private SymbolRegistry symbolRegistry;
-    private MetricsRegistry metricsRegistry;
 
     private ZorkaConfig config;
 
-    /**
-     * Default trace flags
-     */
-    private int defaultTraceFlags = TraceMarker.DROP_INTERIM;
 
     /**
      * Creates tracer library object.
      *
      * @param tracer reference to spy instance
      */
-    public TracerLib(SymbolRegistry symbolRegistry, MetricsRegistry metricsRegistry, Tracer tracer, ZorkaConfig config) {
+    public TracerLib(SymbolRegistry symbolRegistry, Tracer tracer, ZorkaConfig config) {
         this.symbolRegistry = symbolRegistry;
-        this.metricsRegistry = metricsRegistry;
         this.tracer = tracer;
         this.config = config;
-    }
-
-
-    /**
-     * Configures tracer output.
-     *
-     * @param output trace processing object
-     */
-    public void output(ZorkaSubmitter<SymbolicRecord> output) {
-        tracer.addOutput(output);
     }
 
 
@@ -159,7 +132,7 @@ public class TracerLib {
      * @return spy processor object marking new trace
      */
     public SpyProcessor begin(String name, long minimumTraceTime) {
-        return begin(name, minimumTraceTime, defaultTraceFlags);
+        return begin(name, minimumTraceTime, 0);
     }
 
 
@@ -182,12 +155,12 @@ public class TracerLib {
 
 
     public void traceBegin(String name, long minimumTraceTime) {
-        traceBegin(name, minimumTraceTime, defaultTraceFlags);
+        traceBegin(name, minimumTraceTime, 0);
     }
 
 
     public void traceBegin(String name, long minimumTraceTime, int flags) {
-        TraceBuilder traceBuilder = tracer.getHandler();
+        TraceRecorder traceBuilder = tracer.getRecorder();
         traceBuilder.traceBegin(symbolRegistry.stringId(name), System.currentTimeMillis(), flags);
         traceBuilder.setMinimumTraceTime(minimumTraceTime);
     }
@@ -199,7 +172,7 @@ public class TracerLib {
 
 
     public boolean isInTrace(String traceName) {
-        return tracer.getHandler().isInTrace(symbolRegistry.stringId(traceName));
+        return tracer.getRecorder().isInTrace(symbolRegistry.stringId(traceName));
     }
 
 
@@ -309,7 +282,7 @@ public class TracerLib {
      * @param value    attribute value
      */
     public void newAttr(String attrName, Object value) {
-        tracer.getHandler().newAttr(-1, symbolRegistry.stringId(attrName), value);
+        tracer.getRecorder().newAttr(-1, symbolRegistry.stringId(attrName), value);
     }
 
 
@@ -319,34 +292,11 @@ public class TracerLib {
      * @param value
      */
     public void newTraceAttr(String traceName, String attrName, Object value) {
-        tracer.getHandler().newAttr(symbolRegistry.stringId(traceName), symbolRegistry.stringId(attrName), value);
-    }
-
-    /**
-     * Adds trace attribute to trace record immediately. This is useful for programmatic attribute setting.
-     *
-     * @param attrName attribute name
-     * @param value    attribute value
-     */
-    public void newAttr(String attrName, String tag, Object value) {
-        tracer.getHandler().newAttr(-1, symbolRegistry.stringId(attrName), new TaggedValue(symbolRegistry.stringId(tag), value));
-    }
-
-
-    /**
-     * @param traceName
-     * @param attrName
-     * @param tag
-     * @param value
-     */
-    public void newTraceAttr(String traceName, String attrName, String tag, Object value) {
-        tracer.getHandler().newAttr(
-                symbolRegistry.stringId(traceName), symbolRegistry.stringId(attrName),
-                new TaggedValue(symbolRegistry.stringId(tag), value));
+        tracer.getRecorder().newAttr(symbolRegistry.stringId(traceName), symbolRegistry.stringId(attrName), value);
     }
 
     public SpyProcessor markError() {
-        return flags(SUBMIT_TRACE|ERROR_MARK);
+        return flags(0);
     }
 
     /**
@@ -366,7 +316,7 @@ public class TracerLib {
 
 
     public void newFlags(int flags) {
-        tracer.getHandler().markTraceFlags(0, flags);
+        tracer.getRecorder().markTraceFlags(0, flags);
     }
 
 
@@ -386,108 +336,13 @@ public class TracerLib {
         return new TraceFlagsProcessor(tracer, srcField, symbolRegistry.stringId(traceName), flags);
     }
 
-    /**
-     * Labels current trace with tags.
-     *
-     * @param tags tag strings
-     * @return spy processor object
-     */
-    public SpyProcessor tags(String... tags) {
-        return customTags("TAGS", "TAGS", tags);
-    }
 
 
-    /**
-     * Labels
-     *
-     * @param attrName
-     * @param attrTag
-     * @param tags
-     * @return
-     */
-    public SpyProcessor customTags(String attrName, String attrTag, String... tags) {
-        return new TraceTaggerProcessor(symbolRegistry, tracer, attrName, attrTag, tags);
-    }
-
-
-    /**
-     * Creates trace file writer object. Trace writer can receive traces and store them in a file.
-     *
-     * @param path     path to a file
-     * @param maxFiles maximum number of archived files
-     * @param maxSize  maximum file size
-     * @param compress output file will be compressed if true
-     * @return trace file writer
-     */
-    public ZorkaAsyncThread<SymbolicRecord> toFile(String path, int maxFiles, long maxSize, boolean compress) {
-        TraceWriter writer = new FressianTraceWriter(symbolRegistry, metricsRegistry);
-        FileTraceOutput output = new FileTraceOutput(writer, new File(config.formatCfg(path)), maxFiles, maxSize, compress);
-        output.start();
-        return output;
-    }
-
-
-    public ZorkaAsyncThread<SymbolicRecord> toFile(String path, int maxFiles, long maxSize) {
-        return toFile(path, maxFiles, maxSize, false);
-    }
-
-
-    public ZorkaAsyncThread<SymbolicRecord> toZico(String addr, int port, String hostname, String auth) throws IOException {
-        return toZico(addr, port, hostname, auth, 64, 8 * 1024 * 1024, 10, 125, 2, 60000);
-    }
-
-    /**
-     * Creates trace network sender. It will receive traces and send them to remote collector.
-     *
-     * @param addr     collector host name or IP address
-     * @param port     collector port
-     * @param hostname agent name - this will be presented in collector console;
-     * @param auth
-     * @return
-     * @throws IOException
-     */
-    public ZorkaAsyncThread<SymbolicRecord> toZico(String addr, int port, String hostname, String auth,
-                                                   int qlen, long packetSize, int retries, long retryTime, long retryTimeExp,
-                                                   int timeout) throws IOException {
-        TraceWriter writer = new FressianTraceWriter(symbolRegistry, metricsRegistry);
-        ZicoTraceOutput output = new ZicoTraceOutput(writer, addr, port, hostname, auth, qlen, packetSize,
-                retries, retryTime, retryTimeExp, timeout);
-        output.start();
-        return output;
-    }
-
-    
-    /**
-     * Creates trace network sender. It will receive traces and send them to remote Zabbix Server.
-     *
-     * @param addr     collector host name or IP address
-     * @param port     collector port
-     * @param hostname agent name - this will be presented in collector console;
-     * @param qlen
-     * @param packetSize
-     * @param interval
-     * @return
-     * @throws IOException
-     */
-    public ZorkaAsyncThread<SymbolicRecord> toZabbix(String addr, int port, String hostname, int qlen, 
-                                                   long packetSize, int retries, long retryTime, long retryTimeExp, 
-                                                   int timeout, int interval) throws IOException {
-//        TraceWriter writer = new FressianTraceWriter(symbolRegistry, metricsRegistry);
-        ZabbixTraceOutput output = new ZabbixTraceOutput(symbolRegistry, metricsRegistry, addr, port, hostname, qlen, packetSize,
-        		retries, retryTime, retryTimeExp, timeout, interval);
-        output.start();
-        return output;
-    }
-    
 
     public SpyProcessor filterBy(String srcField, Boolean defval, Set<Object> yes, Set<Object> no, Set<Object> maybe) {
         return new TraceFilterProcessor(tracer, srcField, defval, yes, no, maybe);
     }
 
-
-    public void filterTrace(boolean decision) {
-        tracer.getHandler().markTraceFlags(0, decision ? TraceMarker.SUBMIT_TRACE : TraceMarker.DROP_TRACE);
-    }
 
 
     public long getTracerMinMethodTime() {
@@ -518,7 +373,7 @@ public class TracerLib {
 
 
     public long getTracerMinTraceTime() {
-        return TraceMarker.getMinTraceTime() / 1000000L;
+        return Tracer.getMinTraceTime() / 1000000L;
     }
 
 
@@ -530,7 +385,7 @@ public class TracerLib {
      * @param traceTime minimum trace execution time (50 milliseconds by default)
      */
     public void setTracerMinTraceTime(int traceTime) {
-        TraceMarker.setMinTraceTime(traceTime * 1000000L);
+        Tracer.setMinTraceTime(traceTime * 1000000L);
     }
 
 
@@ -542,7 +397,7 @@ public class TracerLib {
      * @param traceTime minimum trace execution time (50 milliseconds by default)
      */
     public void setTracerMinTraceTime(long traceTime) {
-        TraceMarker.setMinTraceTime(traceTime * 1000000L);
+        Tracer.setMinTraceTime(traceTime * 1000000L);
     }
 
 
@@ -579,16 +434,6 @@ public class TracerLib {
         return tracer.isTraceSpyMethods();
     }
 
-
-    /**
-     * Sets default trace marker flags. This setting will be used when beginning new traces
-     * without supplying initial flags.
-     *
-     * @param flags trace flags
-     */
-    public void setDefaultTraceFlags(int flags) {
-        this.defaultTraceFlags = flags;
-    }
 
     public ClassLoader overlayClassLoader(ClassLoader parent, String pattern, ClassLoader overlay) {
         return new OverlayClassLoader(parent, pattern, overlay);

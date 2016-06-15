@@ -25,7 +25,6 @@ import com.jitlogic.zorka.core.integ.SnmpLib;
 import com.jitlogic.zorka.core.integ.SyslogLib;
 import com.jitlogic.zorka.core.integ.zabbix.ZabbixLib;
 import com.jitlogic.zorka.core.mbeans.MBeanServerRegistry;
-import com.jitlogic.zorka.core.perfmon.PerfMonLib;
 import com.jitlogic.zorka.core.spy.*;
 
 import com.jitlogic.zorka.common.test.support.TestUtil;
@@ -54,7 +53,6 @@ public class ZorkaFixture extends CommonFixture {
     protected ZorkaBshAgent zorkaAgent;
     protected ZorkaLib zorka;
 
-    protected PerfMonLib perfmon;
     protected AgentConfig config;
 
     protected SymbolRegistry symbols;
@@ -95,7 +93,6 @@ public class ZorkaFixture extends CommonFixture {
         snmpLib = agentInstance.getSnmpLib();
         spy = agentInstance.getSpyLib();
         tracer = agentInstance.getTracerLib();
-        perfmon = agentInstance.getPerfMonLib();
         spyTransformer = agentInstance.getClassTransformer();
         zabbixLib = agentInstance.getZabbixLib();
         nagiosLib = agentInstance.getNagiosLib();

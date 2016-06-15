@@ -256,7 +256,7 @@ public class TraceRecorder extends TraceBuffer implements TraceHandler { // TODO
 
     @Override
     public void traceBegin(int traceId, long clock, int flags) {
-        if (disabled) return;
+        //if (disabled) return;
         if (stackPos == 0) return;
 
         long sp2 = stack[stackPos-2];
@@ -288,7 +288,7 @@ public class TraceRecorder extends TraceBuffer implements TraceHandler { // TODO
 
     @Override
     public void newAttr(int traceId, int attrId, Object attrVal) {
-        if (disabled) return;
+        //if (disabled) return;
 
         writeUInt(CBORConstants.TAG_CODE0, TraceFormat.TAG_TRACE_ATTR);
         if (traceId >= 0) {

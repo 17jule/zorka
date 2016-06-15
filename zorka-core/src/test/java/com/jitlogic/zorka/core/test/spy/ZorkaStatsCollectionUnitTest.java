@@ -30,7 +30,6 @@ import static org.junit.Assert.*;
 import java.util.Map;
 
 import static com.jitlogic.zorka.core.test.support.TestUtil.getAttr;
-import static com.jitlogic.zorka.core.perfmon.BucketAggregate.MS;
 import static com.jitlogic.zorka.core.spy.SpyLib.*;
 
 public class ZorkaStatsCollectionUnitTest extends ZorkaFixture {
@@ -155,14 +154,14 @@ public class ZorkaStatsCollectionUnitTest extends ZorkaFixture {
     public void testMaxTimeCLR() throws Exception {
         MethodCallStatistic stat = new MethodCallStatistic("A");
 
-        stat.logCall(10L * MS);
-        stat.logCall(20L * MS);
+        stat.logCall(10L * 1000000);
+        stat.logCall(20L * 1000000);
 
         assertEquals(20L, stat.getMaxTime());
         assertEquals(20L, stat.getMaxTimeCLR());
         assertEquals(0L, stat.getMaxTime());
 
-        stat.logError(11L * MS);
+        stat.logError(11L * 1000000);
 
         assertEquals(11L, stat.getMaxTimeCLR());
         assertEquals(0L, stat.getMaxTimeCLR());

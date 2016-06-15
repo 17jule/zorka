@@ -17,8 +17,6 @@
 package com.jitlogic.zorka.core.spy.plugins;
 
 import com.jitlogic.zorka.common.tracedata.SymbolRegistry;
-import com.jitlogic.zorka.common.tracedata.TaggedValue;
-import com.jitlogic.zorka.common.tracedata.TraceRecord;
 import com.jitlogic.zorka.common.util.ObjectInspector;
 import com.jitlogic.zorka.common.util.ZorkaLogger;
 import com.jitlogic.zorka.common.util.ZorkaLog;
@@ -123,20 +121,7 @@ public class TraceAttrProcessor implements SpyProcessor {
                 : ObjectInspector.substitute(srcVal, record);
 
         if (val != null) {
-            if (ZorkaLogger.isLogMask(ZorkaLogger.ZSP_ARGPROC)) {
-                TraceRecord top = tracer.getHandler().realTop();
-                log.debug(ZorkaLogger.ZSP_ARGPROC, "Value: '" + val + "' stored as trace attribute "
-                        + symbolRegistry.stringContent(attrId) + " (classId= " + top.getClassId() + " methodId=" + top.getMethodId()
-                        + " signatureId=" + top.getSignatureId() + ")");
-            }
-            // TODO clean it up after removing old tracer
-            if (tracer.isUsingRecorder()) {
-                tracer.getRecorder().newAttr(traceId, attrId,
-                    attrTagId != null ? new TaggedValue(attrTagId, val) : val);
-            } else {
-                tracer.getHandler().newAttr(traceId, attrId,
-                    attrTagId != null ? new TaggedValue(attrTagId, val) : val);
-            }
+            tracer.getRecorder().newAttr(traceId, attrId, val);
         } else {
             if (ZorkaLogger.isLogMask(ZorkaLogger.ZSP_ARGPROC)) {
                 log.debug(ZorkaLogger.ZSP_ARGPROC, "Null value received. ");

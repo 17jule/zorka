@@ -11,14 +11,6 @@
 
     <artifactId>zorka-common</artifactId>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.fressian</groupId>
-            <artifactId>fressian</artifactId>
-            <version>${fressian.version}</version>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>
