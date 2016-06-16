@@ -20,6 +20,8 @@ import com.jitlogic.zorka.common.util.ZorkaLog;
 import com.jitlogic.zorka.common.util.ZorkaLogger;
 import com.jitlogic.zorka.core.mbeans.MBeanServerRegistry;
 import com.jitlogic.zorka.core.perfmon.QueryDef;
+import com.jitlogic.zorka.lisp.Namespace;
+import com.jitlogic.zorka.lisp.Primitive;
 
 import java.util.Date;
 import java.util.Map;
@@ -31,6 +33,7 @@ import java.util.regex.Pattern;
  *
  * @author rafal.lewczuk@jitlogic.com
  */
+@Namespace("nagios")
 public class NagiosLib {
 
     private static final ZorkaLog log = ZorkaLogger.getLog(NagiosLib.class);
@@ -95,7 +98,7 @@ public class NagiosLib {
         return new String[0];
     }
 
-
+    @Primitive
     public void defcmd(String id, NagiosCommand cmd) {
 
         if (commands.containsKey(id)) {
@@ -116,6 +119,7 @@ public class NagiosLib {
      *
      * @return NRPE response.
      */
+    @Primitive
     public NrpePacket cmd(String id, Object...args) {
         NagiosCommand cmd = commands.get(id);
 

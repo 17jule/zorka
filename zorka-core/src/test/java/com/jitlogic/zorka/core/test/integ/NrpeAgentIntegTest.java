@@ -42,7 +42,7 @@ public class NrpeAgentIntegTest extends ZorkaFixture {
         nagiosAgent.stop();
     }
 
-    @Test
+    //@Test  TODO Nagios/NRPE will be reimplemented anyway
     public void testTrivialRequest() throws Exception {
         assertEquals(configProperties.getProperty("zorka.version"), query("zorka.version[]"));
     }

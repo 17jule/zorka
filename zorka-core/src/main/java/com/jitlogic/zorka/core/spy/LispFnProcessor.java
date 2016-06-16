@@ -14,19 +14,26 @@
  * along with this software. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.jitlogic.zorka.lisp;
+package com.jitlogic.zorka.core.spy;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.jitlogic.zorka.lisp.Fn;
+import com.jitlogic.zorka.lisp.Interpreter;
+import com.jitlogic.zorka.lisp.StandardLibrary;
 
-@Target({ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Primitive {
-    String value() default "";
+import java.util.Map;
 
-    boolean isNative() default false;
+public class LispFnProcessor implements SpyProcessor {
 
-    boolean isMacro() default false;
+    private Fn fn;
+    private Interpreter ctx;
+
+    public LispFnProcessor(Interpreter ctx, Fn fn) {
+        this.ctx = ctx;
+        this.fn = fn;
+    }
+
+    @Override
+    public Map<String, Object> process(Map<String, Object> record) {
+        return (Map<String,Object>)fn.apply(ctx, ctx.env(), StandardLibrary.cons(record,null));
+    }
 }

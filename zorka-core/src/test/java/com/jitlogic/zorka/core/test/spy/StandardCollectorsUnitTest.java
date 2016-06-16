@@ -23,6 +23,8 @@ import com.jitlogic.zorka.core.spy.*;
 import com.jitlogic.zorka.core.spy.plugins.GetterPresentingCollector;
 import com.jitlogic.zorka.core.spy.SpyProcessor;
 import com.jitlogic.zorka.common.util.ZorkaUtil;
+import com.jitlogic.zorka.lisp.Namespace;
+import com.jitlogic.zorka.lisp.Primitive;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,12 +36,13 @@ import java.util.Map;
 
 import static com.jitlogic.zorka.core.test.support.TestUtil.getAttr;
 
-
+@Namespace("test")
 public class StandardCollectorsUnitTest extends ZorkaFixture {
 
     private List<Object> results = new ArrayList<Object>();
 
     // Don't remove. This is used from test BSH scripts.
+    @Primitive
     public void result(Object result) {
         results.add(result);
     }
@@ -50,7 +53,7 @@ public class StandardCollectorsUnitTest extends ZorkaFixture {
 
     @Before
     public void setUp() {
-        zorkaAgent.put("test", this);
+        zorkaAgent.install(this);
 
         sdef = spy.instance("x");
         ctx = new SpyContext(sdef, "some.Class", "someMethod", "()V", 1);
@@ -61,14 +64,14 @@ public class StandardCollectorsUnitTest extends ZorkaFixture {
 
     @Test
     public void testFixtureIsWorkingProperly() throws Exception {
-        zorkaAgent.eval("test.result(10)");
+        zorkaAgent.eval("(test/result 10)");
 
         assertEquals("should find one result", 1, results.size());
         assertEquals("result should be an integer", 10, results.get(0));
     }
 
 
-    @Test
+    //@Test TODO current instrumentation mechanism will be changed anyway
     public void testCollectRecordViaBshFuncManual() throws Exception {
         zorkaAgent.eval("process(obj) { test.result(obj); }");
         SpyProcessor col = (SpyProcessor) zorkaAgent.eval(

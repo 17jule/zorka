@@ -17,6 +17,8 @@ package com.jitlogic.zorka.core.integ;
 
 import com.jitlogic.zorka.common.ZorkaService;
 import com.jitlogic.zorka.common.util.ZorkaConfig;
+import com.jitlogic.zorka.lisp.Namespace;
+import com.jitlogic.zorka.lisp.Primitive;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author rafal.lewczuk@jitlogic.com
  */
+@Namespace("syslog")
 public class SyslogLib implements ZorkaService {
 
 
@@ -211,6 +214,7 @@ public class SyslogLib implements ZorkaService {
      * @param name symbolic facility name
      * @return numeric facility ID
      */
+    @Primitive("get-facility")
     public static int getFacility(String name) {
         for (int i = 0; i < facilities.length; i++) {
             if (facilities[i].equals(name))
@@ -233,6 +237,7 @@ public class SyslogLib implements ZorkaService {
      * @param id trapper unique ID (name)
      * @return trapper object or null if no trapper has been registered with such ID
      */
+    @Primitive("trapper")
     public SyslogTrapper trapper(String id) {
         return trappers.get(id);
     }
@@ -247,6 +252,7 @@ public class SyslogLib implements ZorkaService {
      * @param defaultFacility default facility ID for logged messages
      * @return trapper object
      */
+    @Primitive("trapper-1")
     public SyslogTrapper trapper(String id, String syslogServer, String defaultHost, int defaultFacility) {
         SyslogTrapper trapper = trappers.get(id);
         if (trapper == null) {
@@ -263,6 +269,7 @@ public class SyslogLib implements ZorkaService {
      *
      * @param id trapper unique ID (name)
      */
+    @Primitive("remove")
     public void remove(String id) {
         SyslogTrapper trapper = trappers.remove(id);
 
@@ -296,6 +303,7 @@ public class SyslogLib implements ZorkaService {
      * @param tag      message tag (eg. component name)
      * @param content  message text
      */
+    @Primitive("log")
     public void log(String id, int severity, int facility, String tag, String content) {
         SyslogTrapper trapper = trappers.get(id);
 

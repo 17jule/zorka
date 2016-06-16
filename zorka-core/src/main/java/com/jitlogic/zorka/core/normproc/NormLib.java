@@ -15,6 +15,9 @@
  */
 package com.jitlogic.zorka.core.normproc;
 
+import com.jitlogic.zorka.lisp.Namespace;
+import com.jitlogic.zorka.lisp.Primitive;
+
 import static com.jitlogic.zorka.core.normproc.XqlLexer.*;
 
 /**
@@ -22,6 +25,7 @@ import static com.jitlogic.zorka.core.normproc.XqlLexer.*;
  *
  * @author rafal.lewczuk@jitlogic.com
  */
+@Namespace("normalizers")
 public class NormLib {
 
     /**
@@ -75,6 +79,7 @@ public class NormLib {
      *
      * @return normalizer object
      */
+    @Primitive
     public Normalizer sql(int dialect, int flags) {
         return GenericNormalizer.xql(dialect, flags);
     }
@@ -86,6 +91,7 @@ public class NormLib {
      *
      * @return normalizer object
      */
+    @Primitive
     public Normalizer ldap(int flags) {
         return GenericNormalizer.ldap(flags);
     }

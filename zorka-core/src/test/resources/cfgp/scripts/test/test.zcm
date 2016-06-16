@@ -1,0 +1,4 @@
+
+(define test_bsh 1)
+
+(define not_to_be_overridden "bar")

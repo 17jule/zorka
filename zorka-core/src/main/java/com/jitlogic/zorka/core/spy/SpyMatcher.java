@@ -19,9 +19,13 @@ package com.jitlogic.zorka.core.spy;
 import com.jitlogic.zorka.common.util.ZorkaUtil;
 
 import java.util.*;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.objectweb.asm.Opcodes.*;
+
+import static com.jitlogic.zorka.core.spy.SpyMatcher.*;
 
 import static com.jitlogic.zorka.core.spy.SpyLib.SM_NOARGS;
 
@@ -51,6 +55,7 @@ public class SpyMatcher {
             '[', "\\[", ']', "\\]", '.', "\\.", ';', "\\;", '(', "\\(", ')', "\\)"
     );
 
+    private static final Pattern RE_METHOD_ARGS = Pattern.compile("([\\w~\\s\\.]+)\\s*\\((.*)\\)\\s*");
 
     /**
      * List of common methods (typically omitted by instrumentation)
@@ -95,7 +100,8 @@ public class SpyMatcher {
     /**
      * Public, private, protected and package private methods will match
      */
-    public static final int ANY_FILTER = ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED | ACC_PKGPRIV;
+    public static final int ANY_FILTER = ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED;
+
 
     /**
      * Access bits and custom matcher flags
@@ -116,22 +122,85 @@ public class SpyMatcher {
 
         String s = strMatch;
 
+        int flags = BY_CLASS_NAME | BY_METHOD_NAME;
+
         if (s.indexOf(':') != -1) {
-            priority = Integer.parseInt(s.substring(0, s.indexOf(':')));
+            String ss = s.substring(0, s.indexOf(':'));
+            priority = Integer.parseInt(ss);
             s = s.substring(s.indexOf(':') + 1);
         }
 
         if (s.indexOf('/') != -1) {
             int ix = s.lastIndexOf('/');
             classPattern = s.substring(0, ix);
-            methodPattern = s.substring(ix + 1, s.length());
+            methodPattern = s.substring(ix + 1, s.length()).trim();
         } else {
             classPattern = s;
-            methodPattern = "*";
+            methodPattern = "*".trim();
         }
 
-        return new SpyMatcher(SpyMatcher.BY_CLASS_NAME | SpyMatcher.BY_METHOD_NAME, 1,
-                classPattern, methodPattern, null).priority(priority);
+        if (classPattern.endsWith("#")) {
+            flags = (flags & ~BY_CLASS_NAME) | BY_INTERFACE;
+            classPattern = classPattern.substring(0, classPattern.length()-1);
+        }
+
+        if (classPattern.startsWith("@")) {
+            flags = (flags & ~BY_CLASS_NAME) | BY_CLASS_ANNOTATION;
+            classPattern = classPattern.substring(1);
+        }
+
+        if (methodPattern.startsWith("@")) {
+            flags = (flags & ~BY_METHOD_NAME) | BY_METHOD_ANNOTATION;
+            methodPattern = methodPattern.substring(1);
+        }
+
+        String retType = null;
+        String[] argTypes = new String[0];
+
+        Matcher m = RE_METHOD_ARGS.matcher(methodPattern);
+        if (m.matches()) {
+            methodPattern = m.group(1).trim();
+            List<String> argt = new ArrayList<String>();
+            boolean moreArgs = false;
+            for (String sa : m.group(2).split(",")) {
+                sa = sa.trim();
+                if ("...".equals(sa)) {
+                    moreArgs = true;
+                } else {
+                    argt.add(sa);
+                }
+            }
+            if (!moreArgs) {
+                argt.add(SM_NOARGS);
+            }
+            if (argt.size() > 0) {
+                argTypes = argt.toArray(argTypes);
+            }
+        }
+
+        int access = DEFAULT_FILTER;
+
+        String[] mpComponents = methodPattern.trim().split("\\s+");
+        if (mpComponents.length > 1) {
+            for (int i = 0; i < mpComponents.length-1; i++) {
+                if ("public".equals(mpComponents[i])) {
+                    access = (access & ~ANY_FILTER) | ACC_PUBLIC;
+                } else if ("private".equals(mpComponents[i])) {
+                    access = (access & ~ANY_FILTER) | ACC_PRIVATE;
+                } else if ("protected".equals(mpComponents[i])) {
+                    access = (access & ~ANY_FILTER) | ACC_PROTECTED;
+                } else if ("static".equals(mpComponents[i])) {
+                    access |= ACC_STATIC;
+                } else if ("final".equals(mpComponents[i])) {
+                    access |= ACC_FINAL;
+                } else {
+                    retType = mpComponents[i];
+                }
+            }
+            methodPattern = mpComponents[mpComponents.length-1];
+        }
+
+        return new SpyMatcher(flags, access, classPattern, methodPattern, retType, argTypes).priority(priority);
     }
 
 

@@ -54,10 +54,13 @@ public class Interpreter {
     }
 
     private void install(Class<?> clazz, Object lib) {
+        Namespace ns = clazz.getAnnotation(Namespace.class);
         for (Method m : clazz.getDeclaredMethods()) {
             Primitive ann = m.getAnnotation(Primitive.class);
             if (ann != null) {
-                Symbol sym = symbol(ann.value());
+                Symbol sym = symbol(
+                    ns != null ? ns.value() : null,
+                    ann.value().equals("") ? m.getName() : ann.value());
                 env.define(sym, ann.isNative() ? new NativeMethod(m, lib) : new JavaMethod(m, lib));
             }
         }

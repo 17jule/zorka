@@ -24,6 +24,8 @@ import com.jitlogic.zorka.core.perfmon.QueryDef;
 import com.jitlogic.zorka.core.perfmon.QueryLister;
 import com.jitlogic.zorka.core.perfmon.QueryResult;
 import com.jitlogic.zorka.common.util.JSONWriter;
+import com.jitlogic.zorka.lisp.Namespace;
+import com.jitlogic.zorka.lisp.Primitive;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author rafal.lewczuk@jitlogic.com
  */
+@Namespace("zabbix")
 public class ZabbixLib implements ZorkaService {
 
 
@@ -49,12 +52,12 @@ public class ZabbixLib implements ZorkaService {
         this.config = config;
     }
 
-
+    @Primitive("discovery")
     public String discovery(QueryDef... qdefs) {
         return discovery(QueryDef.NO_NULL_ATTRS, qdefs);
     }
 
-
+    @Primitive("_discovery")
     public Map<String, List<Map<String, String>>> _discovery(QueryDef... qdefs) {
         return _discovery(QueryDef.NO_NULL_ATTRS, qdefs);
     }
@@ -65,6 +68,7 @@ public class ZabbixLib implements ZorkaService {
      * @param qdefs queries
      * @return JSON object describing discovered objects
      */
+    @Primitive("_discovery-1")
     public Map<String, List<Map<String, String>>> _discovery(int flags, QueryDef... qdefs) {
         List<Map<String, String>> data = new ArrayList<Map<String, String>>();
 
@@ -90,7 +94,7 @@ public class ZabbixLib implements ZorkaService {
         return discoveries;
     }
 
-
+    @Primitive("discovery-1")
     public String discovery(int flags, QueryDef... qdefs) {
         return new JSONWriter().write(_discovery(flags, qdefs));
     }
@@ -104,11 +108,12 @@ public class ZabbixLib implements ZorkaService {
      * @param attrs  attribute chain
      * @return JSON string describing discovered objects.
      */
+    @Primitive("discovery-2")
     public String discovery(String mbs, String filter, String... attrs) {
         return new JSONWriter().write(_discovery(mbs, filter, attrs));
     }
 
-
+    @Primitive("_discovery-2")
     public Map<String, List<Map<String, String>>> _discovery(String mbs, String filter, String... attrs) {
         return _discovery(QueryDef.NO_NULL_ATTRS, new QueryDef(mbs, filter, attrs));
     }
@@ -120,6 +125,7 @@ public class ZabbixLib implements ZorkaService {
      * @param id trapper ID
      * @return zabbix trapper or null
      */
+    @Primitive("trapper")
     public ZabbixTrapper trapper(String id) {
         return trappers.get(id);
     }
@@ -133,6 +139,7 @@ public class ZabbixLib implements ZorkaService {
      * @param defaultHost default host name
      * @return zabbix trapper
      */
+    @Primitive("trapper-1")
     public ZabbixTrapper trapper(String id, String serverAddr, String defaultHost, String defaultItem) {
         ZabbixTrapper trapper = trappers.get(id);
 
@@ -152,6 +159,7 @@ public class ZabbixLib implements ZorkaService {
      *
      * @param id trapper id
      */
+    @Primitive
     public void remove(String id) {
         ZabbixTrapper trapper = trappers.remove(id);
 

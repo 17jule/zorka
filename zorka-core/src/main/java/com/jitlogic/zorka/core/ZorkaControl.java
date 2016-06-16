@@ -70,18 +70,6 @@ public class ZorkaControl implements ZorkaControlMBean {
 
 
     @Override
-    public long getTracerMaxTraceRecords() {
-        return instance.getTracerLib().getTracerMaxTraceRecords();
-    }
-
-
-    @Override
-    public void setTracerMaxTraceRecords(long t) {
-        instance.getTracerLib().setTracerMaxTraceRecords(t);
-    }
-
-
-    @Override
     public String listTracerIncludes() {
         return instance.getTracerLib().listIncludes();
     }

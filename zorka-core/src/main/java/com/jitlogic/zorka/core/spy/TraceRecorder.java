@@ -73,7 +73,7 @@ public class TraceRecorder extends TraceBuffer implements TraceHandler { // TODO
      * tid    [16 bit] - trace ID  (only for frames marking trace beginning)
      * flags  [8 bit]  - additional flags: TF_ERROR [1], TF_SUBMIT_TRACE[2], TF_SPLIT [4]
      * calls  [24 bit] - counts (encountered) calls;
-     * bufpos [32bit]  - start position in output buffer (used in
+     * bufpos [32bit]  - start position in output buffer (used in retracting unneeded records)
      */
     private long[] stack = new long[STACK_DEFAULT_SIZE];
 
@@ -290,16 +290,15 @@ public class TraceRecorder extends TraceBuffer implements TraceHandler { // TODO
     public void newAttr(int traceId, int attrId, Object attrVal) {
         //if (disabled) return;
 
-        writeUInt(CBORConstants.TAG_CODE0, TraceFormat.TAG_TRACE_ATTR);
+        writeUInt(CBORConstants.TAG_BASE, TraceFormat.TAG_TRACE_ATTR);
         if (traceId >= 0) {
             writeUInt(CBORConstants.TAG_BASE, TraceFormat.TAG_TRACE_UP_ATTR);
             if (bufLen - bufPos < 1) nextChunk();
-            buffer[bufPos++] = (byte) (CBORConstants.MAP_CODE0+1);
+            buffer[bufPos++] = (byte) (CBORConstants.MAP_BASE+1);
             writeInt(traceId);
-            if (bufLen - bufPos < 4) nextChunk();
         }
         if (bufLen - bufPos < 1) nextChunk();
-        buffer[bufPos++] = (byte) (CBORConstants.MAP_CODE0+1);
+        buffer[bufPos++] = (byte) (CBORConstants.MAP_BASE+1);
         stack[stackPos-2] |= TF_SUBMIT_METHOD;
 
         writeUInt(0,attrId);

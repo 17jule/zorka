@@ -1,4 +1,0 @@
-
-testLoopForever() {
-	while (true) {  } 
-}

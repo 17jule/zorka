@@ -37,6 +37,8 @@ import com.jitlogic.zorka.core.mbeans.MBeanServerRegistry;
 import com.jitlogic.zorka.core.mbeans.AttrGetter;
 import com.jitlogic.zorka.common.stats.ValGetter;
 import com.jitlogic.zorka.core.mbeans.ZorkaMappedMBean;
+import com.jitlogic.zorka.lisp.Namespace;
+import com.jitlogic.zorka.lisp.Primitive;
 
 
 /**
@@ -45,6 +47,7 @@ import com.jitlogic.zorka.core.mbeans.ZorkaMappedMBean;
  *
  * @author rafal.lewczuk@jitlogic.com
  */
+@Namespace("zorka")
 public class ZorkaLib implements ZorkaService {
 
     private static final ZorkaLog log = ZorkaLogger.getLog(ZorkaLib.class);
@@ -101,6 +104,7 @@ public class ZorkaLib implements ZorkaService {
      *
      * @return string containing agent version
      */
+    @Primitive
     public String version() {
         return version;
     }
@@ -116,6 +120,7 @@ public class ZorkaLib implements ZorkaService {
      *
      * @return hostname string
      */
+    @Primitive
     public String getHostname() {
         return "" + hostname;
     }
@@ -129,6 +134,7 @@ public class ZorkaLib implements ZorkaService {
      *         <p/>
      *         TODO fix parameters of this method
      */
+    @Primitive("jmx-list")
     public List<Object> jmxList(List<Object> args) {
         List<Object> objs = new ArrayList<Object>();
         if (args.size() < 2) {
@@ -182,6 +188,7 @@ public class ZorkaLib implements ZorkaService {
      * @return dump of selected JMX objects
      *         TODO fix parameters of this method
      */
+    @Primitive
     public String dump(Object... args) {
 
         StringBuffer sb = new StringBuffer();
@@ -193,7 +200,7 @@ public class ZorkaLib implements ZorkaService {
         return sb.toString();
     } // dump()
 
-
+    @Primitive
     public Object jmxv(Object defval, Object... args) {
         Object v = jmx(args);
         return v != null ? v : defval;
@@ -206,6 +213,7 @@ public class ZorkaLib implements ZorkaService {
      * @param args attribute chain (as in ObjectInspector.get() function)
      * @return retrieved obejct
      */
+    @Primitive
     public Object jmx(Object... args) {
 
         List<Object> argList = Arrays.asList(args);
@@ -329,6 +337,7 @@ public class ZorkaLib implements ZorkaService {
      *
      * @return opration result or null
      */
+    @Primitive
     public Object jmxc(String conname, String objname, String mname, String msign, Object...args) {
 
         MBeanServerConnection conn = mbsRegistry.lookup(conname);
@@ -366,7 +375,7 @@ public class ZorkaLib implements ZorkaService {
         return obj;
     }
 
-
+    @Primitive
     public Object jmxcv(Object defval, String conname, String objname, String mname, String msign, Object...args) {
         Object rslt = jmxc(conname, objname, mname, msign, args);
         return rslt != null ? rslt : defval;
@@ -381,6 +390,7 @@ public class ZorkaLib implements ZorkaService {
      * @param args       attribute chain (as in ObjectInspector.get())
      * @return string listing attributes and their values
      */
+    @Primitive
     public String ls(String mbsName, String objectName, Object... args) {
 
         MBeanServerConnection conn = mbsRegistry.lookup(mbsName);
@@ -445,6 +455,7 @@ public class ZorkaLib implements ZorkaService {
      * @param name object name
      * @return mbean object
      */
+    @Primitive
     public ZorkaMappedMBean mbean(String mbs, String name) {
         return mbean(mbs, name, "");
     }
@@ -458,6 +469,7 @@ public class ZorkaLib implements ZorkaService {
      * @param desc mbean description
      * @return mbean object
      */
+    @Primitive
     public ZorkaMappedMBean mbean(String mbs, String name, String desc) {
         // TODO wyrugować ręczne tworzenie mbeanów, zdefiniować jedną (wspólną) metodę do tego i używać jej
         try {
@@ -485,6 +497,7 @@ public class ZorkaLib implements ZorkaService {
      * @param attrs
      * @return
      */
+    @Primitive
     public ValGetter getter(Object obj, Object... attrs) {
         return new AttrGetter(obj, attrs);
     }
@@ -502,6 +515,7 @@ public class ZorkaLib implements ZorkaService {
      *             containing statistic
      * @return calculated rate
      */
+    @Primitive
     public Double rate(Object... args) {
 
         if (args.length < 5) {
@@ -536,6 +550,7 @@ public class ZorkaLib implements ZorkaService {
      * @param message message text
      * @param args    optional arguments (if message contains format string markers)
      */
+    @Primitive("log-debug")
     public void logDebug(String message, Object... args) {
         log(ZorkaLogLevel.DEBUG, message, args);
     }
@@ -546,6 +561,7 @@ public class ZorkaLib implements ZorkaService {
      * @param message message text
      * @param args    optional arguments (if message contains format string markers)
      */
+    @Primitive("log-info")
     public void logInfo(String message, Object... args) {
         log(ZorkaLogLevel.INFO, message, args);
     }
@@ -556,6 +572,7 @@ public class ZorkaLib implements ZorkaService {
      * @param message message text
      * @param args    optional arguments (if message contains format string markers)
      */
+    @Primitive("log-warning")
     public void logWarning(String message, Object... args) {
         log(ZorkaLogLevel.WARN, message, args);
     }
@@ -566,6 +583,7 @@ public class ZorkaLib implements ZorkaService {
      * @param message message text
      * @param args    optional arguments (if message contains format string markers)
      */
+    @Primitive("log-error")
     public void logError(String message, Object... args) {
         log(ZorkaLogLevel.ERROR, message, args);
     }
@@ -576,6 +594,7 @@ public class ZorkaLib implements ZorkaService {
      * @param message message text
      * @param args    optional arguments (if message contains format string markers)
      */
+    @Primitive("log-fatal")
     public void logFatal(String message, Object... args) {
         log(ZorkaLogLevel.ERROR, message, args);
     }
@@ -587,6 +606,7 @@ public class ZorkaLib implements ZorkaService {
      * @param message message text
      * @param argv    optional arguments (if message is a format string)
      */
+    @Primitive
     private void log(ZorkaLogLevel level, String message, Object... argv) {
         Throwable ex = null;
         Object[] args = argv;
@@ -603,17 +623,19 @@ public class ZorkaLib implements ZorkaService {
      *
      * @return
      */
+    @Primitive
     public String reload() {
         instance.reload();
         long l = AgentDiagnostics.get(AgentDiagnostics.CONFIG_ERRORS);
         return l == 0 ? "OK" : "ERRORS(" + l + ") see agent log.";
     }
 
+    @Primitive("load-script")
     public String loadScript(String script) {
         return agent.loadScript(script);
     }
 
-
+    @Primitive
     public String require(String... names) {
         String s = "";
         for (String name : names) {
@@ -629,6 +651,7 @@ public class ZorkaLib implements ZorkaService {
      *
      * @return true if agent has been initialized
      */
+    @Primitive("initialized?")
     public boolean isInitialized() {
         return agent.isInitialized();
     }
@@ -642,6 +665,7 @@ public class ZorkaLib implements ZorkaService {
      * @param name name at which mbean server will be registered
      * @param mbs  reference to mbean server connection
      */
+    @Primitive("register-mbs")
     public void registerMbs(String name, MBeanServerConnection mbs) {
         mbsRegistry.register(name, mbs, mbs.getClass().getClassLoader());
     }
@@ -656,11 +680,12 @@ public class ZorkaLib implements ZorkaService {
      * @param mbs         reference to mbean server connection
      * @param classLoader context class loader
      */
+    @Primitive("register-mbs-cl") // TODO
     public void registerMbs(String name, MBeanServerConnection mbs, ClassLoader classLoader) {
         mbsRegistry.register(name, mbs, classLoader);
     }
 
-
+    @Primitive("mbs-registered?")
     public boolean isMbsRegistered(String name) {
         return mbsRegistry.lookup(name) != null;
     }
@@ -677,6 +702,7 @@ public class ZorkaLib implements ZorkaService {
      * @param <T>      type of object to be presented
      * @return obj if there was no such attribute or value of existing attribute
      */
+    @Primitive("register-attr")
     public <T> T registerAttr(String mbsName, String beanName, String attrName, T obj) {
         return mbsRegistry.getOrRegister(mbsName, beanName, attrName, obj);
     }
@@ -693,6 +719,7 @@ public class ZorkaLib implements ZorkaService {
      * @param desc     attribute description
      * @return obj if there was no such attribute or value of existing attribute
      */
+    @Primitive("register-attr-dsc") // TODO
     public <T> T registerAttr(String mbsName, String beanName, String attrName, T obj, String desc) {
         return mbsRegistry.getOrRegister(mbsName, beanName, attrName, obj, desc);
     }
@@ -704,6 +731,7 @@ public class ZorkaLib implements ZorkaService {
      * @param id trapper ID
      * @return file trapper or null
      */
+    @Primitive("file-trapper")
     public FileTrapper fileTrapper(String id) {
         return fileTrappers.get(id);
     }
@@ -720,6 +748,7 @@ public class ZorkaLib implements ZorkaService {
      * @param logExceptions if true, stack traces of passed exceptions will be logged
      * @return file trapper
      */
+    @Primitive("rolling-file-trapper")
     public FileTrapper rollingFileTrapper(String id, String logLevel, String path, int count, long maxSize, boolean logExceptions) {
         FileTrapper trapper = fileTrappers.get(id);
 
@@ -742,6 +771,7 @@ public class ZorkaLib implements ZorkaService {
      * @param logExceptions if true, trapper will log stack traces of passed exceptions
      * @return file trapper
      */
+    @Primitive("daily-file-trapper")
     public FileTrapper dailyFileTrapper(String id, ZorkaLogLevel logLevel, String path, boolean logExceptions) {
         FileTrapper trapper = fileTrappers.get(id);
 
@@ -760,6 +790,7 @@ public class ZorkaLib implements ZorkaService {
      *
      * @param id trapper ID
      */
+    @Primitive("remove-file-trapper")
     public void removeFileTrapper(String id) {
         FileTrapper trapper = fileTrappers.get(id);
 
@@ -783,6 +814,7 @@ public class ZorkaLib implements ZorkaService {
      * @param input zorka properties
      * @return
      */
+    @Primitive("format-cfg")
     public String formatCfg(String input) {
         return config.formatCfg(input);
     }
@@ -794,93 +826,67 @@ public class ZorkaLib implements ZorkaService {
      * @param key property key
      * @return true if entry exists and is non-empty
      */
+    @Primitive("has-cfg")
     public boolean hasCfg(String key) {
         return config.hasCfg(key);
     }
 
 
-    public Boolean boolCfg(String key) {
-        return boolCfg(key, null);
-    }
-
-
+    @Primitive("bool-cfg")
     public Boolean boolCfg(String key, Boolean defval) {
         return config.boolCfg(key, defval);
     }
 
 
-    public Integer intCfg(String key) {
-        return intCfg(key, null);
-    }
-
-
+    @Primitive("int-cfg")
     public Integer intCfg(String key, Integer defval) {
         return config.intCfg(key, defval);
     }
 
 
-    public Long longCfg(String key) {
-        return longCfg(key, null);
-    }
-
-
+    @Primitive("long-cfg")
     public Long longCfg(String key, Long defval) {
         return config.longCfg(key, defval);
     }
 
 
-    public Long kiloCfg(String key) {
-        return kiloCfg(key, null);
-    }
-
-
+    @Primitive("kilo-cfg")
     public Long kiloCfg(String key, Long defval) {
         return config.kiloCfg(key, defval);
     }
 
 
-    public String stringCfg(String key) {
-        return stringCfg(key, null);
-    }
-
-
+    @Primitive("string-cfg")
     public String stringCfg(String key, String defval) {
         return config.stringCfg(key, defval);
     }
 
-
+    @Primitive("def-cfg")
     public void defCfg(String key, String defVal) {
         if (!hasCfg(key)) {
             config.setCfg(key, defVal);
         }
     }
 
-    public void defCfg(String key, Object defVal) {
-        String strVal = defVal != null ? defVal.toString() : null;
-        defCfg(key, strVal);
-    }
-
+    @Primitive("set-cfg!")
     public void setCfg(String key, String val) {
         config.setCfg(key, val);
     }
 
+    @Primitive("set-cfg")
     public Set<String> setCfg(String key) {
         Set<String> set = new HashSet<String>();
         set.addAll(listCfg(key));
         return set;
     }
 
-
+    @Primitive("if-cfg")
     public Object ifCfg(String key, boolean defVal, Object thenVal, Object elseVal) {
         return boolCfg(key, defVal) ? thenVal : elseVal;
     }
 
 
-    public Object ifCfg(String key, boolean defVal, Object thenVal) {
-        return ifCfg(key, defVal, thenVal, null);
-    }
-
-
+    @Primitive("load-cfg")
     public Properties loadCfg(String fname) {
         String path = ZorkaUtil.path(config.getHomeDir(), fname);
         Properties props = config.loadCfg(config.getProperties(), path, false);
@@ -893,6 +899,7 @@ public class ZorkaLib implements ZorkaService {
     }
 
 
+    @Primitive("load-cfg-from-props")
     public Properties loadCfg(Properties properties, String fname, boolean verbose) {
         String path = ZorkaUtil.path(config.getHomeDir(), fname);
         Properties props = config.loadCfg(properties, path, verbose);
@@ -912,6 +919,7 @@ public class ZorkaLib implements ZorkaService {
      * @param defVals set of default values (if key is missing)
      * @return parsed list
      */
+    @Primitive("list-cfg")
     public List<String> listCfg(String key, String... defVals) {
         return config.listCfg(key, defVals);
     }
@@ -923,28 +931,29 @@ public class ZorkaLib implements ZorkaService {
      * @param task     task (must be Runnable)
      * @param interval run interval (in milliseconds)
      */
+    @Primitive
     public void schedule(Runnable task, long interval, long delay) {
         scheduler.schedule(task, interval, delay);
     }
 
-
+    @Primitive("query")
     public QueryDef query(String mbsName, String query, String... attrs) {
         return new QueryDef(mbsName, query, attrs);
     }
 
-
+    @Primitive("allow")
     public void allow(String... funcs) {
         for (String func : funcs) {
             translator.allow(func);
         }
     }
 
-
+    @Primitive("cpu-hiccup")
     public HiccupMeter cpuHiccup(String mbsName, String mbeanName, String attr) {
         return cpuHiccup(mbsName, mbeanName, attr, 10, 30000);
     }
 
-
+    @Primitive("cpu-hiccup-ld")
     public HiccupMeter cpuHiccup(String mbsName, String mbeanName, String attr, long resolution, long delay) {
         MethodCallStatistic mcs = mbsRegistry.getOrRegister(mbsName, mbeanName, attr, new MethodCallStatistic("cpuHiccup"));
         HiccupMeter meter = HiccupMeter.cpuMeter(resolution, delay, mcs);
@@ -952,23 +961,24 @@ public class ZorkaLib implements ZorkaService {
     }
 
 
+    @Primitive("mem-hiccup")
     public HiccupMeter memHiccup(String mbsName, String mbeanName, String attr) {
         return memHiccup(mbsName, mbeanName, attr, 10, 30000);
     }
 
-
+    @Primitive("mem-hiccup-ld")
     public HiccupMeter memHiccup(String mbsName, String mbeanName, String attr, long resolution, long delay) {
         MethodCallStatistic mcs = mbsRegistry.getOrRegister(mbsName, mbeanName, attr, new MethodCallStatistic("memHiccup"));
         HiccupMeter meter = HiccupMeter.memMeter(resolution, delay, mcs);
         return meter;
     }
 
-
+    @Primitive("dsk-hiccup")
     public HiccupMeter dskHiccup(String mbsName, String mbeanName, String attr, String path) {
         return dskHiccup(mbsName, mbeanName, attr, 1000, 30000, path);
     }
 
-
+    @Primitive("dsk-hiccup-ld")
     public HiccupMeter dskHiccup(String mbsName, String mbeanName, String attr, long resolution, long delay, String path) {
         MethodCallStatistic mcs = mbsRegistry.getOrRegister(mbsName, mbeanName, attr, new MethodCallStatistic("dskHiccup"));
         HiccupMeter meter = HiccupMeter.dskMeter(resolution, delay, path, mcs);

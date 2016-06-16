@@ -29,7 +29,7 @@ public class TraceAttrProcessingUnitTest extends BytecodeInstrumentationFixture 
     // TODO rewrite onto new tracer
     public void testTraceUntaggedAttr() {
 
-        new TraceAttrProcessor(symbols, tracerObj, TraceAttrProcessor.FIELD_GETTING_PROCESSOR, "SQL", null, "SQL", null).process(
+        new TraceAttrProcessor(symbols, tracerObj, TraceAttrProcessor.FIELD_GETTING_PROCESSOR, "SQL", null, "SQL").process(
                 ZorkaUtil.<String, Object>map("SQL", "select * from table"));
 
         //traceBuilder.check(0, "action", "newAttr", "attrId", symbols.stringId("SQL"));
@@ -40,8 +40,8 @@ public class TraceAttrProcessingUnitTest extends BytecodeInstrumentationFixture 
     //@Test
     // TODO rewrite onto new tracer
     public void testTraceFormattedAttr() {
-        new TraceAttrProcessor(symbols, tracerObj, TraceAttrProcessor.STRING_FORMAT_PROCESSOR, "${SQL} GO", null, "SQL", null).process(
-                ZorkaUtil.<String, Object>map("SQL", "select 1"));
+        new TraceAttrProcessor(symbols, tracerObj, TraceAttrProcessor.STRING_FORMAT_PROCESSOR, "${SQL} GO", null, "SQL")
+            .process(ZorkaUtil.<String, Object>map("SQL", "select 1"));
 
         //traceBuilder.check(0, "action", "newAttr", "attrId", symbols.stringId("SQL"));
         //traceBuilder.check(0, "attrVal", "select 1 GO");
@@ -51,7 +51,7 @@ public class TraceAttrProcessingUnitTest extends BytecodeInstrumentationFixture 
     //@Test
     // TODO rewrite onto new tracer
     public void testTraceTaggedAttr() {
-        new TraceAttrProcessor(symbols, tracerObj, TraceAttrProcessor.FIELD_GETTING_PROCESSOR, "SQL", null, "SQL", "SQL_QUERY").process(
+        new TraceAttrProcessor(symbols, tracerObj, TraceAttrProcessor.FIELD_GETTING_PROCESSOR, "SQL", null, "SQL").process(
                 ZorkaUtil.<String, Object>map("SQL", "select * from table"));
 
         //traceBuilder.check(0, "action", "newAttr", "attrId", symbols.stringId("SQL"));

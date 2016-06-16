@@ -23,10 +23,7 @@ import com.jitlogic.zorka.common.util.ZorkaLog;
 import com.jitlogic.zorka.common.util.ZorkaLogger;
 import com.jitlogic.zorka.common.util.ZorkaUtil;
 import com.jitlogic.zorka.core.util.ObjectDumper;
-import com.jitlogic.zorka.lisp.Interpreter;
-import com.jitlogic.zorka.lisp.Reader;
-import com.jitlogic.zorka.lisp.Seq;
-import com.jitlogic.zorka.lisp.Symbol;
+import com.jitlogic.zorka.lisp.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -74,6 +71,8 @@ public class ZorkaLispAgent implements ZorkaAgent, ZorkaService {
     public ZorkaLispAgent(Executor connExecutor, ExecutorService mainExecutor,
                           long timeout, AgentConfig config) {
         this.interpreter = new Interpreter();
+        interpreter.install(new StandardLibrary(interpreter));
+        interpreter.evalScript("/com/jitlogic/zorka/lisp/boot.zcm");
 
         this.connExecutor = connExecutor;
         this.mainExecutor = mainExecutor;
@@ -81,6 +80,10 @@ public class ZorkaLispAgent implements ZorkaAgent, ZorkaService {
         this.config = config;
     }
 
+
+    public void install(Object lib) {
+        interpreter.install(lib);
+    }
 
     /**
      * Installs object in LISP namespace. Typically used to install
@@ -227,6 +230,11 @@ public class ZorkaLispAgent implements ZorkaAgent, ZorkaService {
 
     public void restart() {
         interpreter = new Interpreter();
+    }
+
+
+    public Interpreter getInterpreter() {
+        return interpreter;
     }
 
 

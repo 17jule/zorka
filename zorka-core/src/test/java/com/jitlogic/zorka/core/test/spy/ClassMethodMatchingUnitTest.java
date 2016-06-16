@@ -224,24 +224,6 @@ public class ClassMethodMatchingUnitTest extends ZorkaFixture {
 
 
     @Test
-    public void testSpyMatcherFromString() {
-        SpyMatcher sm = SpyMatcher.fromString("com.jitlogic.**");
-        assertEquals(SpyMatcher.DEFAULT_PRIORITY, sm.getPriority());
-        assertEquals("com\\.jitlogic\\..+", sm.getClassPattern().toString());
-        assertEquals("[a-zA-Z0-9_]+", sm.getMethodPattern().toString());
-    }
-
-
-    @Test
-    public void testSpyMatcherFromStringWithCustomPriorityAndMethodName() {
-        SpyMatcher sm = SpyMatcher.fromString("999:com.jitlogic.**/myMethod");
-        assertEquals(999, sm.getPriority());
-        assertEquals("com\\.jitlogic\\..+", sm.getClassPattern().toString());
-        assertEquals("myMethod", sm.getMethodPattern().toString());
-    }
-
-
-    @Test
     public void testSpyMatchClazzByName() {
         SpyMatcherSet sms = new SpyMatcherSet(
                 spy.byClass("com.jitlogic.zorka.core.test.spy.support.Test*"));

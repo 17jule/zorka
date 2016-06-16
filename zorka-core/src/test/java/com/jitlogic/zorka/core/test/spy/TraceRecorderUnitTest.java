@@ -46,7 +46,6 @@ public class TraceRecorderUnitTest extends ZorkaFixture {
 
     @After
     public void tearDown() {
-        tracer.setTracerMaxTraceRecords(4096);
         tracer.setTracerMinMethodTime(250000);
         tracer.setTracerMinTraceTime(50);
     }

@@ -176,41 +176,33 @@ public class AgentInstance implements ZorkaService {
 
     private void initBshLibs() {
 
-        getZorkaAgent().put("zorka", getZorkaLib());
-
-        getZorkaAgent().put("util", getUtilLib());
+        getZorkaAgent().install(getZorkaLib());
+        getZorkaAgent().install(getUtilLib());
 
         if (config.boolCfg("spy", true)) {
             log.info(ZorkaLogger.ZAG_CONFIG, "Enabling Zorka SPY");
-            getZorkaAgent().put("spy", getSpyLib());
-            getZorkaAgent().put("tracer", getTracerLib());
+            getZorkaAgent().install(getSpyLib());
+            getZorkaAgent().install(getTracerLib());
         }
 
-        if (config.boolCfg("zabbix.active", false)) {
-        	log.info(ZorkaLogger.ZAG_CONFIG, "Enabling ZABBIX Active Agent subsystem ...");
-        	getZabbixActiveAgent().start();
-            zorkaAgent.put("zabbix.active", getZabbixLib());
-        }
-        
         if (config.boolCfg("zabbix", true)) {
             log.info(ZorkaLogger.ZAG_CONFIG, "Enabling ZABBIX subsystem ...");
             getZabbixAgent().start();
-            zorkaAgent.put("zabbix", getZabbixLib());
+            zorkaAgent.install(getZabbixLib());
         }
 
         if (config.boolCfg("syslog", true)) {
             log.info(ZorkaLogger.ZAG_CONFIG, "Enabling Syslog subsystem ....");
-            zorkaAgent.put("syslog", getSyslogLib());
+            zorkaAgent.install(getSyslogLib());
         }
 
         if (config.boolCfg("nagios", false)) {
             log.info(ZorkaLogger.ZAG_CONFIG, "Enabling Nagios support ...");
             getNagiosAgent().start();
-            zorkaAgent.put("nagios", getNagiosLib());
+            zorkaAgent.install(getNagiosLib());
         }
 
-        getZorkaAgent().put("normalizers", getNormLib());
-
+        getZorkaAgent().install(getNormLib());
     }
 
 
@@ -425,7 +417,7 @@ public class AgentInstance implements ZorkaService {
     public synchronized SpyLib getSpyLib() {
 
         if (spyLib == null) {
-            spyLib = new SpyLib(getClassTransformer(), getMBeanServerRegistry());
+            spyLib = new SpyLib(getClassTransformer(), getMBeanServerRegistry(), getZorkaAgent());
         }
 
         return spyLib;

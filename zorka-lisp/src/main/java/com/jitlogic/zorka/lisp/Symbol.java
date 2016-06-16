@@ -80,4 +80,14 @@ public class Symbol {
         return symbols.get(nname);
     }
 
+    public static synchronized Symbol symbol(String ns, String name) {
+        if (ns == null) {
+            return symbol(name);
+        }
+        String nname = ns.trim() + "/" + name.trim();
+        if (!symbols.containsKey(nname)) {
+            symbols.put(nname, new Symbol(ns.trim(), name.trim()));
+        }
+        return symbols.get(nname);
+    }
 }

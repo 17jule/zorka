@@ -33,13 +33,13 @@ public class SpyLibFunctionsUnitTest extends ZorkaFixture {
 
     @Before
     public void setUp() {
-        spyLib = new SpyLib(agentInstance.getClassTransformer(), mBeanServerRegistry);
+        spyLib = new SpyLib(agentInstance.getClassTransformer(), mBeanServerRegistry, agentInstance.getZorkaAgent());
     }
 
 
     @Test
     public void testSpyInstrumentConvenienceFn1() {
-        SpyDefinition sdef = spyLib.instrument("test", "test:type=MyStats", "stats", "${0}");
+        SpyDefinition sdef = spyLib.instrument("X", "test", "test:type=MyStats", "stats", "${0}");
 
         assertEquals(2, sdef.getProcessors(SpyLib.ON_SUBMIT).size());
         Object coll = sdef.getProcessors(SpyLib.ON_SUBMIT).get(1);
@@ -51,7 +51,7 @@ public class SpyLibFunctionsUnitTest extends ZorkaFixture {
 
     @Test
     public void testSpyInstrumentConvenienceFnWithActualRemap() {
-        SpyDefinition sdef = spyLib.instrument("test", "test:type=MyStats", "stats", "${1}");
+        SpyDefinition sdef = spyLib.instrument("X", "test", "test:type=MyStats", "stats", "${1}");
 
         assertEquals(2, sdef.getProcessors(SpyLib.ON_SUBMIT).size());
         Object coll = sdef.getProcessors(SpyLib.ON_SUBMIT).get(1);
@@ -61,7 +61,7 @@ public class SpyLibFunctionsUnitTest extends ZorkaFixture {
 
     @Test
     public void testSpyInstrumentConvenienceFnWithSingleMultipartVar() {
-        SpyDefinition sdef = spyLib.instrument("test", "test:type=MyStats", "stats", "${0.request.url}");
+        SpyDefinition sdef = spyLib.instrument("X", "test", "test:type=MyStats", "stats", "${0.request.url}");
 
         assertEquals(2, sdef.getProcessors(SpyLib.ON_SUBMIT).size());
         Object coll = sdef.getProcessors(SpyLib.ON_SUBMIT).get(1);
@@ -71,7 +71,7 @@ public class SpyLibFunctionsUnitTest extends ZorkaFixture {
 
     @Test
     public void testSpyInstrumentConvenienceFnWithNonTranslatedVar() {
-        SpyDefinition sdef = spyLib.instrument("test", "test:type=MyStats", "stats", "${methodName}");
+        SpyDefinition sdef = spyLib.instrument("X", "test", "test:type=MyStats", "stats", "${methodName}");
 
         assertEquals(2, sdef.getProcessors(SpyLib.ON_SUBMIT).size());
         Object coll = sdef.getProcessors(SpyLib.ON_SUBMIT).get(1);

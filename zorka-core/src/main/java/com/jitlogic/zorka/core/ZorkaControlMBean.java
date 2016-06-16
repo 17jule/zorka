@@ -28,10 +28,6 @@ public interface ZorkaControlMBean {
 
     void setTracerMinTraceTime(long t);
 
-    long getTracerMaxTraceRecords();
-
-    void setTracerMaxTraceRecords(long t);
-
     String listTracerIncludes();
 
     void reload();

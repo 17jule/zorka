@@ -21,12 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Primitive {
-    String value() default "";
-
-    boolean isNative() default false;
-
-    boolean isMacro() default false;
+public @interface Namespace {
+    String value();
 }

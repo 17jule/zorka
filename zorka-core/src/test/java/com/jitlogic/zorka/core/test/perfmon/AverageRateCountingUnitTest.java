@@ -44,7 +44,7 @@ public class AverageRateCountingUnitTest extends ZorkaFixture {
     @Test
     public void testRegisterAndQueryTrivialBean() throws Exception {
         makeTestJmx("test:name=bean1,type=TestJmx", 10, 10);
-        assertEquals("10", zorkaAgent.query("zorka.jmx(\"test\", \"test:name=bean1,type=TestJmx\", \"Nom\")"));
+        assertEquals("10", zorkaAgent.query("(zorka/jmx \"test\"  \"test:name=bean1,type=TestJmx\"  \"Nom\")"));
     }
 
     @Test

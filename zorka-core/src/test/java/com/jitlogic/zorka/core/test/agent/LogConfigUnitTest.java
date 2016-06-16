@@ -53,28 +53,28 @@ public class LogConfigUnitTest extends ZorkaFixture {
 
     @Test
     public void testParseIntPropsViaZorkaLib() {
-        assertEquals((Integer) 10, zorka.intCfg("test.int"));
+        assertEquals((Integer) 10, zorka.intCfg("test.int", null));
         assertEquals((Integer)10, zorka.intCfg("test.int", 30));
-        assertEquals(null, zorka.intCfg("test.broken"));
+        assertEquals(null, zorka.intCfg("test.broken", null));
         assertEquals((Integer)20, zorka.intCfg("test.broken", 20));
-        assertEquals(null, zorka.intCfg("test.missing"));
+        assertEquals(null, zorka.intCfg("test.missing", null));
     }
 
 
     @Test
     public void testParseLongPropsViaZorkaLib() {
-        assertEquals((Long)10L, zorka.longCfg("test.int"));
+        assertEquals((Long)10L, zorka.longCfg("test.int", null));
         assertEquals((Long)10L, zorka.longCfg("test.int", 30L));
-        assertEquals(null, zorka.longCfg("test.broken"));
+        assertEquals(null, zorka.longCfg("test.broken", null));
         assertEquals((Long)20L, zorka.longCfg("test.broken", 20L));
-        assertEquals(null, zorka.longCfg("test.missing"));
+        assertEquals(null, zorka.longCfg("test.missing", null));
     }
 
 
     @Test
     public void testParseStringPropsViaZorkaLib() {
-        assertEquals(null, zorka.stringCfg("test.missing"));
-        assertEquals("", zorka.stringCfg("test.space"));
+        assertEquals(null, zorka.stringCfg("test.missing", null));
+        assertEquals("", zorka.stringCfg("test.space", null));
         assertEquals("oja!", zorka.stringCfg("test.missing", "oja!"));
     }
 
@@ -89,8 +89,8 @@ public class LogConfigUnitTest extends ZorkaFixture {
 
     @Test
     public void testParseKiloProps() {
-        assertEquals((Long)10L, zorka.kiloCfg("ten.bytes"));
-        assertEquals((Long)1024L, zorka.kiloCfg("one.kilobyte"));
-        assertEquals((Long)10485760L, zorka.kiloCfg("ten.megabytes"));
+        assertEquals((Long)10L, zorka.kiloCfg("ten.bytes", null));
+        assertEquals((Long)1024L, zorka.kiloCfg("one.kilobyte", null));
+        assertEquals((Long)10485760L, zorka.kiloCfg("ten.megabytes", null));
     }
 }
