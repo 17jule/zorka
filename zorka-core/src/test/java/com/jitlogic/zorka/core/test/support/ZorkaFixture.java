@@ -21,7 +21,6 @@ import com.jitlogic.zorka.common.util.ZorkaConfig;
 import com.jitlogic.zorka.core.*;
 import com.jitlogic.zorka.core.integ.NagiosLib;
 import com.jitlogic.zorka.core.integ.QueryTranslator;
-import com.jitlogic.zorka.core.integ.SnmpLib;
 import com.jitlogic.zorka.core.integ.SyslogLib;
 import com.jitlogic.zorka.core.integ.zabbix.ZabbixLib;
 import com.jitlogic.zorka.core.mbeans.MBeanServerRegistry;
@@ -48,7 +47,6 @@ public class ZorkaFixture extends CommonFixture {
     protected SyslogLib syslogLib;
     protected SpyLib spy;
     protected TracerLib tracer;
-    protected SnmpLib snmpLib;
 
     protected ZorkaBshAgent zorkaAgent;
     protected ZorkaLib zorka;
@@ -90,7 +88,6 @@ public class ZorkaFixture extends CommonFixture {
         zorkaAgent = agentInstance.getZorkaAgent();
         zorka = agentInstance.getZorkaLib();
         syslogLib = agentInstance.getSyslogLib();
-        snmpLib = agentInstance.getSnmpLib();
         spy = agentInstance.getSpyLib();
         tracer = agentInstance.getTracerLib();
         spyTransformer = agentInstance.getClassTransformer();

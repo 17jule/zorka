@@ -127,11 +127,6 @@ public class AgentInstance implements ZorkaService {
     private UtilLib utilLib;
 
     /**
-     * Reference to SNMP library - available to zorka scripts as 'snmp.*' functions
-     */
-    private SnmpLib snmpLib;
-
-    /**
      * Reference to normalizers library - available to zorka scripts as 'normalizers.*' function
      */
     private NormLib normLib;
@@ -206,11 +201,6 @@ public class AgentInstance implements ZorkaService {
         if (config.boolCfg("syslog", true)) {
             log.info(ZorkaLogger.ZAG_CONFIG, "Enabling Syslog subsystem ....");
             zorkaAgent.put("syslog", getSyslogLib());
-        }
-
-        if (config.boolCfg("snmp", true)) {
-            log.info(ZorkaLogger.ZAG_CONFIG, "Enabling SNMP subsystem ...");
-            zorkaAgent.put("snmp", getSnmpLib());
         }
 
         if (config.boolCfg("nagios", false)) {
@@ -478,21 +468,6 @@ public class AgentInstance implements ZorkaService {
 
 
     /**
-     * Returns reference to SNMP library
-     *
-     * @return instance of snmp library
-     */
-    public synchronized SnmpLib getSnmpLib() {
-
-        if (snmpLib == null) {
-            snmpLib = new SnmpLib(config);
-        }
-
-        return snmpLib;
-    }
-
-
-    /**
      * Returns reference to mbean server registry.
      *
      * @return mbean server registry reference of null (if not yet initialized)
@@ -517,10 +492,6 @@ public class AgentInstance implements ZorkaService {
 
         if (zorkaLib != null) {
             zorkaLib.shutdown();
-        }
-
-        if (snmpLib != null) {
-            snmpLib.shutdown();
         }
 
         if (zabbixLib != null) {
