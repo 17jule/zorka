@@ -77,7 +77,7 @@ public class AgentInstance implements ZorkaService {
     /**
      * Main zorka agent object - one that executes actual requests
      */
-    private ZorkaBshAgent zorkaAgent;
+    private ZorkaLispAgent zorkaAgent;
 
     /**
      * Reference to zabbix active agent object - one that handles zabbix active requests and passes them to BSH agent
@@ -347,10 +347,10 @@ public class AgentInstance implements ZorkaService {
      *
      * @return instance of Zorka BSH agent
      */
-    public synchronized ZorkaBshAgent getZorkaAgent() {
+    public synchronized ZorkaLispAgent getZorkaAgent() {
         if (zorkaAgent == null) {
             long timeout = config.longCfg("zorka.req.timeout", 5000L);
-            zorkaAgent = new ZorkaBshAgent(getConnExecutor(), getMainExecutor(), timeout, config);
+            zorkaAgent = new ZorkaLispAgent(getConnExecutor(), getMainExecutor(), timeout, config);
         }
         return zorkaAgent;
     }

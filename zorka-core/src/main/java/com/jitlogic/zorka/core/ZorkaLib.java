@@ -61,7 +61,7 @@ public class ZorkaLib implements ZorkaService {
 
     private ZorkaLogger logger = ZorkaLogger.getLogger();
 
-    private ZorkaBshAgent agent;
+    private ZorkaLispAgent agent;
     private Set<JmxObject> registeredObjects = new HashSet<JmxObject>();
 
     private MBeanServerRegistry mbsRegistry;

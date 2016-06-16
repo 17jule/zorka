@@ -48,7 +48,7 @@ public class ZorkaFixture extends CommonFixture {
     protected SpyLib spy;
     protected TracerLib tracer;
 
-    protected ZorkaBshAgent zorkaAgent;
+    protected ZorkaLispAgent zorkaAgent;
     protected ZorkaLib zorka;
 
     protected AgentConfig config;

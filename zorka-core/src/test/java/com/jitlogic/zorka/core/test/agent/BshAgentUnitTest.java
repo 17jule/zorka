@@ -126,7 +126,7 @@ public class BshAgentUnitTest extends ZorkaFixture {
 
     private Object query(final String src) throws Exception {
         ZorkaBasicCallback callback = new ZorkaBasicCallback();
-        ZorkaBshWorker worker = new ZorkaBshWorker(Executors.newSingleThreadExecutor(), 5000,
+        ZorkaLispWorker worker = new ZorkaLispWorker(Executors.newSingleThreadExecutor(), 5000,
                 agentInstance.getZorkaAgent(), src, callback);
         worker.run();
         return callback.getResult();

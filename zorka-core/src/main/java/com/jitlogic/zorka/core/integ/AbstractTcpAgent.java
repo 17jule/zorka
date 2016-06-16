@@ -17,10 +17,10 @@ package com.jitlogic.zorka.core.integ;
 
 import com.jitlogic.zorka.common.ZorkaService;
 import com.jitlogic.zorka.common.stats.AgentDiagnostics;
-import com.jitlogic.zorka.core.ZorkaBshAgent;
 import com.jitlogic.zorka.common.util.ZorkaConfig;
 import com.jitlogic.zorka.common.util.ZorkaLog;
 import com.jitlogic.zorka.common.util.ZorkaLogger;
+import com.jitlogic.zorka.core.ZorkaLispAgent;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -47,7 +47,7 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
     /**
      * BSH agent
      */
-    private ZorkaBshAgent agent;
+    private ZorkaLispAgent agent;
 
     /**
      * Connections accepting thread
@@ -103,7 +103,7 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
      * @param defaultAddr
      * @param defaultPort agent default port
      */
-    public AbstractTcpAgent(ZorkaConfig config, ZorkaBshAgent agent, QueryTranslator translator,
+    public AbstractTcpAgent(ZorkaConfig config, ZorkaLispAgent agent, QueryTranslator translator,
                             String prefix, String defaultAddr, int defaultPort) {
 
         this.agent = agent;

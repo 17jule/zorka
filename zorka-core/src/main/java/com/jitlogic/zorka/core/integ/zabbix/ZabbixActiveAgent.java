@@ -32,12 +32,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import com.jitlogic.zorka.common.ZorkaService;
+import com.jitlogic.zorka.core.ZorkaLispAgent;
 import com.jitlogic.zorka.core.integ.QueryTranslator;
 import com.jitlogic.zorka.common.stats.AgentDiagnostics;
 import com.jitlogic.zorka.common.util.ZorkaConfig;
 import com.jitlogic.zorka.common.util.ZorkaLog;
 import com.jitlogic.zorka.common.util.ZorkaLogger;
-import com.jitlogic.zorka.core.ZorkaBshAgent;
 
 /**
  * Zabbix Active Agent integrates Zorka with Zabbix server. It handles incoming zabbix
@@ -92,7 +92,7 @@ public class ZabbixActiveAgent implements Runnable, ZorkaService {
 	private ScheduledFuture<?> senderTask;
 
 	/* BSH agent */
-	private ZorkaBshAgent agent;
+	private ZorkaLispAgent agent;
 
 	/* Query translator */
 	protected QueryTranslator translator;
@@ -102,7 +102,7 @@ public class ZabbixActiveAgent implements Runnable, ZorkaService {
 	/**
 	 * Creates zabbix active agent.
 	 */
-	public ZabbixActiveAgent(ZorkaConfig config, ZorkaBshAgent agent, QueryTranslator translator, ScheduledExecutorService scheduledExecutorService) {
+	public ZabbixActiveAgent(ZorkaConfig config, ZorkaLispAgent agent, QueryTranslator translator, ScheduledExecutorService scheduledExecutorService) {
 		this.prefix = "zabbix.active";
 		this.config = config;
 		this.defaultPort = 10051;

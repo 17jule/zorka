@@ -20,8 +20,8 @@ package com.jitlogic.zorka.core.integ.zabbix;
 
 import java.net.Socket;
 
-import com.jitlogic.zorka.core.ZorkaBshAgent;
 import com.jitlogic.zorka.common.util.ZorkaConfig;
+import com.jitlogic.zorka.core.ZorkaLispAgent;
 import com.jitlogic.zorka.core.integ.AbstractTcpAgent;
 import com.jitlogic.zorka.core.integ.QueryTranslator;
 import com.jitlogic.zorka.core.integ.ZorkaRequestHandler;
@@ -39,7 +39,7 @@ public class ZabbixAgent extends AbstractTcpAgent {
      *
      * @param agent BSH agent
      */
-	public ZabbixAgent(ZorkaConfig config, ZorkaBshAgent agent, QueryTranslator translator) {
+	public ZabbixAgent(ZorkaConfig config, ZorkaLispAgent agent, QueryTranslator translator) {
         super(config, agent, translator, "zabbix", "127.0.0.1", 10055);
     }
 

@@ -17,7 +17,6 @@
 
 package com.jitlogic.zorka.core.spy;
 
-import bsh.EvalError;
 import com.jitlogic.zorka.common.stats.AgentDiagnostics;
 import com.jitlogic.zorka.common.util.ZorkaLog;
 import com.jitlogic.zorka.common.util.ZorkaLogger;
@@ -77,9 +76,6 @@ public class MainSubmitter {
                 inSubmit.set(true);
                 submitter.submit(stage, id, submitFlags, vals);
             }
-        } catch (EvalError e) {
-            log.debug(ZorkaLogger.ZSP_ERRORS, "Error submitting value from instrumented code: ", e);
-            AgentDiagnostics.inc(AgentDiagnostics.SPY_ERRORS);
         } catch (Throwable e) {
             // This is special case. We must catch everything going out of agent, even OOM errors.
             log.debug(ZorkaLogger.ZSP_ERRORS, "Error submitting value from instrumented code: ", e);

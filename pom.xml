@@ -22,9 +22,7 @@
         <surefire.plugin.version>2.12</surefire.plugin.version>
 
         <asm.version>5.0.3</asm.version>
-        <json.version>1.2</json.version>
         <junit.version>4.11</junit.version>
-        <zoola.version>0.1.0</zoola.version>
     </properties>
 
     <build>
@@ -38,14 +36,6 @@
             </plugins>
         </pluginManagement>
     </build>
-
-    <repositories>
-        <repository>
-            <id>zorka-repo</id>
-            <name>Artifacts for Zorka agent</name>
-            <url>http://zorka.io/repo</url>
-        </repository>
-    </repositories>
 
     <modules>
         <module>zorka-common</module>

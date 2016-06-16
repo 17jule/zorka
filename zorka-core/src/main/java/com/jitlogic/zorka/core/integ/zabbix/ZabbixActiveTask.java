@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.jitlogic.zorka.core.ZorkaLispAgent;
 import com.jitlogic.zorka.core.integ.QueryTranslator;
 import com.jitlogic.zorka.common.util.ZorkaLog;
 import com.jitlogic.zorka.common.util.ZorkaLogger;
-import com.jitlogic.zorka.core.ZorkaBshAgent;
 import com.jitlogic.zorka.core.integ.ZorkaRequestHandler;
 
 public class ZabbixActiveTask implements Runnable, ZorkaRequestHandler {
@@ -34,13 +34,13 @@ public class ZabbixActiveTask implements Runnable, ZorkaRequestHandler {
 	
 	private String agentHost;
 	private ActiveCheckQueryItem item;
-	private ZorkaBshAgent agent;
+	private ZorkaLispAgent agent;
 	private QueryTranslator translator;
 	private ConcurrentLinkedQueue<ActiveCheckResult> responseQueue;
 	
 	private long clock;
 	
-	public ZabbixActiveTask(String agentHost, ActiveCheckQueryItem item, ZorkaBshAgent agent, QueryTranslator translator, ConcurrentLinkedQueue<ActiveCheckResult> responseQueue){
+	public ZabbixActiveTask(String agentHost, ActiveCheckQueryItem item, ZorkaLispAgent agent, QueryTranslator translator, ConcurrentLinkedQueue<ActiveCheckResult> responseQueue){
 		this.agentHost = agentHost;
 		this.item = item;
 		this.agent = agent;

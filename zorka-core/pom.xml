@@ -15,11 +15,6 @@
             <version>${asm.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.jitlogic.zoola</groupId>
-            <artifactId>zoola-core</artifactId>
-            <version>${zoola.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.jitlogic.zorka</groupId>
             <artifactId>zorka-common</artifactId>
             <version>${project.version}</version>
