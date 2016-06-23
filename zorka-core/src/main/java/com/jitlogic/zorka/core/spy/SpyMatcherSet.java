@@ -338,4 +338,8 @@ public class SpyMatcherSet {
     public void clear() {
         matchers.clear();
     }
+
+    public int size() {
+        return matchers.size();
+    }
 }

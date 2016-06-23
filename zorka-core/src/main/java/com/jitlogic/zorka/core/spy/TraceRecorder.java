@@ -31,7 +31,7 @@ import static com.jitlogic.zorka.common.util.ZorkaUnsafe.*;
  *
  * @author Rafal Lewczuk
  */
-public class TraceRecorder extends TraceBuffer implements TraceHandler { // TODO rename as TraceStreamer
+public class TraceRecorder extends TraceBuffer { // TODO rename as TraceStreamer
 
 
     public static final int STACK_DEFAULT_SIZE = 256;
@@ -91,6 +91,7 @@ public class TraceRecorder extends TraceBuffer implements TraceHandler { // TODO
 
     public TraceRecorder(TraceBufManager bufManager, SymbolRegistry symbols, TraceBufOutput output) {
         super(bufManager);
+        this.bufManager = bufManager;
         this.symbols = symbols;
         this.output = output;
     }
@@ -254,7 +255,6 @@ public class TraceRecorder extends TraceBuffer implements TraceHandler { // TODO
     }
 
 
-    @Override
     public void traceBegin(int traceId, long clock, int flags) {
         //if (disabled) return;
         if (stackPos == 0) return;
@@ -272,21 +272,18 @@ public class TraceRecorder extends TraceBuffer implements TraceHandler { // TODO
     }
 
 
-    @Override
     public Object getAttr(int attrId) {
         // TODO eventually implement version with non-guaranteed result
         throw new RuntimeException("Not implemented.");
     }
 
 
-    @Override
     public Object getAttr(int traceId, int attrId) {
         // TODO eventually implement version with non-guaranteed result
         throw new RuntimeException("Not implemented.");
     }
 
 
-    @Override
     public void newAttr(int traceId, int attrId, Object attrVal) {
         //if (disabled) return;
 
@@ -306,20 +303,17 @@ public class TraceRecorder extends TraceBuffer implements TraceHandler { // TODO
     }
 
 
-    @Override
     public void disable() {
         // TODO dopracować disabled bo niekompletny
         disabled = true;
     }
 
 
-    @Override
     public void enable() {
         disabled = false;
     }
 
 
-    @Override
     public void setMinimumTraceTime(long minTraceTime) {
         this.minTraceTime = minTraceTime;
     }
@@ -330,13 +324,11 @@ public class TraceRecorder extends TraceBuffer implements TraceHandler { // TODO
     }
 
 
-    @Override
     public void markTraceFlags(int traceId, int flag) {
         // TODO implement this function
     }
 
 
-    @Override
     public boolean isInTrace(int traceId) {
         // TODO implement this function
         return false;

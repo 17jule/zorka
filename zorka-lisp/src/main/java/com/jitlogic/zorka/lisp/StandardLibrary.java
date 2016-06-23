@@ -485,6 +485,14 @@ public class StandardLibrary {
         return n1 != null && n2 != null ? Utils.mod(n1, n2) : null;
     }
 
+    @Primitive
+    public static String name(Object obj) {
+        if (obj instanceof Symbol) {
+            return ((Symbol)obj).getName();
+        }
+        throw new LispException("Cannot determine name of object " + obj);
+    }
+
     @Primitive("negative?")
     public static boolean isNegative(Number n) { return Utils.cmp(n, 0) < 0; }
 
@@ -579,6 +587,20 @@ public class StandardLibrary {
     @Primitive("symbol?")
     public static boolean isSymbol(Object o) {
         return o instanceof Symbol;
+    }
+
+    @Primitive("to-array")
+    public static Object[] toArray(Object sobj) {
+        Seq seq = seq(sobj);
+        if (seq != null) {
+            Object[] obj = new Object[length(seq)];
+            for (int i = 0; i < obj.length; i++,seq=next(seq)) {
+                obj[i] = car(seq);
+            }
+            return obj;
+        } else {
+            return new Object[0];
+        }
     }
 
     @Primitive("to-byte")

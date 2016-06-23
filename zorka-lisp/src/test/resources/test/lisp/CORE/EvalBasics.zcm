@@ -149,3 +149,7 @@
   (is= 103 (test-cond-4 3)))
 
 
+(deftest test-call-object-method
+  (is= 4 (.length "oja!"))
+  (is= "xxx" (.getName 'xxx)))
+

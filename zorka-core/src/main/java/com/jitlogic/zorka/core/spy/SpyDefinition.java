@@ -17,6 +17,7 @@
 package com.jitlogic.zorka.core.spy;
 
 import com.jitlogic.zorka.common.util.ZorkaUtil;
+import com.jitlogic.zorka.lisp.Symbol;
 
 import java.util.*;
 
@@ -43,6 +44,8 @@ public class SpyDefinition {
 
     private final String name;
 
+    private final Set<Symbol> tags = new HashSet<Symbol>();
+
     /**
      * Spy probes for various places in method bytecode
      */
@@ -58,19 +61,8 @@ public class SpyDefinition {
      */
     private SpyMatcherSet matcherSet = new SpyMatcherSet();
 
-    /**
-     * Creates partially configured spy definition that is suitable for measuring
-     * method execution times.
-     *
-     * @return spy definition
-     */
-    public static SpyDefinition instrument(String name) {
-        return new SpyDefinition(name)
-                .onEnter(new SpyTimeProbe("T1"))
-                .onReturn(new SpyTimeProbe("T2"))
-                .onError(new SpyTimeProbe("T2"))
-                .onEnter();
-    }
+
+    private Set<Symbol> tagMatcherSet = new HashSet<Symbol>();
 
     /**
      * Creates unconfigured spy definition
@@ -100,6 +92,7 @@ public class SpyDefinition {
 
     private SpyDefinition(SpyDefinition orig) {
         this.name = orig.name;
+        this.tags.addAll(orig.tags);
         this.probes = ZorkaUtil.copyArray(orig.probes);
         this.processors = ZorkaUtil.copyArray(orig.processors);
         this.matcherSet = new SpyMatcherSet(orig.matcherSet);
@@ -141,7 +134,7 @@ public class SpyDefinition {
      *
      * @return
      */
-    public SpyDefinition onEnter(SpyDefArg... args) {
+    public SpyDefinition onEnter(Object... args) {
         return with(ON_ENTER, args);
     }
 
@@ -151,7 +144,7 @@ public class SpyDefinition {
      *
      * @return
      */
-    public SpyDefinition onReturn(SpyDefArg... args) {
+    public SpyDefinition onReturn(Object... args) {
         return with(ON_RETURN, args);
     }
 
@@ -161,7 +154,7 @@ public class SpyDefinition {
      *
      * @return
      */
-    public SpyDefinition onError(SpyDefArg... args) {
+    public SpyDefinition onError(Object... args) {
         return with(ON_ERROR, args);
     }
 
@@ -172,7 +165,7 @@ public class SpyDefinition {
      *
      * @return augmented spy definition
      */
-    public SpyDefinition onSubmit(SpyDefArg... args) {
+    public SpyDefinition onSubmit(Object... args) {
         return with(ON_SUBMIT, args);
     }
 
@@ -180,25 +173,23 @@ public class SpyDefinition {
     /**
      * Instructs spy what method to include.
      *
-     * @param matchers
+     * @param mdefs
      * @return
      */
-    public SpyDefinition include(SpyMatcher... matchers) {
+    public SpyDefinition include(Object...mdefs) {
+        SpyMatcher[] matchers = new SpyMatcher[mdefs.length];
+        for (int i = 0; i < mdefs.length; i++) {
+            matchers[i] = mdefs[i] instanceof SpyMatcher ? (SpyMatcher)mdefs[i]
+                : mdefs[i] instanceof String ? SpyMatcher.fromString((String)mdefs[i]) : null;
+        }
         SpyDefinition sdef = new SpyDefinition(this);
         sdef.matcherSet = new SpyMatcherSet(sdef.matcherSet, matchers);
         return sdef;
     }
 
-    public SpyDefinition include(String...mdefs) {
-        SpyMatcher[] matchers = new SpyMatcher[mdefs.length];
-
-        for (int i = 0; i < mdefs.length; i++) {
-            matchers[i] = SpyMatcher.fromString(mdefs[i]);
-        }
-
-        return include(matchers);
+    public SpyDefinition with1(int curStage, Object obj) {
+        return with(curStage, obj);
     }
-
 
     /**
      * Declares which arguments should be fetched by instrumenting code.
@@ -215,7 +206,7 @@ public class SpyDefinition {
      *             class objects are to be fetched)
      * @return spy definition with augmented fetched argument list;
      */
-    private SpyDefinition with(int curStage, SpyDefArg... args) {
+    public SpyDefinition with(int curStage, Object... args) {
         SpyDefinition sdef = new SpyDefinition(this);
 
         List<SpyProbe> newProbes = new ArrayList<SpyProbe>(sdef.probes[curStage].size() + args.length + 2);
@@ -270,8 +261,4 @@ public class SpyDefinition {
 
         return idx;
     }
-
-    // TODO toString() method
-
-    // TODO some method printing 'execution plan' of this SpyDef
 }

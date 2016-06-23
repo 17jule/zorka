@@ -113,3 +113,10 @@
     (else
       `(get-> (get ,obj ,(first args)) ,@(rest args)))))
 
+
+(defmacro -> (obj . (op0 . opn))
+  (cond
+    ((nil? op0) obj)
+    ((list? op0) `(-> (,(first op0) ,obj ,@(rest op0)) ,@opn))
+    (:else `(-> (,op0 ,obj) ,@opn))))
+

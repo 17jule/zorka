@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.util.List;
 
 import static com.jitlogic.zorka.lisp.StandardLibrary.*;
 import static com.jitlogic.zorka.lisp.Utils.*;
@@ -111,7 +112,7 @@ public class Interpreter {
         while (true) {
             try {
                 if (x == null || x instanceof Number || x instanceof String || x instanceof Boolean
-                    || x instanceof Keyword || x instanceof Character) {
+                    || x instanceof Keyword || x instanceof Character || x.getClass().isArray() || x.getClass().isEnum()) {
                     return x;
                 } else if (x instanceof Symbol) {
                     return env.lookup((Symbol) x);
@@ -155,6 +156,22 @@ public class Interpreter {
                         }
                     } else if (f == COND) {
                         return cond(n, env);
+                    } else if (f instanceof Symbol && ((Symbol)f).getName().startsWith(".")) {
+                        Object obj = eval(car(n), env);
+                        if (obj != null) {
+                            for (Method m : ObjectInspector.lookupMethods(obj.getClass(), ((Symbol) f).getName().substring(1), false)) {
+                                if (m.getParameterTypes().length == length(n) - 1) {
+                                    Object[] args = toArray(cdr(n));
+                                    for (int i = 0; i < args.length; i++) {
+                                        args[i] = eval(args[i],env);
+                                    }
+                                    return m.invoke(obj,args);
+                                }
+                            }
+                        } else {
+                            throw new LispException("Cannot call a method on ");
+                        }
+
                     } else {
                         Object obj = eval(f, env);
                         if (!(obj instanceof Fn)) {

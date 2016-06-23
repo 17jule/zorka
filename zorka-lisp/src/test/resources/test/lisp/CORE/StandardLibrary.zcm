@@ -244,3 +244,12 @@
         (hop (+ x 2)))))
   (is= 4 (test 2)))
 
+
+
+(deftest test-threading-macro
+  (is= 42 (-> 42))
+  (is= "42" (-> 42 str))
+  (is= 43 (-> 42 inc))
+  (is= 43 (-> 42 (inc)))
+  (is= 44 (-> 42 (+ 2))))
+

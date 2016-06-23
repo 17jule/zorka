@@ -16,13 +16,10 @@
 
 package com.jitlogic.zorka.core.spy;
 
-import java.util.Set;
-
 import com.jitlogic.zorka.common.tracedata.*;
 import com.jitlogic.zorka.common.util.ZorkaConfig;
 import com.jitlogic.zorka.common.util.ZorkaLog;
 import com.jitlogic.zorka.common.util.ZorkaLogger;
-import com.jitlogic.zorka.core.spy.plugins.*;
 import com.jitlogic.zorka.core.util.OverlayClassLoader;
 import com.jitlogic.zorka.lisp.Namespace;
 import com.jitlogic.zorka.lisp.Primitive;
@@ -115,44 +112,6 @@ public class TracerLib {
         return sb.toString();
     }
 
-    /**
-     * Starts a new (named) trace.
-     *
-     * @param name trace name
-     * @return spy processor object marking new trace
-     */
-    @Primitive("begin|")
-    public SpyProcessor begin(String name) {
-        return begin(name, -1);
-    }
-
-
-    /**
-     * Starts new trace.
-     *
-     * @param name             trace name
-     * @param minimumTraceTime minimum trace time
-     * @return spy processor object marking new trace
-     */
-    @Primitive("begin-t|")
-    public SpyProcessor begin(String name, long minimumTraceTime) {
-        return begin(name, minimumTraceTime, 0);
-    }
-
-
-    /**
-     * Starts new trace.
-     *
-     * @param name             trace name
-     * @param minimumTraceTime minimum trace time
-     * @param flags            initial flags
-     * @return spy processor object marking new trace
-     */
-    @Primitive("begin-tf|")
-    public SpyProcessor begin(String name, long minimumTraceTime, int flags) {
-        return new TraceBeginProcessor(tracer, name, minimumTraceTime * 1000000L, flags, symbolRegistry);
-    }
-
 
     @Primitive("begin!")
     public void traceBegin(String name) {
@@ -174,76 +133,9 @@ public class TracerLib {
     }
 
 
-    @Primitive("in-trace?|")
-    public SpyProcessor inTrace(String traceName) {
-        return new TraceCheckerProcessor(tracer, symbolRegistry.stringId(traceName));
-    }
-
     @Primitive("in-trace?")
     public boolean isInTrace(String traceName) {
         return tracer.getRecorder().isInTrace(symbolRegistry.stringId(traceName));
-    }
-
-
-    @Primitive("get-attr|")
-    public SpyProcessor getTraceAttr(String dstField, String attrName) {
-        return getTraceAttr(dstField, null, attrName);
-    }
-
-    /**
-     * Looks for trace of given attribute name in trace stack.
-     *
-     * @param dstField
-     * @param traceName
-     * @param attrName
-     * @return
-     */
-    @Primitive("get-trace-attr|")
-    public SpyProcessor getTraceAttr(String dstField, String traceName, String attrName) {
-        return new TraceAttrGetterProcessor(tracer, dstField,
-            traceName != null ? symbolRegistry.stringId(traceName) : 0,
-            symbolRegistry.stringId(attrName));
-    }
-
-
-    /**
-     * Creates spy processor that attaches tagged attribute to trace record.
-     *
-     * @param attrName destination attribute name (in trace data)
-     * @param srcField source field name (from spy record)
-     * @return spy processor object adding new trace attribute
-     */
-    @Primitive("attr|")
-    public SpyProcessor attr(String attrName, String srcField) {
-        return new TraceAttrProcessor(symbolRegistry, tracer, TraceAttrProcessor.FIELD_GETTING_PROCESSOR,
-                srcField, null, attrName);
-    }
-
-
-    @Primitive("trace-attr|")
-    public SpyProcessor traceAttr(String traceName, String attrName, String srcField) {
-        return new TraceAttrProcessor(symbolRegistry, tracer, TraceAttrProcessor.FIELD_GETTING_PROCESSOR,
-                srcField, traceName, attrName);
-    }
-
-
-    /**
-     * Creates spy processor that formats a string and attaches it as tagged attribute to trace record.
-     *
-     * @param attrName  destination attribute name (in trace data)
-     * @param srcFormat source field name (from spy record)
-     * @return spy processor object adding new trace attribute
-     */
-    @Primitive("format-attr|")
-    public SpyProcessor formatAttr(String attrName, String srcFormat) {
-        return new TraceAttrProcessor(symbolRegistry, tracer, TraceAttrProcessor.STRING_FORMAT_PROCESSOR,
-                srcFormat, attrName);
-    }
-
-    @Primitive("format-trace-attr|")
-    public SpyProcessor formatTraceAttr(String traceName, String attrName, String srcFormat) {
-        return new TraceAttrProcessor(symbolRegistry, tracer, TraceAttrProcessor.STRING_FORMAT_PROCESSOR,
-                srcFormat, traceName, attrName);
     }
 
 
@@ -269,54 +161,10 @@ public class TracerLib {
         tracer.getRecorder().newAttr(symbolRegistry.stringId(traceName), symbolRegistry.stringId(attrName), value);
     }
 
-    @Primitive("mark-error|")
-    public SpyProcessor markError() {
-        return flags(0);
-    }
-
-    /**
-     * Creates spy processor that sets flags in trace marker.
-     *
-     * @param flags flags to set
-     * @return spy processor object
-     */
-    @Primitive("flags|")
-    public SpyProcessor flags(int flags) {
-        return new TraceFlagsProcessor(tracer, null, 0, flags);
-    }
-
-    @Primitive("trace-flags|")
-    public SpyProcessor traceFlags(String traceName, int flags) {
-        return new TraceFlagsProcessor(tracer, null, symbolRegistry.stringId(traceName), flags);
-    }
 
     @Primitive("flags!")
     public void newFlags(int flags) {
         tracer.getRecorder().markTraceFlags(0, flags);
-    }
-
-
-    /**
-     * Creates spy processor that sets flags in trace marker only if given record field is null.
-     *
-     * @param srcField spy record field to be checked
-     * @param flags    flags to set
-     * @return spy processor object
-     */
-    @Primitive("flags-if-not|")
-    public SpyProcessor flags(String srcField, int flags) {
-        return new TraceFlagsProcessor(tracer, srcField, 0, flags);
-    }
-
-
-    @Primitive("trace-flags-if-not|")
-    public SpyProcessor traceFlags(String srcField, String traceName, int flags) {
-        return new TraceFlagsProcessor(tracer, srcField, symbolRegistry.stringId(traceName), flags);
-    }
-
-    @Primitive("filter-by|")
-    public SpyProcessor filterBy(String srcField, Boolean defval, Set<Object> yes, Set<Object> no, Set<Object> maybe) {
-        return new TraceFilterProcessor(tracer, srcField, defval, yes, no, maybe);
     }
 
 

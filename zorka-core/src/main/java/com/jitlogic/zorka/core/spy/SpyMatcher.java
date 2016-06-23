@@ -19,13 +19,10 @@ package com.jitlogic.zorka.core.spy;
 import com.jitlogic.zorka.common.util.ZorkaUtil;
 
 import java.util.*;
-import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.objectweb.asm.Opcodes.*;
-
-import static com.jitlogic.zorka.core.spy.SpyMatcher.*;
 
 import static com.jitlogic.zorka.core.spy.SpyLib.SM_NOARGS;
 
