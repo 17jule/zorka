@@ -20,8 +20,11 @@ import com.jitlogic.zorka.common.util.ObjectInspector;
 import com.jitlogic.zorka.core.AgentConfig;
 import com.jitlogic.zorka.core.spy.SpyDefinition;
 import com.jitlogic.zorka.core.spy.SpyLib;
-import com.jitlogic.zorka.core.test.support.BytecodeInstrumentationFixture;
+import com.jitlogic.zorka.core.test.spy.support.TestSpyTransformer;
 
+import static com.jitlogic.zorka.core.test.support.BytecodeInstrumentationFixture.*;
+
+import com.jitlogic.zorka.core.test.support.ZorkaFixture;
 import com.jitlogic.zorka.lisp.Symbol;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +36,10 @@ import java.net.URL;
 import static com.jitlogic.zorka.core.test.support.TestUtil.instantiate;
 import static com.jitlogic.zorka.core.test.support.TestUtil.invoke;
 
-public class LispInstrumentationUnitTest extends BytecodeInstrumentationFixture {
+public class LispInstrumentationUnitTest extends ZorkaFixture {
+
+    public TestSpyTransformer engine;
+
     @Before
     public void setUpTestConf() throws Exception {
         URL url = getClass().getResource("/cfgspy");
@@ -43,6 +49,7 @@ public class LispInstrumentationUnitTest extends BytecodeInstrumentationFixture 
         zorkaAgent.loadScripts();
         zorkaAgent.loadScript("zorka.zcm");
         zorkaAgent.loadScript("LispInstrumentationUnitTest.zcm");
+        engine = (TestSpyTransformer)agentInstance.getClassTransformer();
     }
 
 
@@ -67,11 +74,6 @@ public class LispInstrumentationUnitTest extends BytecodeInstrumentationFixture 
         assertEquals(3, sdef.getMatcherSet().size());
 
         assertEquals(1, sdef.getProcessors(SpyLib.ON_ENTER).size());
-
-        //Object obj = instantiate(engine, TCLASS1);
-        //invoke(obj, "trivialMethod");
-
-        //assertEquals(1, zorkaAgent.eval("test-passed"));
     }
 
 
@@ -82,6 +84,8 @@ public class LispInstrumentationUnitTest extends BytecodeInstrumentationFixture 
                 " (on \"com.jitlogic.zorka.core.test.spy.support.TestClass1/trivialMethod\")" +
                 " (on-enter (ctx) (set! test-passed 1) (println 123) ctx)" +
                 ")");
+
+        assertEquals(0, zorkaAgent.eval("test-passed"));
 
         Object obj = instantiate(engine, TCLASS1);
         invoke(obj, "trivialMethod");

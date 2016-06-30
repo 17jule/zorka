@@ -57,98 +57,98 @@ public class AgentInstance implements ZorkaService {
     /**
      * MBean server registry
      */
-    private MBeanServerRegistry mBeanServerRegistry;
+    protected MBeanServerRegistry mBeanServerRegistry;
 
     /**
      * Handles accepted connections.
      */
-    private Executor connExecutor;
+    protected Executor connExecutor;
 
     /**
      * Handles BSH requests (called from connection handlers).
      */
-    private ExecutorService mainExecutor;
+    protected ExecutorService mainExecutor;
 
     /**
      * Handles scheduled tasks
      */
-    private ScheduledExecutorService scheduledExecutor;
+    protected ScheduledExecutorService scheduledExecutor;
     
     /**
      * Main zorka agent object - one that executes actual requests
      */
-    private ZorkaLispAgent zorkaAgent;
+    protected ZorkaLispAgent zorkaAgent;
 
     /**
      * Reference to zabbix active agent object - one that handles zabbix active requests and passes them to BSH agent
      */
-    private ZabbixActiveAgent zabbixActiveAgent;
+    protected ZabbixActiveAgent zabbixActiveAgent;
     
     /**
      * Reference to zabbix agent object - one that handles zabbix requests and passes them to BSH agent
      */
-    private ZabbixAgent zabbixAgent;
+    protected ZabbixAgent zabbixAgent;
 
     /**
      * Reference to zorka library - basic agent functions available to zorka scripts as 'zorka.*'
      */
-    private ZorkaLib zorkaLib;
+    protected ZorkaLib zorkaLib;
 
     /**
      * Reference to zabbix library - available to zorka scripts as 'zabbix.*' functions
      */
-    private ZabbixLib zabbixLib;
+    protected ZabbixLib zabbixLib;
 
     /**
      * Reference to nagios agents - one that handles nagios NRPE requests and passes them to BSH agent
      */
-    private NagiosAgent nagiosAgent;
+    protected NagiosAgent nagiosAgent;
 
     /**
      * Reference to nagios library - available to zorka scripts as 'nagios.*' functions
      */
-    private NagiosLib nagiosLib;
+    protected NagiosLib nagiosLib;
 
     /**
      * Reference to spy library - available to zorka scripts as 'spy.*' functions
      */
-    private SpyLib spyLib;
+    protected SpyLib spyLib;
 
     /**
      * Tracer library
      */
-    private TracerLib tracerLib;
+    protected TracerLib tracerLib;
 
     /**
      * Reference to syslog library - available to zorka scripts as 'syslog.*' functions
      */
-    private SyslogLib syslogLib;
+    protected SyslogLib syslogLib;
 
-    private UtilLib utilLib;
+    protected UtilLib utilLib;
 
     /**
      * Reference to normalizers library - available to zorka scripts as 'normalizers.*' function
      */
-    private NormLib normLib;
+    protected NormLib normLib;
 
-    private MethodCallStatistics stats = new MethodCallStatistics();
+    protected MethodCallStatistics stats = new MethodCallStatistics();
 
     /**
      * Agent configuration properties
      */
-    private Properties props;                // TODO get rid of this, access configuration via ZorkaConfig methods
+    protected Properties props;                // TODO get rid of this, access configuration via ZorkaConfig methods
 
-    private Tracer tracer;
+    protected Tracer tracer;
 
-    private SpyClassTransformer classTransformer;
+    protected SpyClassTransformer classTransformer;
 
-    private DispatchingSubmitter submitter;
+    protected DispatchingSubmitter submitter;
 
-    private AgentConfig config;
+    protected AgentConfig config;
 
-    private ZabbixQueryTranslator translator;
+    protected ZabbixQueryTranslator translator;
 
-    private SpyRetransformer retransformer;
+    protected SpyRetransformer retransformer;
 
     public AgentInstance(AgentConfig config, SpyRetransformer retransformer) {
         this.config = config;
