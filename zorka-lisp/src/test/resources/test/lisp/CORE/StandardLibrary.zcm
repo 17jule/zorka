@@ -26,9 +26,9 @@
   ; Lists
   (is (eqv? '() '()))
 
-  (define lst1 '(a b c))
-  (define lst2 '(a b c))
-  (define lst3 lst1)
+  (def lst1 '(a b c))
+  (def lst2 '(a b c))
+  (def lst3 lst1)
 
   (is (eqv? lst1 lst1))
   (isnt (eqv? lst1 lst2))
@@ -44,9 +44,9 @@
   (is (equal? "AB" (str "A" "B")))
 
   ; Procedures
-  (define proc1 (lambda (x) 10))
-  (define proc2 (lambda (x) 10))
-  (define proc3 proc1)
+  (def proc1 (fn (x) 10))
+  (def proc2 (fn (x) 10))
+  (def proc3 proc1)
 
   (is (eqv? proc1 proc1))
   (isnt (eqv? proc1 proc2))
@@ -173,14 +173,14 @@
 
 
 (deftest test-map
-  (is= '(3 4 5) (map (lambda (x) (+ 2 x)) '(1 2 3)))
+  (is= '(3 4 5) (map (fn (x) (+ 2 x)) '(1 2 3)))
   (is= '((1) (2) (3)) (map list '(1 2 3)))
   (is= '((1) (nil) (3)) (map list '(1 nil 3)))
   (is= '((1) (#f) (2)) (map list '(1 #f 2))))
 
 
 (deftest test-map2
-  (is= '(3 5 7) (map (lambda (x y) (+ x y)) '(1 2 3) '(2 3 4))))
+  (is= '(3 5 7) (map (fn (x y) (+ x y)) '(1 2 3) '(2 3 4))))
 
 
 (deftest test-apply
@@ -194,13 +194,13 @@
 
 (deftest test-macroexpand
   (is=
-    '(define x (lambda (y) (+ y 1)))
+    '(def x (fn (y) (+ y 1)))
     (macroexpand '(defn x (y) (+ y 1))))
   (is=
     '(cond (a) (b))
     (macroexpand '(or a b)))
   (is=
-    '((lambda (x y) (+ x y)) 2 3)
+    '((fn (x y) (+ x y)) 2 3)
     (macroexpand '(let ((x 2)(y 3)) (+ x y))))
 )
 
@@ -234,13 +234,13 @@
     (is= 1 x)
     (is= 2 y)))
 
-; TODO some letrec sample with recursive lambda here
+; TODO some letrec sample with recursive fn here
 
 
 (deftest test-callcc
   (defn test (x)
     (call-with-current-continuation
-      (lambda (hop)
+      (fn (hop)
         (hop (+ x 2)))))
   (is= 4 (test 2)))
 

@@ -13,7 +13,7 @@
 
 (defn multirember (a lat)
   ((letrec
-    ((mr (lambda (lat)
+    ((mr (fn (lat)
       (cond
         ((null? lat) nil)
         ((eq? a (car lat)) (mr (cdr lat)))
@@ -34,7 +34,7 @@
 
 (defn member? (a lat)
   (letrec
-    ((yes? (lambda (l)
+    ((yes? (fn (l)
       (cond
         ((null? l) #f)
         ((eq? (car l) a) #t)
@@ -49,7 +49,7 @@
 
 (defn union-1 (set1 set2)
   (letrec
-    ((U (lambda (s)
+    ((U (fn (s)
       (cond
         ((null? s) set2)
         ((member? (car s) set2) (U (cdr s)))
@@ -71,12 +71,12 @@
 
 (defn union-2 (s1 s2)
   (letrec
-    ((U (lambda (s)
+    ((U (fn (s)
       (cond
         ((null? s) s2)
         ((M? (car s) s2) (U (cdr s)))
         (else (cons (car s) (U (cdr s)))))))
-    (M? (lambda (a lat)
+    (M? (fn (a lat)
           (cond
             ((null? lat) #f)
             ((eq? a (car lat)) #t)
@@ -92,15 +92,15 @@
 
 (defn union-3 (s1 s2)
   (letrec
-    ((U (lambda (s)
+    ((U (fn (s)
           (cond
             ((null? s) s2)
             ((M? (car s) s2) (U (cdr s)))
             (else (cons (car s) (U (cdr s)))))))
-    (M? (lambda (a lat)
+    (M? (fn (a lat)
           (letrec
             ((N?
-              (lambda (lat)
+              (fn (lat)
                 (cond
                   ((null? lat) #f)
                   ((eq? (car lat) a) #t)
@@ -117,7 +117,7 @@
 
 (defn two-in-a-row? (l)
   (letrec
-    ((W (lambda (a l)
+    ((W (fn (a l)
           (cond
             ((null? l) #f)
             ((eq? a (car l)) #t)
@@ -132,14 +132,14 @@
 
 
 
-(define two-in-a-row-2?
+(def two-in-a-row-2?
   (letrec
-    ((W (lambda (a l)
+    ((W (fn (a l)
           (cond
             ((null? l) #f)
             ((eq? a (car l)) #t)
             (else (W (car l) (cdr l)))))))
-    (lambda (l)
+    (fn (l)
       (cond
         ((null? l) #f)
         (else (W (car l) (cdr l)))))))
@@ -152,7 +152,7 @@
 
 (defn sum-of-prefixes (t)
   (letrec
-    ((S (lambda (s t)
+    ((S (fn (s t)
           (cond
             ((null? t) nil)
             (else
@@ -174,7 +174,7 @@
 
 (defn scramble (tup)
   (letrec
-    ((P (lambda (tup rp)
+    ((P (fn (tup rp)
           (cond
             ((null? tup) nil)
             (else

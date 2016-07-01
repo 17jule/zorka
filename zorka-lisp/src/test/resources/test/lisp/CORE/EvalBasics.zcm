@@ -22,74 +22,74 @@
   (is= '(1) '(1 . nil))
   (is= '(1 2) '(1 . (2 . nil))))
 
-(define a 42)
+(def a 42)
 
 (deftest test-define-set!
   (is= 42 a)
-  (is= 24 (define A 24))
+  (is= 24 (def A 24))
   (is= 48 (set! a 48))
   (is= 48 a)
-  (is= 42 (define b (if false 33 42)))
+  (is= 42 (def b (if false 33 42)))
   (is= 42 b)
   (is= 33 (set! b (if true 33 42)))
   (is= 33 b))
 
 
 (deftest test-define-fn
-  (define (f x) (+ 2 x))
+  (def (f x) (+ 2 x))
   (is= 4 (f 2))
-  (define c 99)
-  (define f1 (lambda (c) c))
-  (define f2 (lambda (c) (f1 c)))
+  (def c 99)
+  (def f1 (fn (c) c))
+  (def f2 (fn (c) (f1 c)))
   (is= 42 (f2 42)))
 
 
-(deftest test-define-call-lambda
-  (define f (lambda (x) (if x 1 2)))
+(deftest test-define-call-fn
+  (def f (fn (x) (if x 1 2)))
   (is= 1 (f true))
   (is= 2 (f false)))
 
 
 (deftest test-macro-1
-  (define xand (macro (a b) (if a (if b b))))
+  (def xand (macro (a b) (if a (if b b))))
   (is= nil (xand true false))
   (is= #t (xand true true)))
 
 
 (deftest test-macro-2
-  (define x 42)
-  (define y 24)
-  (define iff (macro (a b c) (if a b c)))
+  (def x 42)
+  (def y 24)
+  (def iff (macro (a b c) (if a b c)))
   (is= 10 (iff true (set! x 10) (set! y 20)))
   (is= 10 x)
   (is= 24 y))
 
 
 (deftest test-macro-3
-  (define iff (macro (a b c) (if a b c)))
-  (define f (lambda (a b c) (iff a b c)))
+  (def iff (macro (a b c) (if a b c)))
+  (def f (fn (a b c) (iff a b c)))
   (is= 10 (f true 10 20)))
 
 
 (deftest test-semiquote
   (is= '(1 2 3) `(1 2 3))
-  (define a 2)
+  (def a 2)
   (is= 'a `a)
-  (is= 2 `,a)
-  (is= '(1 2 3) `(1 ,a 3))
-  (define l '(2 3))
-  (is= '(1 2 3 4) `(1 ,@l 4))
-  (is= '(1 (+ 2 2 3) 4 5) `(1 (+ ,a ,@l) 4 5)))
+  (is= 2 `~a)
+  (is= '(1 2 3) `(1 ~a 3))
+  (def l '(2 3))
+  (is= '(1 2 3 4) `(1 ~@l 4))
+  (is= '(1 (+ 2 2 3) 4 5) `(1 (+ ~a ~@l) 4 5)))
 
 
 (deftest test-variable-capture
-  (define adder (lambda (n) (lambda (m) (+ m n))))
-  (define add5 (adder 5))
+  (def adder (fn (n) (fn (m) (+ m n))))
+  (def add5 (adder 5))
   (is= 10 (add5 5)))
 
 
 (deftest test-varargs-processing
-  (define test (lambda (x y . ks) ks))
+  (def test (fn (x y . ks) ks))
   (is= '() (test 1 2))
   (is= '(3) (test 1 2 3))
   (is= '(3 4) (test 1 2 3 4))
@@ -97,7 +97,7 @@
 
 
 (deftest test-closure-sole-varargs-processing
-  (define test (lambda ks (cdr ks)))
+  (def test (fn ks (cdr ks)))
   (is= '(1 2 3) (test 0 1 2 3)))
 
 (defn test-cond (x)

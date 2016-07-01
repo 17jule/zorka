@@ -2,7 +2,7 @@
 (defn spy/-process-instrument-on-clauses (clauses)
   (cond
     ((nil? clauses) nil)
-    ((equal? 'on (caar clauses)) (cons `(.include ,(to-array (cdar clauses)))
+    ((equal? 'on (caar clauses)) (cons `(.include ~(to-array (cdar clauses)))
                                    (spy/-process-instrument-on-clauses (cdr clauses))))
     (else (spy/-process-instrument-on-clauses (cdr clauses)))))
 
@@ -10,7 +10,7 @@
 (defn spy/-process-instrument-on-enter (clauses)
   (cond
     ((nil? clauses) nil)
-    ((equal? 'on-enter (caar clauses)) (cons `(.with1 0 (spy/lisp-fn (lambda ,@(cdar clauses))))
+    ((equal? 'on-enter (caar clauses)) (cons `(.with1 0 (spy/lisp-fn (fn ~@(cdar clauses))))
                                          (spy/-process-instrument-on-enter (cdr clauses))))
     (else (spy/-process-instrument-on-enter (cdr clauses)))))
 
@@ -19,12 +19,12 @@
   (let ((sname (.getName sym))
         (includes (spy/-process-instrument-on-clauses clauses))
         (on-enter (spy/-process-instrument-on-enter clauses))  )
-    `(define ,sym
+    `(def ~sym
       (spy/add!
         (->
-          (spy/sdef ,sname)
-          ,@includes
-          ,@on-enter
+          (spy/sdef ~sname)
+          ~@includes
+          ~@on-enter
           )))))
 
 

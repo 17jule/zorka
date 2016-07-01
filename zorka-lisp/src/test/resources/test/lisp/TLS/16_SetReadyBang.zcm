@@ -4,7 +4,7 @@
 ;  * Chapter 16: Set, Ready, Bang !
 ;  */
 
-(define last 'angelfood)
+(def last 'angelfood)
 
 (defn sweet-toothL (food)
   (set! last food)
@@ -16,7 +16,7 @@
   (is= '(carrot cake) (sweet-toothL 'carrot)))
 
 
-(define ingredients '())
+(def ingredients '())
 
 (defn sweet-toothR (food)
   (set! ingredients (cons food ingredients))
@@ -39,8 +39,8 @@
   (is= '(((((((pizza))))))) (deep 7)))
 
 
-(define Ns '())
-(define Rs '())
+(def Ns '())
+(def Rs '())
 
 ; /**
 ;  * The Nineteenth Commandment:
@@ -65,7 +65,7 @@
 
 (defn find (n Ns Rs)
   (letrec
-    ((A (lambda (ns rs)
+    ((A (fn (ns rs)
           (cond
             ((null? ns) nil)
             ((= (car ns) n) (car rs))
@@ -80,7 +80,7 @@
 
 (defn member? (a lat)
   (letrec
-    ((yes? (lambda (l)
+    ((yes? (fn (l)
       (cond
         ((null? l) #f)
         ((eq? (car l) a) #t)
@@ -118,9 +118,9 @@
   (is= '(((((((((pizza))))))))) (deepM 9))
   (is= '(9 8 7 6 2 5 3) Ns))
 
-(define deepM
+(def deepM
   (let ((Rs '()) (Ns '()))
-    (lambda (n)
+    (fn (n)
       (if (member? n Ns)
         (find n Ns Rs)
         (let ((result (deep n)))
@@ -134,9 +134,9 @@
   (is= '((pizza)) (deepM 2)))
 
 
-(define deepM
+(def deepM
   (let ((Rs nil) (Ns nil))
-    (lambda (n)
+    (fn (n)
       (let ((found (find n Ns Rs)))
         (if (null? found)
           (let ((rslt (deep n)))
@@ -155,13 +155,13 @@
 ;  * The Seventeenth Commandment: (final version)
 ;  *
 ;  * Use (set! x ...) for (let ((x ...) ...) only if there is at least
-;  * one (lambda ...) between it and the (let ...), of if the new value
+;  * one (fn ...) between it and the (let ...), of if the new value
 ;  * for x is a function that refers to x.
 ;  */
-(define length
-  (let ((h (lambda (l) 0)))
+(def length
+  (let ((h (fn (l) 0)))
     (set! h
-      (lambda (l)
+      (fn (l)
         (cond
           ((null? l) 0)
           (else (inc (h (cdr l)))))))
@@ -176,14 +176,14 @@
 
 
 (defn L (length)
-  (lambda (l)
+  (fn (l)
     (cond
       ((null? l) 0)
       (else (inc (length (cdr l)))))))
 
-(define length
-  (let ((h (lambda (l) 0)))
-    (set! h (L (lambda (arg) (h arg))))
+(def length
+  (let ((h (fn (l) 0)))
+    (set! h (L (fn (arg) (h arg))))
     h))
 
 (deftest test-length-fn-L
@@ -195,17 +195,17 @@
 
 
 (defn Y! (f)
-  (let ((h (lambda (l) nil)))
-    (set! h (f (lambda (arg)
+  (let ((h (fn (l) nil)))
+    (set! h (f (fn (arg)
                  ;(println "Y!")
                  (h arg))))
     h))
 
 (defn Y-bang (f)
-  (letrec ((h (f (lambda (arg) (h arg)))))
+  (letrec ((h (f (fn (arg) (h arg)))))
     h))
 
-(define length
+(def length
   (Y! L))
 
 (deftest test-length-fn-L
@@ -216,7 +216,7 @@
 
 
 (defn D (f)
-  (lambda (s)
+  (fn (s)
     (cond
       ((null? s) (println "null") 1)
       ((atom? (car s)
@@ -227,7 +227,7 @@
           (inc (f (car s)))
           (f (cdr s)))))))
 
-(define depth*
+(def depth*
   (Y! D))
 
 (deftest test-depth*-fn

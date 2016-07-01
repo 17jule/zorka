@@ -8,42 +8,42 @@
 
 
 (defn extend (name1 value table)
-  (lambda (name2)
+  (fn (name2)
     (cond
       ((eq? name2 name1) value)
       (else (table name2)))))
 
 
-(defn define? (e)
+(defn def? (e)
   (cond
     ((atom? e) #f)
-    ((atom? (car e)) (eq? (car e) 'define))
+    ((atom? (car e)) (eq? (car e) 'def))
     (else #f)))
 
 
 (defn global-table (x)
-  (lambda (x) nil))
+  (fn (x) nil))
 
 (defn box (it)
-  (lambda (sel)
+  (fn (sel)
     (sel it
-      (lambda (new)
+      (fn (new)
         (set! it new)))))
 
 
 (defn setbox (box new)
   (box
-    (lambda (it set)
+    (fn (it set)
       (set new))))
 
 
 (defn unbox (box)
   (box
-    (lambda
+    (fn
       (it set) it)))
 
 
-(defn *define (e)
+(defn *def (e)
   (set! global-table
     (extend
       (second e)
@@ -62,8 +62,8 @@
     e table))
 
 
-(define *quote
-  (lambda (e table)
+(def *quote
+  (fn (e table)
     (rest e)))
 
 
@@ -81,7 +81,7 @@
     ((null? (cdr es))
      (meaning (car es) table))
     (else
-     ((lambda (val))
+     ((fn (val))
        (beglis (cdr es) table)
        (meaning (car es) table)))))
 
@@ -115,8 +115,8 @@
     ((zero? n) #t)
     (else (odd? (dec n)))))
 
-(defn *lambda (e table)
-  (lambda (args)
+(defn *fn (e table)
+  (fn (args)
     (beglis (cddr e)
       (multi-extend
         (second e)
@@ -127,7 +127,7 @@
   (cond
     ((null? args) nil)
     (else
-      ((lambda (val)
+      ((fn (val)
         (cons val
           (evlis (cdr args) table)))
        (meaning (car args) table)))))
@@ -140,11 +140,11 @@
   (car (car args-in-a-list)))
 
 (defn a-prim (p)
-  (lambda (args-in-a-list)
+  (fn (args-in-a-list)
     (p (car args-in-a-list))))
 
 (defn b-prim (p)
-  (lambda (args-in-a-list)
+  (fn (args-in-a-list)
     (p (car args-in-a-list)
        (car (cdr args-in-a-list)))))
 
@@ -185,7 +185,7 @@
 (defn the-meaning (x)
   (meaning x lookup-in-global-table))
 
-(define abort)
+(def abort)
 
 (defn the-empty-table (name)
   (abort
@@ -217,7 +217,7 @@
     ((atom? (car e))
       (cond
         ((eq? (car e) 'quote) *quote)
-        ((eq? (car e) 'lambda) *lambda)
+        ((eq? (car e) 'fn) *fn)
         ((eq? (car e) 'letcc) *letcc)
         ((eq? (car e) 'set!) *set)
         ((eq? (car e) 'cond) *cond)
@@ -228,12 +228,12 @@
   (letcc the-end
     (set! abort the-end)
     (cond
-      ((define? e) (*define e))
+      ((def? e) (*def e))
       (else (the-meaning e)))))
 
 
-(deftest test-define-resolve
-  ;(is (value '(define x 3)))
+(deftest test-def-resolve
+  ;(is (value '(def x 3)))
   ;(println global-table)
   ;(is= 3 (value 'x))
   )

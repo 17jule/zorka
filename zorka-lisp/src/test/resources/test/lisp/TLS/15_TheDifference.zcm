@@ -4,7 +4,7 @@
 ;  * Chapter 15: The Difference Between Men and Boys
 ;  */
 
-(define x
+(def x
   (cons 'chicago (cons 'pizza '())))
 
 (set! x 'gone)
@@ -50,9 +50,9 @@
 ;  * Use (set!...) only with names defined in (let...).
 ;  */
 
-(define omnivore
+(def omnivore
   (let ((x 'minestrone))
-    (lambda (food)
+    (fn (food)
       (set! x food)
       (cons food (cons x '())))))
 
@@ -61,9 +61,9 @@
   (is= '(milk milk) (omnivore 'milk)))
 
 
-(define gobbler
+(def gobbler
   (let ((x 'minestrone))
-    (lambda (food)
+    (fn (food)
       (set! x food)
       (cons food (cons x '())))))
 
@@ -76,11 +76,11 @@
 ;  * The Seventeenth Commandment: (preliminary version)
 ;  *
 ;  * Use (set!...x) for (let ((x...)) ...) only if there is
-;  * at least one (lambda... between it and the (let ((x ...
+;  * at least one (fn... between it and the (let ((x ...
 ;  */
 
-(define nibbler
-  (lambda (food)
+(def nibbler
+  (fn (food)
     (let ((x 'donut))
       (set! x food)
       (cons food (cons x '())))))
@@ -89,14 +89,14 @@
   (is= '(cheerio cheerio) (nibbler 'cheerio)))
 
 
-(define food 'none)
+(def food 'none)
 
 (defn glutton (x)
   (set! food x)
   (cons 'more (cons x (cons 'more (cons x nil)))))
 
-(define chez-nousbad
-  (lambda ()
+(def chez-nousbad
+  (fn ()
     (set! food x)
     (set! x food)))
 
@@ -106,8 +106,8 @@
 ;  *
 ;  * Use (set! x ...) only when the value of that x refers to is no longer needed.
 
-(define ches-nous-good
-  (lambda ()
+(def ches-nous-good
+  (fn ()
     (let ((a food))
       (set! food x)
       (set! x a))))

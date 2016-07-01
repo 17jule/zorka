@@ -111,7 +111,7 @@
   (isnt (eq? 6 7))    ; Undefined result as numbers are illegal arguments of eq?
   (is (eq? (car '(Mary)) 'Mary))
   (isnt (eq? (cdr '(soured milk)) 'milk))
-  (define l '(beans beans we need jelly beans))
+  (def l '(beans beans we need jelly beans))
   (is (eq? (car l) (car (cdr l))))
 )
 

@@ -1,2 +1,2 @@
 
-(define loose_bsh 1)
+(def loose_bsh 1)

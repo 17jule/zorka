@@ -30,7 +30,7 @@
 
 (defn rember1* (a l)
   (letrec
-    ((R (lambda (l)
+    ((R (fn (l)
           (cond
             ((null? l) nil)
             ((atom? (car l))
@@ -135,7 +135,7 @@
 
 (defn scramble (tup)
   (letrec
-    ((P (lambda (tup rp)
+    ((P (fn (tup rp)
           (cond
             ((null? tup) nil)
             (else
@@ -181,7 +181,7 @@
 (defn leftmost2 (l)
   (letcc skip
     (letrec
-      ((lm (lambda (l)
+      ((lm (fn (l)
         (cond
           ((null? l) nil)
           ((atom? (car l)) (skip (car l)))

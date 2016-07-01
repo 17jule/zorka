@@ -1,6 +1,6 @@
 
 ; This eval will be executed but executeScript() will return last expression anyway
-(define x 41)
+(def x 41)
 
 ; This will be returned
 42

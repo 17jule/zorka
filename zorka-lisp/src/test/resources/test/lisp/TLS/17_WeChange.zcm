@@ -10,7 +10,7 @@
 
 (defn find (n Ns Rs)
   (letrec
-    ((A (lambda (ns rs)
+    ((A (fn (ns rs)
           (cond
             ((null? ns) nil)
             ((= (car ns) n) (car rs))
@@ -21,14 +21,14 @@
 
 ; We start refactoring with function below;
 
-(define deepM
+(def deepM
   (let ((Rs '()) (Ns '()))
     (letrec
-      ((D (lambda (m)
+      ((D (fn (m)
             (if (zero? m)
               'pizza
               (cons (D (dec m)) nil)))))
-      (lambda (n)
+      (fn (n)
         (let ((exists (find n Ns Rs)))
           (if (null? exists)
             (let ((result (D n)))
@@ -44,14 +44,14 @@
 
 ; We improve its performance a bit
 
-(define deepM
+(def deepM
   (let ((Rs '()) (Ns '()))
     (letrec
-      ((D (lambda (m)
+      ((D (fn (m)
             (if (zero? m)
               'pizza
               (cons (deepM (dec m)) nil)))))
-      (lambda (n)
+      (fn (n)
         (let ((exists (find n Ns Rs)))
           (if (null? exists)
             (let ((result (D n)))
@@ -67,14 +67,14 @@
 
 ; No need for letrec, use let instead
 
-(define deepM
+(def deepM
   (let ((Rs '()) (Ns '()))
     (let
-      ((D (lambda (m)
+      ((D (fn (m)
             (if (zero? m)
               'pizza
               (cons (deepM (dec m)) nil)))))
-      (lambda (n)
+      (fn (n)
         (let ((exists (find n Ns Rs)))
           (if (null? exists)
             (let ((result (D n)))
@@ -91,14 +91,14 @@
 
 ; Now collapse two unrelated let into one
 
-(define deepM
+(def deepM
  (let ((Rs '())
        (Ns '())
-       (D (lambda (m)
+       (D (fn (m)
             (if (zero? m)
               'pizza
               (cons (deepM (dec m)) nil)))))
-   (lambda (n)
+   (fn (n)
      (let ((exists (find n Ns Rs)))
        (if (null? exists)
          (let ((result (D n)))
@@ -114,13 +114,13 @@
 
 ; Here we can inline D
 
-(define deepM
+(def deepM
  (let ((Rs '())
        (Ns '()))
-   (lambda (n)
+   (fn (n)
      (let ((exists (find n Ns Rs)))
        (if (null? exists)
-         (let ((result ((lambda (m)
+         (let ((result ((fn (m)
                           (if (zero? m)
                             'pizza
                             (cons (deepM (dec m)) nil)))
@@ -136,12 +136,12 @@
 
 
 
-; ... here we get rid of redundant lambda ...
+; ... here we get rid of redundant fn ...
 
-(define deepM
+(def deepM
  (let ((Rs '())
        (Ns '()))
-   (lambda (n)
+   (fn (n)
      (let ((exists (find n Ns Rs)))
        (if (null? exists)
          (let ((result (let ((m n))
@@ -159,10 +159,10 @@
 
 ; ... and now get rid of redundant let ...
 
-(define deepM
+(def deepM
  (let ((Rs '())
        (Ns '()))
-   (lambda (n)
+   (fn (n)
      (let ((exists (find n Ns Rs)))
        (if (null? exists)
          (let ((result (if (zero? n) 'pizza (cons (deepM (dec n))))))
@@ -176,12 +176,12 @@
   (is= '((pizza)) (deepM 2)))
 
 
-(define counter)
+(def counter)
 
-(define consC
+(def consC
   (let ((N 0))
-    (set! counter (lambda() N))
-    (lambda (x y)
+    (set! counter (fn() N))
+    (fn (x y)
       (set! N (inc N))
       (cons x y))))
 
@@ -196,7 +196,7 @@
 
 (defn supercounter (f)
   (letrec
-    ((S (lambda (n)
+    ((S (fn (n)
           (if (zero? n)
             (f n)
             (begin (f n) (S (dec n)))))))
@@ -206,16 +206,16 @@
   (supercounter deep)
   (is= 5055 (counter)))
 
-(define set-counter)
+(def set-counter)
 
-(define consC
+(def consC
   (let ((N 0))
     (set! counter
-      (lambda () N))
+      (fn () N))
     (set! set-counter
-      (lambda (n)
+      (fn (n)
         (set! N n)))
-    (lambda (x y)
+    (fn (x y)
       (set! N (inc N))
       (cons x y))))
 
@@ -233,10 +233,10 @@
 
 ; ... and now counting conses ...
 
-(define deepM
+(def deepM
  (let ((Rs '())
        (Ns '()))
-   (lambda (n)
+   (fn (n)
      (let ((exists (find n Ns Rs)))
        (if (null? exists)
          (let ((result (if (zero? n) 'pizza (consC (deepM (dec n))))))
@@ -263,7 +263,7 @@
 
 (defn rember1*C (a l)
   (letrec
-    ((R (lambda (l oh)
+    ((R (fn (l oh)
           (cond
             ((null? l) (oh 'no))
             ((atom? (car l))
@@ -299,7 +299,7 @@
 
 (defn rember1*C2 (a l)
   (letrec
-    ((R (lambda (l)
+    ((R (fn (l)
           (cond
             ((null? l) nil)
             ((atom? (car l))

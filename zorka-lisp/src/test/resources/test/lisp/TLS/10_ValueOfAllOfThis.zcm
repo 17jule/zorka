@@ -18,15 +18,15 @@
     'tastes
     (lookup-in-entry 'entree
       '((appetizer entree beverage) (food tastes good))
-      (lambda (x) nil)))
+      (fn (x) nil)))
   (is= nil
     (lookup-in-entry 'dessert
       '((appetizer entree beverage) (food      tastes good))
-      (lambda (x) nil))))
+      (fn (x) nil))))
 
 
 
-(define extend-table cons)
+(def extend-table cons)
 
 
 (defn lookup-in-table (name table table-f)
@@ -34,14 +34,14 @@
     ((null? table) (table-f name))
     (else
       (lookup-in-entry name (car table)
-        (lambda (name)
+        (fn (name)
           (lookup-in-table name (cdr table) table-f))))))
 
 (deftest test-lookup-in-table-fn
   (is= 'spaghetti
     (lookup-in-table 'entree
       '(((entree dessert) (spaghetti spumoni)) ((appetizer entree beverage) (food tastes good)))
-      (lambda (name) nil))))
+      (fn (name) nil))))
 
 
 (defn build (s1 s2)
@@ -57,7 +57,7 @@
       (build (quote primitive) e))))
 
 
-(define text-of second)
+(def text-of second)
 
 
 (defn *quote (e table)
@@ -72,19 +72,19 @@
   (lookup-in-table e table initial-table))
 
 
-(defn *lambda (e table)
+(defn *fn (e table)
   (build
     (quote non-primitive)
     (cons table (cdr e))))
 
 
-(define table-of first)
+(def table-of first)
 
 
-(define formals-of second)
+(def formals-of second)
 
 
-(define body-if third)
+(def body-if third)
 
 
 (defn else? (x)
@@ -93,10 +93,10 @@
     (else #f)))
 
 
-(define question-of first)
+(def question-of first)
 
 
-(define answer-of second)
+(def answer-of second)
 
 
 (defn evcon (lines table)
@@ -108,7 +108,7 @@
     (else (evcon (cdr lines) table)))))
 
 
-(define cond-lines-of cdr)
+(def cond-lines-of cdr)
 
 
 (defn *cond (e table)
@@ -116,7 +116,7 @@
 
 
 (defn evlis
-  (lambda (args table)
+  (fn (args table)
     (cond
       ((null? args) (quote ()))
       (else
@@ -141,10 +141,10 @@
       (table-of closure))))
 
 
-(define function-of car)
+(def function-of car)
 
 
-(define arguments-of cdr)
+(def arguments-of cdr)
 
 
 (defn primitive? (l)
@@ -208,7 +208,7 @@
     ((atom? (car e))
      (cond
        ((eq? (car e) 'quote) *quote)
-       ((eq? (car e) 'lambda) *lambda)
+       ((eq? (car e) 'fn) *fn)
        ((eq? (car e) 'cond) *cond)
        (else *application))
     (else *application))))

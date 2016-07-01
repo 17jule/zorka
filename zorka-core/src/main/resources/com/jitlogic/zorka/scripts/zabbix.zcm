@@ -16,9 +16,9 @@
 ;
 
 
-(define agent/ping 1)
+(def agent/ping 1)
 
-;(define agent/version (zorka/version))
+;(def agent/version (zorka/version))
 
-; (define agent/hostname (zorka.getHostname))
+; (def agent/hostname (zorka.getHostname))
 

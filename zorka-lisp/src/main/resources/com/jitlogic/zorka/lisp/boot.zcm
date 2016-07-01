@@ -1,34 +1,34 @@
 
 ; Some aliases to commonly used functions
-(define first car)
-(define second cadr)
-(define third caddr)
-(define rest cdr)
+(def first car)
+(def second cadr)
+(def third caddr)
+(def rest cdr)
 
-(define nil? null?)
+(def nil? null?)
 
-(define defmacro
+(def defmacro
   (macro (name args . body)
-    `(define ,name
-      (macro ,args ,@body))))
+    `(def ~name
+      (macro ~args ~@body))))
 
 
 (defmacro defn (name args . body)
-  `(define ,name
-    (lambda ,args ,@body)))
+  `(def ~name
+    (fn ~args ~@body)))
 
 
 (defmacro lazy-seq form
-  `(_lazy-seq (lambda () ,@form)))
+  `(_lazy-seq (fn () ~@form)))
 
 
 (defmacro if (icond ithen . ielse)
   `(cond
-    (,icond ,ithen)
+    (~icond ~ithen)
     (else
-      ,(cond
+      ~(cond
           ((null? ielse) 'nil)
-          (else `,@(car ielse))))))
+          (else `~@(car ielse))))))
 
 
 (defn any? (f coll)
@@ -67,38 +67,38 @@
 
 
 (defmacro or args
-  (if args `(cond ,@(map list args)) #f))
+  (if args `(cond ~@(map list args)) #f))
 
 
 (defmacro and args
   (cond
     ((null? args) #t)
-    ((null? (rest args)) `(cond (,(first args)) #f))
-    (else `(if ,(first args) (and ,@(rest args)) #f))))
+    ((null? (rest args)) `(cond (~(first args)) #f))
+    (else `(if ~(first args) (and ~@(rest args)) #f))))
 
 
 (defmacro let (bindings . body)
-  `((lambda ,(map first bindings) ,@body)
-    ,@(map second bindings)))
+  `((fn ~(map first bindings) ~@body)
+    ~@(map second bindings)))
 
 
 (defmacro let* (bindings . body)
   (if (null? bindings)
-    `((lambda () ,@body))
-    `(let (,(first bindings))
-      (let* ,(rest bindings) ,@body))))
+    `((fn () ~@body))
+    `(let (~(first bindings))
+      (let* ~(rest bindings) ~@body))))
 
 
 (defmacro letrec (bindings . body)
   (let ((ks (map first bindings)) (vs (map second bindings)))
-    `(let ,(map (lambda (k) `(,k nil)) ks)
-      ,@(map (lambda (k v) `(set! ,k ,v)) ks vs)
-      ,@body)))
+    `(let ~(map (fn (k) `(~k nil)) ks)
+      ~@(map (fn (k v) `(set! ~k ~v)) ks vs)
+      ~@body)))
 
 
 (defmacro letcc (var . body)
   `(call-with-current-continuation
-    (lambda (,var) ,@body)))
+    (fn (~var) ~@body)))
 
 
 (defn identity (x)
@@ -109,14 +109,14 @@
   (cond
     ((null? args) obj)
     ((null? (cdr args))
-      `(get ,obj ,(first args)))
+      `(get ~obj ~(first args)))
     (else
-      `(get-> (get ,obj ,(first args)) ,@(rest args)))))
+      `(get-> (get ~obj ~(first args)) ~@(rest args)))))
 
 
 (defmacro -> (obj . (op0 . opn))
   (cond
     ((nil? op0) obj)
-    ((list? op0) `(-> (,(first op0) ,obj ,@(rest op0)) ,@opn))
-    (:else `(-> (,op0 ,obj) ,@opn))))
+    ((list? op0) `(-> (~(first op0) ~obj ~@(rest op0)) ~@opn))
+    (:else `(-> (~op0 ~obj) ~@opn))))
 

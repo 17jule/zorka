@@ -128,10 +128,10 @@
 
 
 
-(define length1
-  ((lambda (mklength) (mklength mklength))
-    (lambda (mklength)
-      (lambda (l)
+(def length1
+  ((fn (mklength) (mklength mklength))
+    (fn (mklength)
+      (fn (l)
         (cond
           ((null? l) 0)
           (else
@@ -141,11 +141,11 @@
   (is= 3 (length1 '(a b c))))
 
 
-;(define length2
-;  ((lambda (mklength) (mklength mklength))
-;    (lambda (mklength)
-;      ((lambda (length)
-;        (lambda (l)
+;(def length2
+;  ((fn (mklength) (mklength mklength))
+;    (fn (mklength)
+;      ((fn (length)
+;        (fn (l)
 ;          (cond
 ;            ((null? l) 0)
 ;            (else (inc (length (cdr l)))))))

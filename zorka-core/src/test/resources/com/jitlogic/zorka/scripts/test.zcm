@@ -1,5 +1,5 @@
 
-(define test_bsh 1);
+(def test_bsh 1);
 
 (defn testScriptIsLoaded ()
   "yes")

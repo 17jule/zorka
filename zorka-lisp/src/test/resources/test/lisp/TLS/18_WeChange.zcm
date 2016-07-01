@@ -5,23 +5,23 @@
 ;  */
 
 
-(define kar car)
-(define kdr cdr)
-(define kons cons)
-(define set-kdr set-cdr)
+(def kar car)
+(def kdr cdr)
+(def kons cons)
+(def set-kdr set-cdr)
 
-(define kounter)
+(def kounter)
 
-(define set-kounter)
+(def set-kounter)
 
-(define konsC
+(def konsC
   (let ((N 0))
     (set! kounter
-      (lambda () N))
+      (fn () N))
     (set! set-kounter
-      (lambda (n)
+      (fn (n)
         (set! N n)))
-    (lambda (x y)
+    (fn (x y)
       (set! N (inc N))
       (kons x y))))
 
@@ -58,7 +58,7 @@
 
 (defn add-at-end-too (l)
   (letrec
-    ((A (lambda (ls)
+    ((A (fn (ls)
           (cond
             ((null? (kdr ls)) (set-kdr ls (kons 'egg nil)))
             (else (A (kdr ls)))))))
@@ -74,14 +74,14 @@
 ; Example shadows of car/cdr/cons
 
 (defn kons (kar kdr)
-  (lambda (selector)
+  (fn (selector)
     (selector kar kdr)))
 
 (defn kar (c)
-  (c (lambda (a d) a)))
+  (c (fn (a d) a)))
 
 (defn kdr (c)
-  (c (lambda (a d) d)))
+  (c (fn (a d) d)))
 
 (deftest test-kons-kdr
   (is= 'a (kar (kons 'a 'b)))
@@ -92,20 +92,20 @@
 
 (defn bons (kar)
   (let ((kdr nil))
-    (lambda (selector)
+    (fn (selector)
       (selector
-        (lambda (x) (set! kdr x))
+        (fn (x) (set! kdr x))
         kar
         kdr))))
 
 (defn kar (c)
-  (c (lambda (s a d) a)))
+  (c (fn (s a d) a)))
 
 (defn kdr (c)
-  (c (lambda (s a d) d)))
+  (c (fn (s a d) d)))
 
 (defn set-kdr (c x)
-  ((c (lambda (s a d) s)) x))
+  ((c (fn (s a d) s)) x))
 
 (defn kons (a d)
   (let ((c (bons a)))
@@ -135,7 +135,7 @@
 
 (defn add-at-end-too (l)
   (letrec
-    ((A (lambda (ls)
+    ((A (fn (ls)
           (cond
             ((null? (kdr ls)) (set-kdr ls (konsC 'egg nil)))
             (else (A (kdr ls)))))))
@@ -144,22 +144,22 @@
 
 
 
-(define dozen (lots 12))
+(def dozen (lots 12))
 
 (deftest test-dozen-kounter
   (is= 12 (kounter)))
 
-(define bakers-dozen (add-at-end dozen))
+(def bakers-dozen (add-at-end dozen))
 
 (deftest test-add-at-end-kounter
   (is= 25 (kounter)))
 
-(define bakers-dozen-too (add-at-end-too dozen))
+(def bakers-dozen-too (add-at-end-too dozen))
 
 (deftest test-add-at-end-too-kounter
   (is= 26 (kounter)))
 
-(define bakers-dozen-again (add-at-end dozen))
+(def bakers-dozen-again (add-at-end dozen))
 
 (deftest test-add-at-end-again-kounter
   (is= 40 (kounter)))
@@ -196,14 +196,14 @@
     ((null? (kdr ls)) ls)
     (else (last-kons (kdr ls)))))
 
-(define long (lots 12))
+(def long (lots 12))
 
 (set-kdr (last-kons long) long)
 
 (defn infinite-lenkth (p)
   (letcc infinite
     (letrec
-      ((C (lambda (p q)
+      ((C (fn (p q)
             (cond
               ((same? p q) (infinite #f))
               ((null? q) 0)

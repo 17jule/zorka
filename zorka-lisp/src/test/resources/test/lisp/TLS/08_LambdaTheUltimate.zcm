@@ -28,12 +28,12 @@
 
 
 (defn eq?-c (a)
-  (lambda (x)
+  (fn (x)
     (eq? x a)))
 
 
 (defn rember-fn (f)
-  (lambda (a l)
+  (fn (a l)
     (cond
       ((null? l) nil)
       ((f a (car l)) (cdr l))
@@ -54,7 +54,7 @@
 ;  */
 
 (defn insertL-fn (f)
-  (lambda (n o l)
+  (fn (n o l)
     (cond
       ((null? l) nil)
       ((f o (car l)) (cons n (cons o ((insertL-fn f) n o (cdr l)))))
@@ -68,7 +68,7 @@
 
 
 (defn insertR-fn (f)
-  (lambda (n o l)
+  (fn (n o l)
     (cond
       ((null? l) nil)
       ((f o (car l)) (cons o (cons n ((insertR-fn f) n o (cdr l)))))
@@ -97,7 +97,7 @@
 
 
 (defn insert-x (f s)
-  (lambda (n o l)
+  (fn (n o l)
     (cond
       ((null? l) nil)
       ((f (car l) o) (s n o ((insert-x f s) n o (cdr l))))
@@ -125,7 +125,7 @@
 ;  */
 
 (defn insert-g (s)
-  (lambda (n o l)
+  (fn (n o l)
     (cond
       ((null? l) nil)
       ((eq? (car l) o) (s n o ((insert-g s) n o (cdr l))))
@@ -147,13 +147,13 @@
 
 
 
-(define insertL (insert-g seqL))
+(def insertL (insert-g seqL))
 
-(define insertR (insert-g seqR))
+(def insertR (insert-g seqR))
 
-(define subst (insert-g seqS))
+(def subst (insert-g seqS))
 
-(define remove (insert-g seqRm))
+(def remove (insert-g seqRm))
 
 (deftest test-insertLR-subst-remove-fn
   (is=
@@ -177,7 +177,7 @@
     ((eq? x '*) *)
     (else ^)))
 
-(define operator car)
+(def operator car)
 
 
 (defn value (x)
@@ -192,7 +192,7 @@
 
 
 (defn multirember-f (f)
-  (lambda (a l)
+  (fn (a l)
     (cond
       ((null? l) nil)
       ((f (car l) a) ((multirember-f f) a (cdr l)))
@@ -219,12 +219,12 @@
     ((eq? (car lat) a)
       (multirember-co a
         (cdr lat)
-        (lambda (newlat seen)
+        (fn (newlat seen)
           (col newlat (cons (car lat) seen)))))
     (else
       (multirember-co a
         (cdr lat)
-        (lambda (newlat seen)
+        (fn (newlat seen)
           (col (cons (car lat) newlat) seen))))))
 
 (defn a-friend (x y)
@@ -264,21 +264,21 @@
     ((null? lat) (col nil 0 0))
     ((eq? (car lat) oldL)
       (multiinsertLR-co new oldL oldR (cdr lat)
-        (lambda (newlat L R)
+        (fn (newlat L R)
           (col (cons new (cons oldL newlat)) (+ 1 L) R))))
     ((eq? (car lat) oldR)
       (multiinsertLR-co new oldL oldR (cdr lat)
-        (lambda (newlat L R)
+        (fn (newlat L R)
           (col (cons oldR (cons new newlat)) L (+ 1 R)))))
     (else
       (multiinsertLR-co new oldL oldR (cdr lat)
-        (lambda (newlat L R)
+        (fn (newlat L R)
           (col (cons (car lat) newlat) L R))))))
 
 (deftest test-multiinsertLR-co-fn
   (is=
     '((chips salty and salty fish or salty fish and chips salty) 2 2)
-    (multiinsertLR-co 'salty 'fish 'chips '(chips and fish or fish and chips) (lambda args args))))
+    (multiinsertLR-co 'salty 'fish 'chips '(chips and fish or fish and chips) (fn args args))))
 
 
 (defn evens-only* (l)
@@ -302,17 +302,17 @@
       (cond
         ((even? (car l))
           (evens-only*-co (cdr l)
-            (lambda (n p s)
+            (fn (n p s)
               (col (cons (car l) n) (* (car l) p) s))))
         (else
           (evens-only*-co (cdr l)
-            (lambda (n p s)
+            (fn (n p s)
               (col n p (+ s (car l))))))))
     (else
       (evens-only*-co (car l)
-        (lambda (n1 p1 s1)
+        (fn (n1 p1 s1)
           (evens-only*-co (cdr l)
-            (lambda (n2 p2 s2)
+            (fn (n2 p2 s2)
               (col
                 (cons n1 n2)
                 (* p1 p2)

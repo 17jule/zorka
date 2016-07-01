@@ -7,7 +7,7 @@
 
 (defn member? (a lat)
   (letrec
-    ((yes? (lambda (l)
+    ((yes? (fn (l)
       (cond
         ((null? l) #f)
         ((eq? (car l) a) #t)
@@ -16,7 +16,7 @@
 
 (defn intersect (s1 s2)
   (letrec
-    ((I (lambda (s)
+    ((I (fn (s)
       (cond
         ((null? s) '())
         ((member? (car s) s2)
@@ -33,7 +33,7 @@
 
 (defn intersect-all (lset)
   (letrec
-    ((A (lambda (l)
+    ((A (fn (l)
           (cond
             ((null? (cdr l)) (car l))
             (else
@@ -52,9 +52,9 @@
 
 (defn intersect-all-2 (lset)
   (call-with-current-continuation
-    (lambda (hop)
+    (fn (hop)
       (letrec
-        ((A (lambda (lset)
+        ((A (fn (lset)
               (cond
                 ((null? (car lset)) (hop '()))
                 ((null? (cdr lset)) (car lset))
@@ -78,7 +78,7 @@
 (defn intersect-all-3 (lset)
   (letcc hop
     (letrec
-      ((A (lambda (lset)
+      ((A (fn (lset)
             (cond
               ((null? (car lset)) (hop '()))
               ((null? (cdr lset)) (car lset))
@@ -98,14 +98,14 @@
 (defn intersect-all-4 (lset)
   (letcc hop
     (letrec
-      ((A (lambda (lset)
+      ((A (fn (lset)
         (cond
           ((null? (car lset)) (hop '()))
           ((null? (cdr lset)) (car lset))
           (else (I (car lset) (A (cdr lset)))))))
-       (I (lambda (s1 s2)
+       (I (fn (s1 s2)
             (letrec
-              ((J (lambda (s)
+              ((J (fn (s)
                     (cond
                       ((null? s) '())
                       ((member? (car s) s2) (cons (car s) (J (cdr s))))
@@ -127,7 +127,7 @@
 
 (defn rember (a lat)
   (letrec
-    ((R (lambda (l)
+    ((R (fn (l)
           (cond
             ((null? l) '())
             ((eq? a (car l)) (cdr l))
@@ -161,7 +161,7 @@
 
 (defn rember-beyond-first (a lat)
   (letrec
-    ((R (lambda (l)
+    ((R (fn (l)
           (cond
             ((null? l) '())
             ((eq? a (car l)) '())
@@ -184,7 +184,7 @@
 (defn rember-upto-last (a lat)
   (letcc skip
     (letrec
-      ((R (lambda (lat)
+      ((R (fn (lat)
             (cond
               ((null? lat) '())
               ((eq? (car lat) a)

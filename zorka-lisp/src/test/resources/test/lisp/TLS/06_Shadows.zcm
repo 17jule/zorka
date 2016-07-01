@@ -80,7 +80,7 @@
 ;  */
 
 (defn value-fn (sym op arg1 arg2)
-  (lambda (e)
+  (fn (e)
     (cond
       ((number? e) e)
       ((eq? (op e) '+)
@@ -91,7 +91,7 @@
         (^ ((eval sym) (arg1 e)) ((eval sym) (arg2 e)))))))
 
 
-(define a-value
+(def a-value
   (value-fn 'a-value cadr car caddr))
 
 (deftest test-a-value-fn
@@ -101,7 +101,7 @@
 
 
 
-(define a-value1
+(def a-value1
   (value-fn 'a-value1 car cadr caddr))
 
 (deftest test-a-value1-fn

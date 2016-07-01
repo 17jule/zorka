@@ -197,7 +197,7 @@ public class Reader {
         int ch = getch();
 
         // Skip whitespaces
-        while (Character.isWhitespace(ch)) ch = getch();
+        while (Character.isWhitespace(ch) || ch == ',') ch = getch();
 
         rl = line; rc = col;
 
@@ -216,7 +216,7 @@ public class Reader {
                 return QUOTE;
             case '`':
                 return QUASIQUOTE;
-            case ',': {
+            case '~': {
                 int pc = getch();
                 if (pc == '@') {
                     return UNQUOTE_SPLICING;

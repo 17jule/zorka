@@ -1,8 +1,8 @@
 
 (zorka/require "common.zcm")
 
-(define jvm_bsh 1)
+(def jvm_bsh 1)
 
-(define not_to_be_overridden "foo")
+(def not_to_be_overridden "foo")
 
 

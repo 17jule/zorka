@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.util.List;
 
 import static com.jitlogic.zorka.lisp.StandardLibrary.*;
 import static com.jitlogic.zorka.lisp.Utils.*;
@@ -38,10 +37,10 @@ public class Interpreter {
 
     public final Symbol BEGIN = symbol("begin");
     public final Symbol COND = symbol("cond");
-    public final Symbol DEFINE = symbol("define");
+    public final Symbol DEF = symbol("def");
     public final Symbol ELSE = symbol("else");
     public final Symbol GE = symbol("=>");
-    public final Symbol LAMBDA = symbol("lambda");
+    public final Symbol FN = symbol("fn");
     public final Symbol MACRO = symbol("macro");
     public final Symbol QUOTE = symbol("quote");
     public final Symbol QUASIQUOTE = symbol("quasiquote");
@@ -129,7 +128,7 @@ public class Interpreter {
                             n = next(n);
                         }
                         return n != null ? eval(n.first(), env) : null;
-                    } else if (f == DEFINE) {
+                    } else if (f == DEF) {
                         Object sym = car(n);
                         if (sym instanceof Symbol) {
                             return env.define((Symbol) sym, eval(cadr(n), env));
@@ -147,7 +146,7 @@ public class Interpreter {
                         } else {
                             throw new LispException("First argument in set! must be a symbol.");
                         }
-                    } else if (f == LAMBDA || f == MACRO) {
+                    } else if (f == FN || f == MACRO) {
                         Object args = car(n);
                         if (args == null || args instanceof Seq || args instanceof Symbol) {
                             return new Closure(this, env, args, next(n), f == MACRO);

@@ -14,7 +14,7 @@
 
 
 
-(define toppings)
+(def toppings)
 
 (defn deepB (m)
   (cond
@@ -39,7 +39,7 @@
     (else
       (deep-co
         (dec m)
-        (lambda (x) (k (cons x '())))))))
+        (fn (x) (k (cons x '())))))))
 
 
 (deftest test-deep-co
@@ -54,7 +54,7 @@
     (else
       (deep-co-2
         (dec m)
-        (lambda (x) (k (cons x '())))))))
+        (fn (x) (k (cons x '())))))))
 
 (deftest test-deep-co-2
   (is= '(((pizza))) (deep-co-2 3 identity))
@@ -68,7 +68,7 @@
 (defn leftmost (l)
    (letcc skip
      (letrec
-       ((lm (lambda (l)
+       ((lm (fn (l)
               (cond
                 ((null? l) nil)
                 ((atom? (car l)) (skip (car l)))
@@ -76,7 +76,7 @@
        (lm l))))
 
 
-(define leave)
+(def leave)
 
 (defn walk (l)
   (cond
@@ -96,7 +96,7 @@
 
 
 
-(define fill)
+(def fill)
 
 (defn waddle (l)
   (cond
@@ -131,7 +131,7 @@
 
 
 (defn rest2
-  (lambda (x)
+  (fn (x)
     (waddle l2)))
 
 (defn get-first (l)
@@ -152,20 +152,20 @@
       (or (eq? n a) (two-in-a-row-b*? n))
       #f)))
 
-(define two-in-a-row-x*
+(def two-in-a-row-x*
   (letrec
-    ((T? (lambda (a)
+    ((T? (fn (a)
            (let ((n (get-next 0)))
              (if (atom? n) (or (eq? n a) (T? n)) #f))))
      (get-next
-       (lambda (x)
+       (fn (x)
          (letcc here-again
            (set! leave here-again)
            (fill 'go))))
      (fill
-       (lambda (x) x))
+       (fn (x) x))
      (waddle
-       (lambda (l)
+       (fn (l)
          (cond
            ((null? l) '())
            ((atom? (car l))
@@ -176,7 +176,7 @@
            (else
              (waddle (car l))
              (waddle (cdr l)))))))
-    (lambda (l)
+    (fn (l)
       (let ((fst (letcc here (set! leave here) (waddle l) (leave nil))))
         (if (atom? fst) (T? fst) #f)))))
 

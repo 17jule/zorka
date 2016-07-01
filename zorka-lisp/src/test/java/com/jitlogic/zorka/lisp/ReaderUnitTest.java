@@ -161,8 +161,8 @@ public class ReaderUnitTest extends LispTestSupport {
         assertEquals(lst(sym("quote"), sym("abc")), read("'abc"));
         assertEquals(lst(sym("quote"), lst(sym("a"),sym("b"),sym("c"))), read("'(a b c)"));
         assertEquals(lst(sym("quasiquote"), lst(1,2,3)), read("`(1 2 3)"));
-        assertEquals(lst(sym("unquote"), lst(1,2,3)), read(",(1 2 3)"));
-        assertEquals(lst(sym("unquote-splicing"), lst(1,2,3)), read(",@(1 2 3)"));
+        assertEquals(lst(sym("unquote"), lst(1,2,3)), read("~(1 2 3)"));
+        assertEquals(lst(sym("unquote-splicing"), lst(1,2,3)), read("~@(1 2 3)"));
     }
 
     @Test
