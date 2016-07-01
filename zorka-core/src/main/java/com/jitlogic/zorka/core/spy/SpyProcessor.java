@@ -34,5 +34,5 @@ public interface SpyProcessor extends SpyDefArg {
      * @return processed record (can be the same as passed with record argument)
      *         or null to indicate that record should be dropped by instrumentation engine.
      */
-    public Map<String,Object> process(Map<String,Object> record);
+    Map process(Map record);
 }

@@ -33,7 +33,7 @@ public class LispFnProcessor implements SpyProcessor {
     }
 
     @Override
-    public Map<String, Object> process(Map<String, Object> record) {
-        return (Map<String,Object>)fn.apply(ctx, ctx.env(), StandardLibrary.cons(record,null));
+    public Map process(Map record) {
+        return (Map)fn.apply(ctx, ctx.env(), StandardLibrary.cons(record,null));
     }
 }

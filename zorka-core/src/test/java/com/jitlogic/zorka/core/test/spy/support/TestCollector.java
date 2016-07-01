@@ -25,9 +25,10 @@ import java.util.Map;
 
 public class TestCollector implements SpyProcessor {
 
-    private List<Map<String,Object>> records = new ArrayList<Map<String,Object>>();
+    private List<Map> records = new ArrayList<Map>();
 
-    public Map<String,Object> process(Map<String,Object> record) {
+    @Override
+    public Map process(Map record) {
         records.add(record);
         return record;
     }
@@ -36,7 +37,7 @@ public class TestCollector implements SpyProcessor {
         return records.size();
     }
 
-    public Map<String,Object> get(int i) {
+    public Map get(int i) {
         return records.get(i);
     }
 

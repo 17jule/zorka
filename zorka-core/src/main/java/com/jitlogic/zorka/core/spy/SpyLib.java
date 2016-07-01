@@ -211,148 +211,6 @@ public class SpyLib {
     }
 
     /**
-     * Creates new matcher object that will match classes by annotation.
-     *
-     * @param annotationName class annotation pattern
-     * @return spy matcher object
-     */
-    @Primitive("by-class-annotation")
-    public SpyMatcher byClassAnnotation(String annotationName) {
-        return new SpyMatcher(SpyMatcher.BY_CLASS_ANNOTATION, 1,
-                "L" + annotationName + ";", "~[a-zA-Z_].*$", null);
-    }
-
-    /**
-     * Creates new matcher object that will match methods by class annotation and method name.
-     *
-     * @param annotationName class annotation pattern
-     * @param methodPattern  method name pattern
-     * @return spy matcher object
-     */
-    @Primitive("by-class-annotation-and-method")
-    public SpyMatcher byClassAnnotation(String annotationName, String methodPattern) {
-        return new SpyMatcher(SpyMatcher.BY_CLASS_ANNOTATION | SpyMatcher.BY_METHOD_NAME, 1,
-                "L" + annotationName + ";", methodPattern, null);
-    }
-
-
-    /**
-     * Creates new matcher that will match all public methods of given class.
-     *
-     * @param className class name (or mask)
-     * @return spy matched object
-     */
-    @Primitive("by-class")
-    public SpyMatcher byClass(String className) {
-        return byMethod(className, "*");
-    }
-
-    /**
-     * Creates new matcher that will match all public methods of given class.
-     *
-     * @param iClassName interface class name (or mask)
-     * @return spy matched object
-     */
-    @Primitive("by-interface")
-    public SpyMatcher byInterface(String iClassName) {
-        return byInterfaceAndMethod(iClassName, "*");
-    }
-
-    /**
-     * Creates new matcher that will match methods by method annotation.
-     *
-     * @param classPattern     class name pattern
-     * @param methodAnnotation method annotation patten
-     * @return spy matcher object
-     */
-    @Primitive("by-method-annotation")
-    public SpyMatcher byMethodAnnotation(String classPattern, String methodAnnotation) {
-        return new SpyMatcher(SpyMatcher.BY_CLASS_NAME | SpyMatcher.BY_METHOD_ANNOTATION, 1,
-                classPattern, "L" + methodAnnotation + ";", null);
-    }
-
-
-    /**
-     * Creates new matcher that will match methods by class and method annotations
-     *
-     * @param classAnnotation  class annotation pattern
-     * @param methodAnnotation method annotation pattern
-     * @return spy matcher object
-     */
-    @Primitive("by-class-method-annotation")
-    public SpyMatcher byClassMethodAnnotation(String classAnnotation, String methodAnnotation) {
-        return new SpyMatcher(SpyMatcher.BY_CLASS_ANNOTATION | SpyMatcher.BY_METHOD_ANNOTATION, 1,
-                "L" + classAnnotation + ";", "L" + methodAnnotation + ";", null);
-    }
-
-
-    /**
-     * Creates new matcher object that will match methods by class name and method name.
-     *
-     * @param iClassPattern interface class name mask (where * matches arbitrary name and ** matches arbitrary path) or
-     *                      regular expression (if starts with '~' character);
-     * @param methodPattern method name mask (where '*' means arbitrary name part) or regular expression
-     *                      (if starts with '~' character);
-     * @return new matcher object
-     */
-    @Primitive("by-interface-and-method")
-    public SpyMatcher byInterfaceAndMethod(String iClassPattern, String methodPattern) {
-        return new SpyMatcher(SpyMatcher.BY_INTERFACE | SpyMatcher.BY_METHOD_NAME, 1, iClassPattern, methodPattern, null);
-    }
-
-
-    /**
-     * Creates new matcher object that will match methods by class name, method name, access flags, return type and arguments.
-     *
-     * @param access        access flags (use spy.ACC_* constants);
-     * @param iClassPattern interface class name mask (where * matches arbitrary name and ** matches arbitrary path) or
-     *                      regular expression (if starts with '~' character);
-     * @param methodPattern method name mask (where '*' means arbitrary string) or regular expression (if starts with '~' char);
-     * @param retType       return type (eg. void, int, String, javax.servlet.HttpResponse etc.);
-     * @param argTypes      types of consecutive arguments;
-     * @return new matcher object;
-     */
-    @Primitive("by-interface-and-method-signature")
-    public SpyMatcher byInterfaceAndMethod(int access, String iClassPattern, String methodPattern, String retType, String... argTypes) {
-        return new SpyMatcher(SpyMatcher.BY_INTERFACE | SpyMatcher.BY_METHOD_NAME | SpyMatcher.BY_METHOD_SIGNATURE,
-                access, iClassPattern, methodPattern, retType, argTypes);
-    }
-
-
-    /**
-     * Creates new matcher object that will match methods by class name and method name.
-     *
-     * @param classPattern  class name mask (where * matches arbitrary name and ** matches arbitrary path) or
-     *                      regular expression (if starts with '~' character);
-     * @param methodPattern method name mask (where '*' means arbitrary name part) or regular expression
-     *                      (if starts with '~' character);
-     * @return new matcher object
-     */
-    @Primitive("by-method")
-    public SpyMatcher byMethod(String classPattern, String methodPattern) {
-        return new SpyMatcher(SpyMatcher.BY_CLASS_NAME | SpyMatcher.BY_METHOD_NAME, 1, classPattern, methodPattern, null);
-    }
-
-
-    /**
-     * Creates new matcher object that will match methods by class name, method name, access flags, return type and arguments.
-     *
-     * @param access        access flags (use spy.ACC_* constants);
-     * @param classPattern  class name mask (where * matches arbitrary name and ** matches arbitrary path) or
-     *                      regular expression (if starts with '~' character);
-     * @param methodPattern method name mask (where '*' means arbitrary string) or regular expression (if starts with '~' char);
-     * @param retType       return type (eg. void, int, String, javax.servlet.HttpResponse etc.);
-     * @param argTypes      types of consecutive arguments;
-     * @return new matcher object;
-     */
-    @Primitive("by-method-signature")
-    public SpyMatcher byMethod(int access, String classPattern, String methodPattern, String retType, String... argTypes) {
-        return new SpyMatcher(SpyMatcher.BY_CLASS_NAME | SpyMatcher.BY_METHOD_NAME | SpyMatcher.BY_METHOD_SIGNATURE,
-                access, classPattern, methodPattern, retType, argTypes);
-    }
-
-
-    /**
      * Creates argument fetching probe. When injected into method code by instrumentation engine, it will fetch argument
      * selected by specific index `arg`.
      *
@@ -360,36 +218,9 @@ public class SpyLib {
      * @param arg fetched argument index
      * @return new probe
      */
-    @Primitive("fetch-arg|")
-    public SpyProbe fetchArg(String dst, int arg) {
+    @Primitive("arg-probe")
+    public SpyProbe argProbe(Object dst, int arg) {
         return new SpyArgProbe(arg, dst);
-    }
-
-
-    /**
-     * Creates class fetching probe. When injected into method code it will fetch class object of given name in context
-     * of method caller.
-     *
-     * @param dst       name (key) used to store fetched data
-     * @param className class name
-     * @return class fetching probe
-     */
-    @Primitive("fetch-class")
-    public SpyProbe fetchClass(String dst, String className) {
-        return new SpyClassProbe(dst, className);
-    }
-
-
-    /**
-     * Creates exception fetching probe. When injected into method code it will fetch exception object when exception is
-     * thrown out of method code.
-     *
-     * @param dst name (key) used to store fetched data
-     * @return exception fetching probe
-     */
-    @Primitive("fetch-error")
-    public SpyProbe fetchError(String dst) {
-        return new SpyReturnProbe(dst);
     }
 
 
@@ -400,23 +231,10 @@ public class SpyLib {
      * @param dst name (key) used to store fetched data
      * @return return value fetching probe
      */
-    @Primitive("fetch-ret-val")
-    public SpyProbe fetchRetVal(String dst) {
+    @Primitive("ret-probe")
+    public SpyProbe returnProbe(Object dst) {
         return new SpyReturnProbe(dst);
     }
-
-
-    /**
-     * Creates time fetching probe. When injected into method code it will fetch current time.
-     *
-     * @param dst name (key) used to store fetched data
-     * @return time fetching probe
-     */
-    @Primitive("fetch-time")
-    public SpyProbe fetchTime(String dst) {
-        return new SpyTimeProbe(dst);
-    }
-
 
 
     @Primitive("mark-error")
@@ -448,17 +266,10 @@ public class SpyLib {
      *
      * @param matchers spy matcher objects (created using spy.byXxxx() functions)
      */
-    @Primitive
-    public void include(String... matchers) {
-        for (String matcher : matchers) {
-            log.info(ZorkaLogger.ZAG_CONFIG, "Tracer include: " + matcher);
-            tracer.include(SpyMatcher.fromString(matcher.toString()));
-        }
-    }
-
-    @Primitive("include-matchers")
-    public void include(SpyMatcher... matchers) {
-        for (SpyMatcher matcher : matchers) {
+    @Primitive("tracer-include")
+    public void include(Object ... matchers) {
+        for (Object obj : matchers) {
+            SpyMatcher matcher = obj instanceof SpyMatcher ? (SpyMatcher)obj : SpyMatcher.fromString(obj.toString());
             log.info(ZorkaLogger.ZAG_CONFIG, "Tracer include: " + matcher);
             tracer.include(matcher);
         }

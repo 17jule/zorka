@@ -56,13 +56,20 @@ public class LispInstrumentationUnitTest extends ZorkaFixture {
     @Test
     public void testDefineSimpleInstrumentationAndCheckHowItHasBeenRegistered() throws Exception {
         // Configure instrumentation
-        System.out.println(zorkaAgent.eval(
+        zorkaAgent.eval(
             "(spy/defi single-trivial-method-test " +
-            " (on \"com.jitlogic.zorka.core.test.spy.support.TestClass1/trivialMethod\"" +
+            " (spy/on \"com.jitlogic.zorka.core.test.spy.support.TestClass1/trivialMethod\"" +
                 " \"TestClass/otherMethod\")" +
-            " (on \"com.myapp.OtherClass/yetAnotherMethod\")" +
-            " (on-enter (ctx) (set! test-passed 1) ctx)" +
-                ")"));
+            " (spy/on \"com.myapp.OtherClass/yetAnotherMethod\")" +
+            " (spy/on-enter (ctx) (set! test-passed 1) ctx)" +
+            " (spy/on-return (ctx) ctx)" +
+            " (spy/on-error (ctx) ctx)" +
+            " (spy/on-submit (ctx) ctx)" +
+            " (spy/on-submit (ctx) ctx)" +
+            " (spy/fetch-arg :this 0)" +
+            " (spy/fetch-ret :ret)" +
+            " (spy/fetch-err :err)" +
+            ")");
 
         // Check sdef
         Object sobj = zorkaAgent.getInterpreter().env().lookup(Symbol.symbol("single-trivial-method-test"));
@@ -74,6 +81,13 @@ public class LispInstrumentationUnitTest extends ZorkaFixture {
         assertEquals(3, sdef.getMatcherSet().size());
 
         assertEquals(1, sdef.getProcessors(SpyLib.ON_ENTER).size());
+        assertEquals(1, sdef.getProcessors(SpyLib.ON_RETURN).size());
+        assertEquals(1, sdef.getProcessors(SpyLib.ON_ERROR).size());
+        assertEquals(2, sdef.getProcessors(SpyLib.ON_SUBMIT).size());
+
+        assertEquals(1, sdef.getProbes(SpyLib.ON_ENTER).size());
+        assertEquals(1, sdef.getProbes(SpyLib.ON_RETURN).size());
+        assertEquals(1, sdef.getProbes(SpyLib.ON_ERROR).size());
     }
 
 
@@ -81,8 +95,8 @@ public class LispInstrumentationUnitTest extends ZorkaFixture {
     public void testTrivialOnEnterInstrumentation() throws Exception {
         zorkaAgent.eval(
             "(spy/defi single-trivial-method-test " +
-                " (on \"com.jitlogic.zorka.core.test.spy.support.TestClass1/trivialMethod\")" +
-                " (on-enter (ctx) (set! test-passed 1) (println 123) ctx)" +
+                " (spy/on \"com.jitlogic.zorka.core.test.spy.support.TestClass1/trivialMethod\")" +
+                " (spy/on-enter (ctx) (set! test-passed 1) (println 123) ctx)" +
                 ")");
 
         assertEquals(0, zorkaAgent.eval("test-passed"));
@@ -92,5 +106,7 @@ public class LispInstrumentationUnitTest extends ZorkaFixture {
 
         assertEquals(1, zorkaAgent.eval("test-passed"));
     }
+
+
 
 }

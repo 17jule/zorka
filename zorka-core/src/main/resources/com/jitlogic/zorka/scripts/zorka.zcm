@@ -1,30 +1,43 @@
 
-(defn spy/-process-instrument-on-clauses (clauses)
-  (cond
-    ((nil? clauses) nil)
-    ((equal? 'on (caar clauses)) (cons `(.include ~(to-array (cdar clauses)))
-                                   (spy/-process-instrument-on-clauses (cdr clauses))))
-    (else (spy/-process-instrument-on-clauses (cdr clauses)))))
+
+(defn spy/on (sdef . includes)
+   (.include sdef (to-array includes)))
 
 
-(defn spy/-process-instrument-on-enter (clauses)
-  (cond
-    ((nil? clauses) nil)
-    ((equal? 'on-enter (caar clauses)) (cons `(.with1 0 (spy/lisp-fn (fn ~@(cdar clauses))))
-                                         (spy/-process-instrument-on-enter (cdr clauses))))
-    (else (spy/-process-instrument-on-enter (cdr clauses)))))
+(defmacro spy/on-enter (sdef args . body)
+  `(.with ~sdef 0 (spy/lisp-fn (fn ~args ~@body))))
+
+
+(defmacro spy/on-return (sdef args . body)
+  `(.with ~sdef 1 (spy/lisp-fn (fn ~args ~@body))))
+
+
+(defmacro spy/on-error (sdef args . body)
+  `(.with ~sdef 2 (spy/lisp-fn (fn ~args ~@body))))
+
+
+(defmacro spy/on-submit (sdef args . body)
+  `(.with ~sdef 3 (spy/lisp-fn (fn ~args ~@body))))
+
+
+(defn spy/fetch-arg (sdef name idx)
+  (.with sdef 0 (spy/arg-probe name idx)))
+
+
+(defn spy/fetch-ret (sdef name)
+  (.with sdef 1 (spy/ret-probe name)))
+
+
+(defn spy/fetch-err (sdef name)
+  (.with sdef 2 (spy/ret-probe name)))
 
 
 (defmacro spy/defi (sym . clauses)
-  (let ((sname (.getName sym))
-        (includes (spy/-process-instrument-on-clauses clauses))
-        (on-enter (spy/-process-instrument-on-enter clauses))  )
-    `(def ~sym
-      (spy/add!
-        (->
-          (spy/sdef ~sname)
-          ~@includes
-          ~@on-enter
-          )))))
+  `(def ~sym
+    (spy/add!
+      (->
+        (spy/sdef ~(.getName sym))
+        ~@clauses
+        ))))
 
 

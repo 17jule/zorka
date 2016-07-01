@@ -29,7 +29,7 @@ public abstract class SpyProbe implements SpyDefArg {
 
 
     /** Field name fetched value will be saved in spy record */
-    private String dstField;
+    private Object dstField;
 
 
     /**
@@ -37,7 +37,7 @@ public abstract class SpyProbe implements SpyDefArg {
      *
      * @param dstField destination field name
      */
-    public SpyProbe(String dstField) {
+    public SpyProbe(Object dstField) {
         this.dstField = dstField;
     }
 
@@ -47,7 +47,7 @@ public abstract class SpyProbe implements SpyDefArg {
      *
      * @return field name
      */
-    public String getDstField() {
+    public Object getDstField() {
         return dstField;
     }
 

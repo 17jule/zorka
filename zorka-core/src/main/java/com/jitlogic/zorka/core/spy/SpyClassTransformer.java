@@ -46,7 +46,7 @@ public class SpyClassTransformer implements ClassFileTransformer {
     /**
      * All spy defs configured
      */
-    private Map<String, SpyDefinition> sdefs = new LinkedHashMap<String, SpyDefinition>();
+    private Map<Object, SpyDefinition> sdefs = new LinkedHashMap<Object, SpyDefinition>();
 
 
     /**
@@ -224,7 +224,7 @@ public class SpyClassTransformer implements ClassFileTransformer {
     }
 
 
-    public SpyDefinition getSdef(String name) {
+    public SpyDefinition getSdef(Object name) {
         return sdefs.get(name);
     }
 
@@ -268,7 +268,7 @@ public class SpyClassTransformer implements ClassFileTransformer {
         }
 
         long st1 = System.nanoTime();
-        for (Map.Entry<String, SpyDefinition> e : sdefs.entrySet()) {
+        for (Map.Entry<Object, SpyDefinition> e : sdefs.entrySet()) {
             SpyDefinition sdef = e.getValue();
             if (sdef.getMatcherSet().classMatch(clazzName)) {
                 found.add(sdef);

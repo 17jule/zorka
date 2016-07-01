@@ -42,7 +42,7 @@ public class SpyDefinition {
     private static final List<SpyProbe> EMPTY_AF =
             Collections.unmodifiableList(Arrays.asList(new SpyProbe[0]));
 
-    private final String name;
+    private final Object name;
 
     private final Set<Symbol> tags = new HashSet<Symbol>();
 
@@ -62,21 +62,21 @@ public class SpyDefinition {
     private SpyMatcherSet matcherSet = new SpyMatcherSet();
 
 
-    private Set<Symbol> tagMatcherSet = new HashSet<Symbol>();
+    private Set<Object> tagMatcherSet = new HashSet<Object>();
 
     /**
      * Creates unconfigured spy definition
      *
      * @return spy definition
      */
-    public static SpyDefinition instance(String name) {
+    public static SpyDefinition instance(Object name) {
         return new SpyDefinition(name);
     }
 
     /**
      * Creates empty (unconfigured) spy definition.
      */
-    public SpyDefinition(String name) {
+    public SpyDefinition(Object name) {
         this.name = name;
         probes = new List[4];
         for (int i = 0; i < probes.length; i++) {
@@ -125,50 +125,9 @@ public class SpyDefinition {
         return matcherSet;
     }
 
-    public String getName() {
+    public Object getName() {
         return name;
     }
-
-    /**
-     * Instructs spy what should be collected at the beginning of a method.
-     *
-     * @return
-     */
-    public SpyDefinition onEnter(Object... args) {
-        return with(ON_ENTER, args);
-    }
-
-
-    /**
-     * Instructs spy what should be collected at the end of a method.
-     *
-     * @return
-     */
-    public SpyDefinition onReturn(Object... args) {
-        return with(ON_RETURN, args);
-    }
-
-
-    /**
-     * Instructs spy what should be collected at exception handling code of a method.
-     *
-     * @return
-     */
-    public SpyDefinition onError(Object... args) {
-        return with(ON_ERROR, args);
-    }
-
-
-    /**
-     * Instructs spy that subsequent transforms will be executed at data submission
-     * point.
-     *
-     * @return augmented spy definition
-     */
-    public SpyDefinition onSubmit(Object... args) {
-        return with(ON_SUBMIT, args);
-    }
-
 
     /**
      * Instructs spy what method to include.
@@ -187,42 +146,21 @@ public class SpyDefinition {
         return sdef;
     }
 
-    public SpyDefinition with1(int curStage, Object obj) {
-        return with(curStage, obj);
-    }
-
-    /**
-     * Declares which arguments should be fetched by instrumenting code.
-     * This method should generally be called once as arguments are fetched
-     * only at one place of a method (beginning or end - depending on
-     * whether instrumentation will actually run at the beginning or at the end of
-     * method.
-     * <p/>
-     * <p>For instance methods first argument will have index 1 and
-     * instance reference will be present at index 0. </p>
-     * <p>For static methods arguments start with 0. </p>
-     *
-     * @param args argument indexes to be fetched (or class names if
-     *             class objects are to be fetched)
-     * @return spy definition with augmented fetched argument list;
-     */
-    public SpyDefinition with(int curStage, Object... args) {
+    public SpyDefinition with(int curStage, Object arg) {
         SpyDefinition sdef = new SpyDefinition(this);
 
-        List<SpyProbe> newProbes = new ArrayList<SpyProbe>(sdef.probes[curStage].size() + args.length + 2);
+        List<SpyProbe> newProbes = new ArrayList<SpyProbe>(sdef.probes[curStage].size() + 1);
         newProbes.addAll(sdef.probes[curStage]);
 
-        List<SpyProcessor> newProcessors = new ArrayList<SpyProcessor>(sdef.processors[curStage].size() + args.length + 2);
+        List<SpyProcessor> newProcessors = new ArrayList<SpyProcessor>(sdef.processors[curStage].size() + 1);
         newProcessors.addAll(sdef.processors[curStage]);
 
-        for (Object arg : args) {
-            if (arg instanceof SpyProcessor) {
-                newProcessors.add((SpyProcessor) arg);
-            } else if (arg instanceof SpyProbe) {
-                newProbes.add((SpyProbe) arg);
-            } else if (arg != null) {
-                throw new IllegalArgumentException();
-            }
+        if (arg instanceof SpyProcessor) {
+            newProcessors.add((SpyProcessor) arg);
+        } else if (arg instanceof SpyProbe) {
+            newProbes.add((SpyProbe) arg);
+        } else if (arg != null) {
+            throw new IllegalArgumentException();
         }
 
         sdef.probes = ZorkaUtil.copyArray(probes);

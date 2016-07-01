@@ -40,7 +40,7 @@ public class SpyArgProbe extends SpyProbe {
      * @param argIdx   argument index
      * @param dstField destination field
      */
-    public SpyArgProbe(int argIdx, String dstField) {
+    public SpyArgProbe(int argIdx, Object dstField) {
         super(dstField);
         this.argIndex = argIdx;
     }

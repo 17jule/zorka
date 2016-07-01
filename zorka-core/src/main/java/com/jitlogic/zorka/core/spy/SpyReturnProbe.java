@@ -29,7 +29,7 @@ public class SpyReturnProbe extends SpyProbe {
      *
      * @param dstField destination field
      */
-    public SpyReturnProbe(String dstField) {
+    public SpyReturnProbe(Object dstField) {
         super(dstField);
     }
 
