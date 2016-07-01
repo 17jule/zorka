@@ -38,7 +38,7 @@ public class TracerInstrumentationUnitTest extends BytecodeInstrumentationFixtur
     @Test @Ignore
     // TODO rewrite onto new tracer
     public void testTraceSingleTrivialMethod() throws Exception {
-        tracer.include(spy.byMethod(TCLASS1, "trivialMethod"));
+        //tracer.include(spy.byMethod(TCLASS1, "trivialMethod"));
 
         Object obj = instantiate(engine, TCLASS1);
         invoke(obj, "trivialMethod");
@@ -105,7 +105,7 @@ public class TracerInstrumentationUnitTest extends BytecodeInstrumentationFixtur
 
     @Test @Ignore
     public void testTryCatchSimpleCatch() throws Exception {
-        tracer.include(spy.byMethod(TCLASS3, "tryCatchFinally0"));
+        //tracer.include(spy.byMethod(TCLASS3, "tryCatchFinally0"));
 
         Object obj = instantiate(engine, TCLASS3);
         invoke(obj, "tryCatchFinally0", true);
@@ -117,7 +117,7 @@ public class TracerInstrumentationUnitTest extends BytecodeInstrumentationFixtur
 
     @Test @Ignore
     public void testTryCatchFinallyWithEmbeddedCatch() throws Exception {
-        tracer.include(spy.byMethod(TCLASS3, "tryCatchFinally1"));
+        //tracer.include(spy.byMethod(TCLASS3, "tryCatchFinally1"));
 
         Object obj = instantiate(engine, TCLASS3);
         invoke(obj, "tryCatchFinally1", true);
@@ -130,7 +130,7 @@ public class TracerInstrumentationUnitTest extends BytecodeInstrumentationFixtur
 
     @Test @Ignore
     public void testTryCatchEmbeddedCatch() throws Exception {
-        tracer.include(spy.byMethod(TCLASS3, "tryCatchFinally2"));
+        //tracer.include(spy.byMethod(TCLASS3, "tryCatchFinally2"));
 
         Object obj = instantiate(engine, TCLASS3);
         invoke(obj, "tryCatchFinally2", true);
@@ -143,9 +143,9 @@ public class TracerInstrumentationUnitTest extends BytecodeInstrumentationFixtur
     @Test @Ignore
     // TODO rewrite onto new tracer
     public void testIfTracerCatchesSpuriousMethodsBUG() throws Exception {
-        tracer.include(spy.byMethod(MCLASS1, "trivia*"));
-        tracer.exclude(spy.byClass(MCLASS0));
-        tracer.include(spy.byClass("**"));
+        //tracer.include(spy.byMethod(MCLASS1, "trivia*"));
+        //tracer.exclude(spy.byClass(MCLASS0));
+        //tracer.include(spy.byClass("**"));
 
         Object obj = instantiate(engine, TCLASS1);
         invoke(obj, "errorMethod");

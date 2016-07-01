@@ -35,7 +35,7 @@ public class FullTracerUnitTest extends ZorkaFixture {
     @Before
     public void initOutput() {
         agentInstance.getTracer().setMinMethodTime(0); // Catch everything
-        tracer.traceBufOutput(bufOutput);
+        spy.traceBufOutput(bufOutput);
         agentInstance.getTracer();
     }
 

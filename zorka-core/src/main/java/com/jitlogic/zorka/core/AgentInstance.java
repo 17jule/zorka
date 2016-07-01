@@ -115,11 +115,6 @@ public class AgentInstance implements ZorkaService {
     protected SpyLib spyLib;
 
     /**
-     * Tracer library
-     */
-    protected TracerLib tracerLib;
-
-    /**
      * Reference to syslog library - available to zorka scripts as 'syslog.*' functions
      */
     protected SyslogLib syslogLib;
@@ -182,7 +177,6 @@ public class AgentInstance implements ZorkaService {
         if (config.boolCfg("spy", true)) {
             log.info(ZorkaLogger.ZAG_CONFIG, "Enabling Zorka SPY");
             getZorkaAgent().install(getSpyLib());
-            getZorkaAgent().install(getTracerLib());
         }
 
         if (config.boolCfg("zabbix", true)) {
@@ -417,25 +411,10 @@ public class AgentInstance implements ZorkaService {
     public synchronized SpyLib getSpyLib() {
 
         if (spyLib == null) {
-            spyLib = new SpyLib(getClassTransformer(), getMBeanServerRegistry(), getZorkaAgent());
+            spyLib = new SpyLib(getClassTransformer(), getMBeanServerRegistry(), getZorkaAgent(), getTracer(), getSymbolRegistry(), getConfig());
         }
 
         return spyLib;
-    }
-
-
-    /**
-     * Returns reference to tracer library.
-     *
-     * @return instance of tracer library
-     */
-    public synchronized TracerLib getTracerLib() {
-
-        if (tracerLib == null) {
-            tracerLib = new TracerLib(getSymbolRegistry(), getTracer(), config);
-        }
-
-        return tracerLib;
     }
 
 

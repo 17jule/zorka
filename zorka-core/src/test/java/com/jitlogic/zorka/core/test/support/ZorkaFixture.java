@@ -46,7 +46,6 @@ public class ZorkaFixture extends CommonFixture {
 
     protected SyslogLib syslogLib;
     protected SpyLib spy;
-    protected TracerLib tracer;
 
     protected ZorkaLispAgent zorkaAgent;
     protected ZorkaLib zorka;
@@ -89,7 +88,6 @@ public class ZorkaFixture extends CommonFixture {
         zorka = agentInstance.getZorkaLib();
         syslogLib = agentInstance.getSyslogLib();
         spy = agentInstance.getSpyLib();
-        tracer = agentInstance.getTracerLib();
         spyTransformer = agentInstance.getClassTransformer();
         zabbixLib = agentInstance.getZabbixLib();
         nagiosLib = agentInstance.getNagiosLib();

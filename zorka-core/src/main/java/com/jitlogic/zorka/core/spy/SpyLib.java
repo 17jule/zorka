@@ -17,9 +17,11 @@
 
 package com.jitlogic.zorka.core.spy;
 
+import com.jitlogic.zorka.common.tracedata.SymbolRegistry;
 import com.jitlogic.zorka.common.util.*;
 import com.jitlogic.zorka.core.ZorkaLispAgent;
 import com.jitlogic.zorka.core.mbeans.MBeanServerRegistry;
+import com.jitlogic.zorka.core.util.OverlayClassLoader;
 import com.jitlogic.zorka.lisp.*;
 
 import java.util.*;
@@ -169,15 +171,25 @@ public class SpyLib {
 
     private ZorkaLispAgent agent;
 
+    private Tracer tracer;
+
+    private SymbolRegistry symbolRegistry;
+
+    private ZorkaConfig config;
+
+
     /**
      * Creates spy library object
      *
      * @param classTransformer spy transformer
      */
-    public SpyLib(SpyClassTransformer classTransformer, MBeanServerRegistry mbsRegistry, ZorkaLispAgent agent) {
+    public SpyLib(SpyClassTransformer classTransformer, MBeanServerRegistry mbsRegistry, ZorkaLispAgent agent, Tracer tracer, SymbolRegistry symbolRegistry, ZorkaConfig config) {
         this.classTransformer = classTransformer;
         this.mbsRegistry = mbsRegistry;
         this.agent = agent;
+        this.tracer = tracer;
+        this.symbolRegistry = symbolRegistry;
+        this.config = config;
     }
 
 
@@ -362,7 +374,7 @@ public class SpyLib {
      * @param className class name
      * @return class fetching probe
      */
-    @Primitive("fetch-class|")
+    @Primitive("fetch-class")
     public SpyProbe fetchClass(String dst, String className) {
         return new SpyClassProbe(dst, className);
     }
@@ -375,7 +387,7 @@ public class SpyLib {
      * @param dst name (key) used to store fetched data
      * @return exception fetching probe
      */
-    @Primitive("fetch-error|")
+    @Primitive("fetch-error")
     public SpyProbe fetchError(String dst) {
         return new SpyReturnProbe(dst);
     }
@@ -388,7 +400,7 @@ public class SpyLib {
      * @param dst name (key) used to store fetched data
      * @return return value fetching probe
      */
-    @Primitive("fetch-ret-val|")
+    @Primitive("fetch-ret-val")
     public SpyProbe fetchRetVal(String dst) {
         return new SpyReturnProbe(dst);
     }
@@ -400,7 +412,7 @@ public class SpyLib {
      * @param dst name (key) used to store fetched data
      * @return time fetching probe
      */
-    @Primitive("fetch-time|")
+    @Primitive("fetch-time")
     public SpyProbe fetchTime(String dst) {
         return new SpyTimeProbe(dst);
     }
@@ -425,4 +437,173 @@ public class SpyLib {
     public SpyProcessor lispFn(Fn fn) {
         return new LispFnProcessor(agent.getInterpreter(), fn);
     }
+
+    @Primitive("trace-buf-output")
+    public void traceBufOutput(TraceBufOutput bufOutput) {
+        tracer.setBufOutput(bufOutput);
+    }
+
+    /**
+     * Adds matching method to tracer.
+     *
+     * @param matchers spy matcher objects (created using spy.byXxxx() functions)
+     */
+    @Primitive
+    public void include(String... matchers) {
+        for (String matcher : matchers) {
+            log.info(ZorkaLogger.ZAG_CONFIG, "Tracer include: " + matcher);
+            tracer.include(SpyMatcher.fromString(matcher.toString()));
+        }
+    }
+
+    @Primitive("include-matchers")
+    public void include(SpyMatcher... matchers) {
+        for (SpyMatcher matcher : matchers) {
+            log.info(ZorkaLogger.ZAG_CONFIG, "Tracer include: " + matcher);
+            tracer.include(matcher);
+        }
+    }
+
+    /**
+     * Exclude classes/methods from tracer.
+     *
+     * @param matchers spy matcher objects (created using spy.byXxxx() functions)
+     */
+    @Primitive
+    public void exclude(String... matchers) {
+        for (String matcher : matchers) {
+            log.info(ZorkaLogger.ZAG_CONFIG, "Tracer exclude: " + matcher);
+            tracer.include(SpyMatcher.fromString(matcher.toString()).exclude());
+        }
+    }
+
+    @Primitive("exclude-matchers")
+    public void exclude(SpyMatcher... matchers) {
+        for (SpyMatcher matcher : matchers) {
+            log.info(ZorkaLogger.ZAG_CONFIG, "Tracer exclude: " + matcher);
+            tracer.include((matcher).exclude());
+        }
+
+    }
+
+    @Primitive("list-includes")
+    public String listIncludes() {
+        StringBuilder sb = new StringBuilder();
+        for (SpyMatcher sm : tracer.getMatcherSet().getMatchers()) {
+            sb.append(sm.hasFlags(SpyMatcher.EXCLUDE_MATCH) ? "excl: " : "incl: ");
+            sb.append(sm);
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
+
+    @Primitive("begin!")
+    public void traceBegin(String name) {
+        traceBegin(name, 0);
+    }
+
+
+    @Primitive("begin-t!")
+    public void traceBegin(String name, long minimumTraceTime) {
+        traceBegin(name, minimumTraceTime, 0);
+    }
+
+
+    @Primitive("begin-tf!")
+    public void traceBegin(String name, long minimumTraceTime, int flags) {
+        TraceRecorder traceBuilder = tracer.getRecorder();
+        traceBuilder.traceBegin(symbolRegistry.stringId(name), System.currentTimeMillis(), flags);
+        traceBuilder.setMinimumTraceTime(minimumTraceTime);
+    }
+
+
+    @Primitive("in-trace?")
+    public boolean isInTrace(String traceName) {
+        return tracer.getRecorder().isInTrace(symbolRegistry.stringId(traceName));
+    }
+
+
+    /**
+     * Adds trace attribute to trace record immediately. This is useful for programmatic attribute setting.
+     *
+     * @param attrName attribute name
+     * @param value    attribute value
+     */
+    @Primitive("attr!")
+    public void newAttr(String attrName, Object value) {
+        tracer.getRecorder().newAttr(-1, symbolRegistry.stringId(attrName), value);
+    }
+
+
+    /**
+     * @param traceName - trace name
+     * @param attrName -
+     * @param value
+     */
+    @Primitive("trace-attr!")
+    public void newTraceAttr(String traceName, String attrName, Object value) {
+        tracer.getRecorder().newAttr(symbolRegistry.stringId(traceName), symbolRegistry.stringId(attrName), value);
+    }
+
+
+    @Primitive("flags!")
+    public void newFlags(int flags) {
+        tracer.getRecorder().markTraceFlags(0, flags);
+    }
+
+
+    @Primitive("min-method-time")
+    public long getTracerMinMethodTime() {
+        return Tracer.getMinMethodTime();
+    }
+
+
+    /**
+     * Sets minimum traced method execution time. Methods that took less time
+     * will be discarded from traces and will only reflect in summary call/error counters.
+     *
+     * @param methodTime minimum execution time (in nanoseconds, 250 microseconds by default)
+     */
+    @Primitive("min-method-time!")
+    public void setTracerMinMethodTime(long methodTime) {
+        Tracer.setMinMethodTime(methodTime);
+    }
+
+
+    @Primitive("min-trace-time")
+    public long getTracerMinTraceTime() {
+        return Tracer.getMinTraceTime() / 1000000L;
+    }
+
+
+    /**
+     * Sets minimum trace execution time. Traces that laster for shorted period
+     * of time will be discarded. Not that this is default setting that can be
+     * overridden with spy.begin() method.
+     *
+     * @param traceTime minimum trace execution time (50 milliseconds by default)
+     */
+    @Primitive("min-trace-time!")
+    public void setTracerMinTraceTime(long traceTime) {
+        Tracer.setMinTraceTime(traceTime * 1000000L);
+    }
+
+
+    @Primitive("trace-spy-methods!")
+    public void setTraceSpyMethods(boolean tsm) {
+        tracer.setTraceSpyMethods(tsm);
+    }
+
+
+    @Primitive("trace-spy-methods?")
+    public boolean isTraceSpyMethods() {
+        return tracer.isTraceSpyMethods();
+    }
+
+    @Primitive("overlay-class-loader")
+    public ClassLoader overlayClassLoader(ClassLoader parent, String pattern, ClassLoader overlay) {
+        return new OverlayClassLoader(parent, pattern, overlay);
+    }
+
 }
