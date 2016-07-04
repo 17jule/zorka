@@ -13,21 +13,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this software. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jitlogic.zorka.core;
 
+package com.jitlogic.zorka.lisp;
 
-public interface ZorkaControlMBean {
+public interface InternedObject {
 
-    String getHostname();
-
-    long getTracerMinMethodTime();
-
-    void setTracerMinMethodTime(long t);
-
-    long getTracerMinTraceTime();
-
-    void setTracerMinTraceTime(long t);
-
-    void reload();
+    int getId();
 
 }

@@ -418,5 +418,15 @@ public class Utils {
         return map;
     }
 
+    public static LispMap lispMap(Object...objs) {
+        if (objs.length % 2 != 0) {
+            throw new LispException("Uneven number of arguments.");
+        }
+        LispMap m = LispSMap.EMPTY;
+        for (int i = 0; i < objs.length; i += 2) {
+            m = m.assoc(objs[i], objs[i+1]);
+        }
+        return m;
+    }
 
 }

@@ -48,6 +48,9 @@ public class Reader {
     public final static Object V_BEGIN = new Object();
     public final static Object V_END = new Object();
 
+    public final static Object M_BEGIN = new Object();
+    public final static Object M_END = new Object();
+
 
     /**
      * Returns one character from input stream.
@@ -165,15 +168,33 @@ public class Reader {
             return head.rest();
         } else if (V_BEGIN.equals(t)) {
             Pair head = null;
-            int cnt = 0, l = rl, c = rc;
+            int l = rl, c = rc;
             for (Object o = read(); o != V_END; o = read()) {
                 if (o == EOF) {
                     throw new ReaderException(line, col, "Unexpected end of stream.");
                 }
                 head = pair(l, c, o, head);
-                cnt++; l = rl; c = rc;
+                l = rl; c = rc;
             }
             return StandardLibrary.vector(Utils.lstReverse(head));
+        } else if (M_BEGIN.equals(t)) {
+            LispMap m = LispSMap.EMPTY;
+            Object k = null;
+            for (Object o = read(); o != M_END; o = read()) {
+                if (o == EOF) {
+                    throw new ReaderException(line, col, "Unexpected end of stream.");
+                }
+                if (k == null) {
+                    k = o;
+                } else {
+                    m = m.assoc(k, o);
+                    k = null;
+                }
+            }
+            if (k != null) {
+                throw new ReaderException(line, col, "Uneven number of elements in declared map.");
+            }
+            return m;
         }
 
         return t;
@@ -212,6 +233,10 @@ public class Reader {
                 return V_BEGIN;
             case ']':
                 return V_END;
+            case '{':
+                return M_BEGIN;
+            case '}':
+                return M_END;
             case '\'':
                 return QUOTE;
             case '`':
@@ -253,7 +278,7 @@ public class Reader {
                     sb.append((char)ch);
                     ch = getch();
                 } while (!Character.isWhitespace(ch) && ch != -1 && ch != '(' && ch != ')' && ch != '"'
-                    && ch != ';' && ch != '[' && ch != ']');
+                    && ch != ';' && ch != '[' && ch != ']' && ch != '{' && ch != '}' && ch != ',');
                 if (ch != -1) {
                     ungetch(ch);
                 }

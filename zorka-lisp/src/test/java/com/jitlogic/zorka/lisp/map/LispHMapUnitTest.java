@@ -13,21 +13,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this software. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jitlogic.zorka.core;
+
+package com.jitlogic.zorka.lisp.map;
+
+import com.jitlogic.zorka.lisp.LispHMap;
+import com.jitlogic.zorka.lisp.LispMap;
 
 
-public interface ZorkaControlMBean {
-
-    String getHostname();
-
-    long getTracerMinMethodTime();
-
-    void setTracerMinMethodTime(long t);
-
-    long getTracerMinTraceTime();
-
-    void setTracerMinTraceTime(long t);
-
-    void reload();
+/**
+ *
+ */
+public class LispHMapUnitTest extends LispMapAbstractTest {
+    @Override
+    public LispMap newMap() {
+        return new LispHMap();
+    }
 
 }

@@ -81,7 +81,7 @@
     ((null? (cdr es))
      (meaning (car es) table))
     (else
-     ((fn (val))
+     ((fn (pair))
        (beglis (cdr es) table)
        (meaning (car es) table)))))
 
@@ -127,8 +127,8 @@
   (cond
     ((null? args) nil)
     (else
-      ((fn (val)
-        (cons val
+      ((fn (pair)
+        (cons pair
           (evlis (cdr args) table)))
        (meaning (car args) table)))))
 

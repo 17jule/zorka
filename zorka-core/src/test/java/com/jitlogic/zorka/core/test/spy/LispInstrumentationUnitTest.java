@@ -28,6 +28,7 @@ import com.jitlogic.zorka.core.test.support.ZorkaFixture;
 import com.jitlogic.zorka.lisp.Symbol;
 import org.junit.Before;
 import org.junit.Test;
+import sun.misc.VMSupport;
 
 import static org.junit.Assert.*;
 
@@ -108,5 +109,9 @@ public class LispInstrumentationUnitTest extends ZorkaFixture {
     }
 
 
+    @Test
+    public void testObjectLayout() throws Exception {
+
+    }
 
 }

@@ -116,7 +116,7 @@ public class ReaderUnitTest extends LispTestSupport {
 
         assertEquals(lst('x'), read("(#\\x)"));
 
-        assertEquals(lst(1, 2, 3), read(" ( 1 2 3 ) "));
+        assertEquals(lst(1, 2, 3), read(" ( 1, 2, 3 ) "));
     }
 
     @Test
@@ -124,7 +124,15 @@ public class ReaderUnitTest extends LispTestSupport {
         assertEquals(vec(), read("[]"));
         assertEquals(vec(), read("[ ]"));
         assertEquals(vec(1,2), read("[1 2]"));
-        assertEquals(vec(1,2,3), read("[ 1 2 3 ]"));
+        assertEquals(vec(1,2,3), read("[ 1, 2, 3 ]"));
+    }
+
+
+    @Test
+    public void testReadMaps() {
+        assertEquals(LispSMap.EMPTY, read("{}"));
+        assertEquals(LispSMap.EMPTY, read("{ }"));
+        assertEquals(Utils.lispMap(1, 2, 3, 4), read("{1 2, 3 4}"));
     }
 
 

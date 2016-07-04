@@ -18,16 +18,20 @@ package com.jitlogic.zorka.lisp;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Keyword {
+
+    int id;
+
     String ns;
 
     String name;
 
-
-    public Keyword(String ns, String name) {
+    private Keyword(String ns, String name) {
         this.ns = ns;
         this.name = name;
+        this.id = nextId.getAndIncrement();
     }
 
     public String getNs() {
@@ -37,6 +41,8 @@ public class Keyword {
     public String getName() {
         return name;
     }
+
+    public int getId() { return id; }
 
     @Override
     public String toString() {
@@ -53,7 +59,7 @@ public class Keyword {
         }
         if (o.getClass() == this.getClass()) {
             Keyword sym = (Keyword)o;
-            return name.equals(sym.name) && Utils.objEquals(ns, sym.ns);
+            return sym.id == id || (name.equals(sym.name) && Utils.objEquals(ns, sym.ns));
         } else {
             return false;
         }
@@ -61,10 +67,12 @@ public class Keyword {
 
     @Override
     public int hashCode() {
-        return 31 * name.hashCode() + (ns != null ? 17 * ns.hashCode() : 0);
+        return id;
     }
 
     private static Map<String,Keyword> keywords = new HashMap<String,Keyword>();
+
+    private static AtomicInteger nextId = new AtomicInteger(1);
 
     /**
      * Returns keyword of given name.

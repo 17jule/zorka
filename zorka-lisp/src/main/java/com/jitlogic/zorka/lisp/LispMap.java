@@ -13,21 +13,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this software. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jitlogic.zorka.core;
 
+package com.jitlogic.zorka.lisp;
 
-public interface ZorkaControlMBean {
+public interface LispMap {
 
-    String getHostname();
+    public static final Object NULL_KEY = new Object();
 
-    long getTracerMinMethodTime();
+    public static final Object NOT_FOUND = new Object();
 
-    void setTracerMinMethodTime(long t);
+    public static final int MUTABLE = 0x00000001;
 
-    long getTracerMinTraceTime();
+    LispMap assoc(Object k, Object v);
 
-    void setTracerMinTraceTime(long t);
+    LispMap dissoc(Object k);
 
-    void reload();
+    Object get(Object k);
 
+    Object get(Object k, Object dv);
+
+    boolean contains(Object k);
+
+    int size();
+
+    Seq seq();
+
+    int getFlags();
+
+    void setFlags(int flags);
 }

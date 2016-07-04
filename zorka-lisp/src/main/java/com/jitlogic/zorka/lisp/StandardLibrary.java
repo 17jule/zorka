@@ -17,7 +17,6 @@
 package com.jitlogic.zorka.lisp;
 
 import java.io.InputStream;
-import java.security.Key;
 import java.util.*;
 
 import static com.jitlogic.zorka.lisp.Utils.next;
@@ -196,15 +195,6 @@ public class StandardLibrary {
         }
     }
 
-    @Primitive("array-list")
-    public static List arrayList(Object...objs) {
-        List<Object> rslt = new ArrayList<Object>(objs.length);
-        for (int i = 0; i < objs.length; i++) {
-            rslt.add(objs[i]);
-        }
-        return rslt;
-    }
-
     @Primitive("apply")
     public Object apply(Fn fn, Object...args) {
         if (args.length > 0) {
@@ -218,100 +208,114 @@ public class StandardLibrary {
         }
     }
 
+    @Primitive("array-list")
+    public static List arrayList(Object...objs) {
+        List<Object> rslt = new ArrayList<Object>(objs.length);
+        for (int i = 0; i < objs.length; i++) {
+            rslt.add(objs[i]);
+        }
+        return rslt;
+    }
+
+    @Primitive
+    public static LispMap assoc(LispMap m, Object k, Object v) {
+        return m.assoc(k, v);
+    }
+
     @Primitive("atom?")
     public static boolean isAtom(Object o) { return !isList(o); }
 
     @Primitive("byte?")
     public static boolean isByte(Object o) { return o instanceof Byte; }
 
-    @Primitive("car")
+    @Primitive
     public static Object car(Object o) { return o instanceof Seq ? ((Seq)o).first() : null; }
 
-    @Primitive("cdr")
+    @Primitive
     public static Object cdr(Object o) { return o instanceof Seq ? ((Seq)o).rest() : null; }
 
-    @Primitive("caar")
+    @Primitive
     public static Object caar(Object o) { return car(car(o)); }
 
-    @Primitive("cadr")
+    @Primitive
     public static Object cadr(Object o) { return car(cdr(o)); }
 
-    @Primitive("cdar")
+    @Primitive
     public static Object cdar(Object o) { return cdr(car(o)); }
 
-    @Primitive("cddr")
+    @Primitive
     public static Object cddr(Object o) { return cdr(cdr(o)); }
 
-    @Primitive("caaar")
+    @Primitive
     public static Object caaar(Object o) { return car(caar(o)); }
 
-    @Primitive("caadr")
+    @Primitive
     public static Object caadr(Object o) { return car(cadr(o)); }
 
-    @Primitive("cadar")
+    @Primitive
     public static Object cadar(Object o) { return car(cdar(o)); }
 
-    @Primitive("caddr")
+    @Primitive
     public static Object caddr(Object o) { return car(cddr(o)); }
 
-    @Primitive("cdaar")
+    @Primitive
     public static Object cdaar(Object o) { return cdr(caar(o)); }
 
-    @Primitive("cdadr")
+    @Primitive
     public static Object cdadr(Object o) { return cdr(cadr(o)); }
 
-    @Primitive("cddar")
+    @Primitive
     public static Object cddar(Object o) { return cdr(cdar(o)); }
 
-    @Primitive("cdddr")
+    @Primitive
     public static Object cdddr(Object o) { return cdr(cddr(o)); }
 
-    @Primitive("caaaar")
+    @Primitive
     public static Object caaaar(Object o) { return car(caaar(o)); }
 
-    @Primitive("caaadr")
+    @Primitive
     public static Object caaadr(Object o) { return car(caadr(o)); }
 
-    @Primitive("caadar")
+    @Primitive
     public static Object caadar(Object o) { return car(cadar(o)); }
 
-    @Primitive("caaddr")
+    @Primitive
     public static Object caaddr(Object o) { return car(caddr(o)); }
 
-    @Primitive("cadaar")
+    @Primitive
     public static Object cadaar(Object o) { return car(cdaar(o)); }
 
-    @Primitive("cadadr")
+    @Primitive
     public static Object cadadr(Object o) { return car(cdadr(o)); }
 
-    @Primitive("caddar")
+    @Primitive
     public static Object caddar(Object o) { return car(cddar(o)); }
 
-    @Primitive("cadddr")
+    @Primitive
     public static Object cadddr(Object o) { return car(cdddr(o)); }
 
-    @Primitive("cdaaar")
+    @Primitive
     public static Object cdaaar(Object o) { return cdr(caaar(o)); }
 
-    @Primitive("cdaadr")
+    @Primitive
     public static Object cdaadr(Object o) { return cdr(caadr(o)); }
 
-    @Primitive("cdadar")
+    @Primitive
     public static Object cdadar(Object o) { return cdr(cadar(o)); }
 
-    @Primitive("cdaddr")
+    @Primitive
     public static Object cdaddr(Object o) { return cdr(caddr(o)); }
 
-    @Primitive("cddaar")
+    @Primitive
     public static Object cddaar(Object o) { return cdr(cdaar(o)); }
 
-    @Primitive("cddadr")
+    @Primitive
     public static Object cddadr(Object o) { return cdr(cdadr(o)); }
 
-    @Primitive("cdddar")
+    @Primitive
     public static Object cdddar(Object o) { return cdr(cddar(o)); }
 
-    @Primitive("cddddr")
+    @Primitive
     public static Object cddddr(Object o) { return cdr(cdddr(o)); }
 
     @Primitive(value = "call-with-current-continuation", isNative = true)
@@ -341,6 +345,11 @@ public class StandardLibrary {
         return Utils.sub(n, (byte)1);
     }
 
+    @Primitive
+    public static LispMap dissoc(LispMap m, Object k) {
+        return m.dissoc(k);
+    }
+
     @Primitive("eq?")
     public static boolean isSame(Object obj1, Object obj2) { return obj1 == obj2; }
 
@@ -366,10 +375,15 @@ public class StandardLibrary {
         return o instanceof Fn;
     }
 
-    @Primitive("get")
-    public static Object get(Object...args) {
-        Object rslt = ObjectInspector.get(args[0], args[1]);
-        return rslt == null && args.length > 2 ? args[2] : rslt;
+    @Primitive(value = "get", isNative = true)
+    public static Object get(Interpreter ctx, Environment env, Seq args) {
+        Object obj = car(args), k = cadr(args), dv = caddr(args);
+        if (obj instanceof LispMap) {
+            return ((LispMap)obj).get(k, dv);
+        } else {
+            Object rslt = ObjectInspector.get(obj, k);
+            return rslt == null ? dv : rslt;
+        }
     }
 
     @Primitive("hash-map")
@@ -385,6 +399,23 @@ public class StandardLibrary {
             m.put(objs[i-1], objs[i]);
         }
 
+        return m;
+    }
+
+    @Primitive(isNative = true)
+    public static LispMap lispMap(Interpreter ctx, Environment env, Seq args) {
+
+        if (length(args) % 2 != 0) {
+            throw new LispException("Uneven number of arguments.");
+        }
+
+        LispMap m = new LispSMap(LispMap.MUTABLE);
+
+        for (Seq seq = args; seq != null; seq = (Seq)cddr(seq)) {
+            m = m.assoc(car(seq), cadr(seq));
+        }
+
+        m.setFlags(0);
         return m;
     }
 
@@ -495,6 +526,19 @@ public class StandardLibrary {
 
     @Primitive("negative?")
     public static boolean isNegative(Number n) { return Utils.cmp(n, 0) < 0; }
+
+    @Primitive(value = "new-map", isNative = true)
+    public static LispMap newMap(Interpreter ctx, Environment env, Seq args) {
+        int len = length(args);
+        if (len % 2 != 0) {
+            throw new LispException("Uneven number for arguments when constructing map.");
+        }
+        if (len <= 6) {
+            return new LispSMap(LispSMap.MUTABLE, args);
+        } else {
+            throw new LispException("Big maps not supported (yet).");
+        }
+    }
 
     @Primitive("not")
     public static boolean not(Object o) {

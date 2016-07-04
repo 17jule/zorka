@@ -70,12 +70,6 @@ public class ZorkaControl implements ZorkaControlMBean {
 
 
     @Override
-    public String listTracerIncludes() {
-        return instance.getSpyLib().listIncludes();
-    }
-
-
-    @Override
     public void reload() {
         instance.reload();
     }

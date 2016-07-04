@@ -122,49 +122,12 @@ public class SpyLib {
     public static final int SPD_MAX = 13;
 
 
-    public static final String GT = ">";
-    public static final String GE = ">=";
-    public static final String EQ = "==";
-    public static final String LE = "<=";
-    public static final String LT = "<";
-    public static final String NE = "!=";
 
     public static final int ON_ENTER = 0;
     public static final int ON_RETURN = 1;
     public static final int ON_ERROR = 2;
     public static final int ON_SUBMIT = 3;
 
-    public static final int AC_PUBLIC = 0x000001;
-    public static final int AC_PRIVATE = 0x000002;
-    public static final int AC_PROTECTED = 0x000004;
-    public static final int AC_STATIC = 0x000008;
-    public static final int AC_FINAL = 0x000010;
-    public static final int AC_SUPER = 0x000020;
-    public static final int AC_SYNCHRONIZED = 0x000020;
-    public static final int AC_VOLATILE = 0x000040;
-    public static final int AC_BRIDGE = 0x000040;
-    public static final int AC_VARARGS = 0x000080;
-    public static final int AC_TRANSIENT = 0x000080;
-    public static final int AC_NATIVE = 0x000100;
-    public static final int AC_INTERFACE = 0x000200;
-    public static final int AC_ABSTRACT = 0x000400;
-    public static final int AC_STRICT = 0x000800;
-    public static final int AC_SYNTHETIC = 0x001000;
-    public static final int AC_ANNOTATION = 0x002000;
-    public static final int AC_ENUM = 0x004000;
-    public static final int AC_PKGPRIV = 0x010000;
-    public static final int AC_ANY = 0x000000;
-
-    public static final int ACTION_STATS = 0x01;
-    public static final int ACTION_ENTER = 0x02;
-    public static final int ACTION_EXIT = 0x04;
-
-    public static final String TRACE = "TRACE";
-    public static final String DEBUG = "DEBUG";
-    public static final String INFO = "INFO";
-    public static final String WARN = "WARN";
-    public static final String ERROR = "ERROR";
-    public static final String FATAL = "FATAL";
 
     private SpyClassTransformer classTransformer;
     private MBeanServerRegistry mbsRegistry;
@@ -280,32 +243,13 @@ public class SpyLib {
      *
      * @param matchers spy matcher objects (created using spy.byXxxx() functions)
      */
-    @Primitive
+    @Primitive("tracer-exclude")
     public void exclude(String... matchers) {
-        for (String matcher : matchers) {
-            log.info(ZorkaLogger.ZAG_CONFIG, "Tracer exclude: " + matcher);
-            tracer.include(SpyMatcher.fromString(matcher.toString()).exclude());
+        for (Object obj : matchers) {
+            SpyMatcher matcher = obj instanceof SpyMatcher ? (SpyMatcher)obj : SpyMatcher.fromString(obj.toString());
+            log.info(ZorkaLogger.ZAG_CONFIG, "Tracer include: " + matcher);
+            tracer.include(matcher.exclude());
         }
-    }
-
-    @Primitive("exclude-matchers")
-    public void exclude(SpyMatcher... matchers) {
-        for (SpyMatcher matcher : matchers) {
-            log.info(ZorkaLogger.ZAG_CONFIG, "Tracer exclude: " + matcher);
-            tracer.include((matcher).exclude());
-        }
-
-    }
-
-    @Primitive("list-includes")
-    public String listIncludes() {
-        StringBuilder sb = new StringBuilder();
-        for (SpyMatcher sm : tracer.getMatcherSet().getMatchers()) {
-            sb.append(sm.hasFlags(SpyMatcher.EXCLUDE_MATCH) ? "excl: " : "incl: ");
-            sb.append(sm);
-            sb.append("\n");
-        }
-        return sb.toString();
     }
 
 
