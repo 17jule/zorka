@@ -148,7 +148,7 @@ public class JmxQueryUnitTest extends ZorkaFixture {
             bean.put(md[i - 1], md[i]);
         }
 
-        testMbs.registerMBean(bean, new ObjectName(name));
+        //testMbs.registerMBean(bean, new ObjectName(name));
 
         return bean;
     }

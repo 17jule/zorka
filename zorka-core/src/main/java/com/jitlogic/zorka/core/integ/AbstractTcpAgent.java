@@ -17,10 +17,16 @@ package com.jitlogic.zorka.core.integ;
 
 import com.jitlogic.zorka.common.ZorkaService;
 import com.jitlogic.zorka.common.stats.AgentDiagnostics;
-import com.jitlogic.zorka.common.util.ZorkaConfig;
 import com.jitlogic.zorka.common.util.ZorkaLog;
 import com.jitlogic.zorka.common.util.ZorkaLogger;
 import com.jitlogic.zorka.core.ZorkaLispAgent;
+import com.jitlogic.zorka.lisp.Keyword;
+import com.jitlogic.zorka.lisp.LispMap;
+import com.jitlogic.zorka.lisp.Seq;
+
+import static com.jitlogic.zorka.lisp.StandardLibrary.car;
+import static com.jitlogic.zorka.lisp.StandardLibrary.cdr;
+import static com.jitlogic.zorka.lisp.StandardLibrary.cons;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -73,7 +79,7 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
 
     private int defaultPort;
 
-    private ZorkaConfig config;
+    private LispMap config;
 
     /**
      * TCP listen address
@@ -90,10 +96,9 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
      */
     private ServerSocket socket;
 
-    /**
-     * Query translator
-     */
-    protected QueryTranslator translator;
+    public static final Keyword KW_ADDR = Keyword.keyword("addr");
+    public static final Keyword KW_PORT = Keyword.keyword("port");
+    public static final Keyword KW_SVRS = Keyword.keyword("servers");
 
     /**
      * Standard constructor
@@ -103,12 +108,11 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
      * @param defaultAddr
      * @param defaultPort agent default port
      */
-    public AbstractTcpAgent(ZorkaConfig config, ZorkaLispAgent agent, QueryTranslator translator,
+    public AbstractTcpAgent(LispMap config, ZorkaLispAgent agent,
                             String prefix, String defaultAddr, int defaultPort) {
 
         this.agent = agent;
         this.prefix = prefix;
-        this.translator = translator;
 
         this.defaultPort = defaultPort;
         this.defaultAddr = defaultAddr;
@@ -118,19 +122,20 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
     }
 
     protected void setup() {
-        String la = config.stringCfg(prefix + ".listen.addr", defaultAddr);
+        String la = (String)config.get(KW_ADDR, defaultAddr);
         try {
             listenAddr = InetAddress.getByName(la.trim());
         } catch (UnknownHostException e) {
-            log.error(ZorkaLogger.ZAG_ERRORS, "Cannot parse " + prefix + ".listen.addr in zorka.properties", e);
+            log.error(ZorkaLogger.ZAG_ERRORS, "Cannot parse " + prefix + " address in zorka.conf", e);
             AgentDiagnostics.inc(AgentDiagnostics.CONFIG_ERRORS);
         }
 
-        listenPort = config.intCfg(prefix + ".listen.port", defaultPort);
+        listenPort = (Integer)config.get(KW_PORT, defaultPort);
 
         log.info(ZorkaLogger.ZAG_ERRORS, "Zorka will listen for " + prefix + " connections on " + listenAddr + ":" + listenPort);
 
-        for (String sa : config.listCfg(prefix + ".server.addr", "127.0.0.1")) {
+        for (Seq seq = (Seq)config.get(KW_SVRS, cons("127.0.0.1", null)); seq != null; seq = (Seq)cdr(seq)) {
+            String sa = (String)car(seq);
             try {
                 log.info(ZorkaLogger.ZAG_ERRORS, "Zorka will accept " + prefix + " connections from '" + sa.trim() + "'.");
                 allowedAddrs.add(InetAddress.getByName(sa.trim()));

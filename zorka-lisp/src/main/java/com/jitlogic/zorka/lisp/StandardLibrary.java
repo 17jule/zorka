@@ -208,11 +208,11 @@ public class StandardLibrary {
         }
     }
 
-    @Primitive("array-list")
-    public static List arrayList(Object...objs) {
-        List<Object> rslt = new ArrayList<Object>(objs.length);
-        for (int i = 0; i < objs.length; i++) {
-            rslt.add(objs[i]);
+    @Primitive(value = "array-list", isNative = true)
+    public static List arrayList(Interpreter ctx, Environment env, Seq args) {
+        List<Object> rslt = new ArrayList<Object>(length(args));
+        for (Seq seq = args; seq != null; seq = (Seq)cdr(seq)) {
+            rslt.add(car(seq));
         }
         return rslt;
     }

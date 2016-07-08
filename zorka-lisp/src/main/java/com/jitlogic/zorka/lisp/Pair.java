@@ -16,6 +16,8 @@
 
 package com.jitlogic.zorka.lisp;
 
+import java.util.Iterator;
+
 /**
  * Lisp Cell represents one list element. This is single linked list.
  */
@@ -79,5 +81,10 @@ public class Pair implements Seq {
         return o != null &&
             (o == this || o instanceof Seq &&
                 Utils.lstEquals((Seq) o, this));
+    }
+
+    @Override
+    public Iterator iterator() {
+        return new SeqIterator(this);
     }
 }

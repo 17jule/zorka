@@ -16,6 +16,8 @@
 
 package com.jitlogic.zorka.lisp;
 
+import java.util.Iterator;
+
 import static com.jitlogic.zorka.lisp.StandardLibrary.car;
 import static com.jitlogic.zorka.lisp.StandardLibrary.cdr;
 import static com.jitlogic.zorka.lisp.StandardLibrary.cdar;
@@ -27,7 +29,6 @@ public class LispHMap implements LispMap {
     private static final int HBITS = 4;
     private static final int HSIZE = 1 << HBITS;
     private static final int HMASK = HSIZE - 1;
-
 
     private interface Node {
         Node assoc(int shift, int hash, Object k, Object v, boolean mutable);
@@ -351,6 +352,11 @@ public class LispHMap implements LispMap {
 
             return sb.toString();
         }
+
+        @Override
+        public Iterator iterator() {
+            return new SeqIterator(this);
+        }
     }
 
     private int flags;
@@ -491,4 +497,48 @@ public class LispHMap implements LispMap {
             return null;
         }
     }
+
+    private class SeqIterator implements Iterator<LispMap.Entry> {
+
+        NodeSeqTail tail = new NodeSeqTail(root);
+        Entry val;
+
+        public SeqIterator() {
+            if (tail.next()) {
+                val = new Entry(LispHMap.this, tail.key(), tail.value());
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return val != null;
+        }
+
+        @Override
+        public Entry next() {
+            Entry rslt = val;
+            if (tail.next()) {
+                val = new Entry(LispHMap.this, tail.key(), tail.value());
+            } else {
+                val = null;
+            }
+            return rslt;
+        }
+
+        @Override
+        public void remove() {
+            if (0 != (flags & MUTABLE)) {
+                dissoc(val.getKey());
+            } else {
+                throw new LispException("Cannot modify immutable map.");
+            }
+        }
+    }
+
+    @Override
+    public Iterator<LispMap.Entry> iterator() {
+        return new SeqIterator();
+    }
+
+
 }

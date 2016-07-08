@@ -19,6 +19,8 @@ package com.jitlogic.zorka.core.spy;
 import com.jitlogic.zorka.common.util.ZorkaLog;
 import com.jitlogic.zorka.common.util.ZorkaLogger;
 import com.jitlogic.zorka.core.AgentConfig;
+import com.jitlogic.zorka.lisp.Keyword;
+import com.jitlogic.zorka.lisp.LispMap;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
@@ -33,9 +35,11 @@ public class RealSpyRetransformer implements SpyRetransformer {
 
     private boolean matchMethods;
 
-    public RealSpyRetransformer(Instrumentation instrumentation, AgentConfig config) {
+    public static final Keyword KW_MATCH_METHODS = Keyword.keyword("match-methods");
+
+    public RealSpyRetransformer(Instrumentation instrumentation, LispMap config) {
         this.instrumentation = instrumentation;
-        matchMethods = config.boolCfg("zorka.retransform.match.methods", false);
+        matchMethods = (Boolean)config.get(KW_MATCH_METHODS, false);
         log.info(ZorkaLogger.ZSP_CONFIG, "Enabling spy retransformer. Full online reconfiguration should be possible.");
     }
 

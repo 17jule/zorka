@@ -19,6 +19,7 @@ package com.jitlogic.zorka.lisp;
 import java.io.*;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import static com.jitlogic.zorka.lisp.StandardLibrary.car;
 import static com.jitlogic.zorka.lisp.StandardLibrary.cdr;
@@ -416,6 +417,15 @@ public class Utils {
         }
 
         return map;
+    }
+
+    public static <T> Iterable<T> iterable(final Seq seq) {
+        return new Iterable<T>() {
+            @Override
+            public Iterator<T> iterator() {
+                return new Seq.SeqIterator<T>(seq);
+            }
+        };
     }
 
     public static LispMap lispMap(Object...objs) {

@@ -15,14 +15,8 @@
  */
 package com.jitlogic.zorka.core.test.support;
 
-import com.jitlogic.zorka.common.test.support.CommonFixture;
 import com.jitlogic.zorka.common.test.support.TestJmx;
-import com.jitlogic.zorka.common.util.ZorkaConfig;
 import com.jitlogic.zorka.core.*;
-import com.jitlogic.zorka.core.integ.NagiosLib;
-import com.jitlogic.zorka.core.integ.QueryTranslator;
-import com.jitlogic.zorka.core.integ.SyslogLib;
-import com.jitlogic.zorka.core.integ.zabbix.ZabbixLib;
 import com.jitlogic.zorka.core.mbeans.MBeanServerRegistry;
 import com.jitlogic.zorka.core.spy.*;
 
@@ -36,15 +30,13 @@ import javax.management.ObjectName;
 import java.io.File;
 import java.util.Properties;
 
-public class ZorkaFixture extends CommonFixture {
+public class ZorkaFixture {
 
-    protected Properties configProperties;
     protected MBeanServerRegistry mBeanServerRegistry;
 
     protected AgentInstance agentInstance;
     protected SpyClassTransformer spyTransformer;
 
-    protected SyslogLib syslogLib;
     protected SpyLib spy;
 
     protected ZorkaLispAgent zorkaAgent;
@@ -54,11 +46,8 @@ public class ZorkaFixture extends CommonFixture {
 
     protected SymbolRegistry symbols;
 
-    protected ZabbixLib zabbixLib;
-    protected NagiosLib nagiosLib;
     protected UtilLib util;
 
-    protected QueryTranslator translator;
 
     private String tmpDir;
 
@@ -67,17 +56,7 @@ public class ZorkaFixture extends CommonFixture {
 
         // Configure and spawn agent instance ...
 
-        configProperties = TestUtil.setProps(
-                ZorkaConfig.defaultProperties(AgentConfig.DEFAULT_CONF_PATH),
-                "zorka.home.dir", "/tmp",
-                "zabbix.enabled", "no",
-                "zorka.hostname", "test",
-                "zorka.filelog", "no",
-                "zorka.mbs.autoregister", "yes",
-                "spy", "yes"
-        );
-
-        config = new AgentConfig(configProperties);
+        config = new AgentConfig("/tmp");
         agentInstance = new TestAgentInstance(config, new DummySpyRetransformer(null, config));
         agentInstance.start();
 
@@ -86,17 +65,13 @@ public class ZorkaFixture extends CommonFixture {
         mBeanServerRegistry = agentInstance.getMBeanServerRegistry();
         zorkaAgent = agentInstance.getZorkaAgent();
         zorka = agentInstance.getZorkaLib();
-        syslogLib = agentInstance.getSyslogLib();
         spy = agentInstance.getSpyLib();
         spyTransformer = agentInstance.getClassTransformer();
-        zabbixLib = agentInstance.getZabbixLib();
-        nagiosLib = agentInstance.getNagiosLib();
-        translator = agentInstance.getTranslator();
         util = agentInstance.getUtilLib();
 
         // Install test MBean server
 
-        mBeanServerRegistry.register("test", testMbs, testMbs.getClass().getClassLoader());
+        //mBeanServerRegistry.register("test", testMbs, testMbs.getClass().getClassLoader());
 
         MainSubmitter.setSubmitter(agentInstance.getSubmitter());
         MainSubmitter.setTracer(agentInstance.getTracer());
@@ -130,7 +105,7 @@ public class ZorkaFixture extends CommonFixture {
         bean.setNom(nom);
         bean.setDiv(div);
 
-        testMbs.registerMBean(bean, new ObjectName(name));
+        //testMbs.registerMBean(bean, new ObjectName(name));
 
         return bean;
     }

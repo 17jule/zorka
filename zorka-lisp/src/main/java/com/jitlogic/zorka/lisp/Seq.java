@@ -16,12 +16,14 @@
 
 package com.jitlogic.zorka.lisp;
 
+import java.util.Iterator;
+
 /**
  * Common interface for all sequence objects. It applies to
  * linked lists (eg. LispPair), lazy evaluation constructs
  * and wrappers for all kinds of collections etc.
  */
-public interface Seq {
+public interface Seq extends Iterable {
 
     /**
      * Returns value of current sequence item.
@@ -32,5 +34,32 @@ public interface Seq {
      * Returns next sequence item or null if current is the last one.
      */
     Object rest();
+
+
+    public static class SeqIterator<T> implements Iterator<T> {
+
+        private Seq seq;
+
+        public SeqIterator(Seq seq) {
+            this.seq = seq;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return seq != null;
+        }
+
+        @Override
+        public T next() {
+            Object rslt = seq.first();
+            seq = (Seq)seq.rest();
+            return (T)rslt;
+        }
+
+        @Override
+        public void remove() {
+            throw new LispException("Cannot modify LISP Seq.");
+        }
+    }
 
 }

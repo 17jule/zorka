@@ -27,7 +27,6 @@ import com.jitlogic.zorka.common.stats.AgentDiagnostics;
 import com.jitlogic.zorka.common.stats.MethodCallStatistic;
 import com.jitlogic.zorka.common.util.*;
 import com.jitlogic.zorka.common.util.FileTrapper;
-import com.jitlogic.zorka.core.integ.QueryTranslator;
 import com.jitlogic.zorka.core.perfmon.*;
 import com.jitlogic.zorka.core.spy.SpyClassTransformer;
 import com.jitlogic.zorka.core.spy.SpyDefinition;
@@ -40,6 +39,7 @@ import com.jitlogic.zorka.core.mbeans.ZorkaMappedMBean;
 import com.jitlogic.zorka.lisp.Namespace;
 import com.jitlogic.zorka.lisp.Primitive;
 
+import static com.jitlogic.zorka.core.AgentConfigConstants.*;
 
 /**
  * Standard library for zorka-agent. All public methods implemented in this module will be available for
@@ -80,22 +80,19 @@ public class ZorkaLib implements ZorkaService {
 
     private AgentConfig config;
 
-    private QueryTranslator translator;
-
     private AgentInstance instance;
 
     /**
      * Standard constructor
      */
-    public ZorkaLib(AgentInstance instance, QueryTranslator translator) {
+    public ZorkaLib(AgentInstance instance) {
         this.agent = instance.getZorkaAgent();
         this.mbsRegistry = instance.getMBeanServerRegistry();
         this.config = instance.getConfig();
-        this.translator = translator;
         this.instance = instance;
 
-        this.hostname = config.getProperties().getProperty("zorka.hostname").trim();
-        this.version = config.getProperties().getProperty("zorka.version").trim();
+        this.hostname = config.strVal(null, KW_HOSTNAME);
+        this.version = config.strVal("?", KW_ZORKA, KW_VERSION);
     }
 
 
@@ -738,54 +735,6 @@ public class ZorkaLib implements ZorkaService {
 
 
     /**
-     * Loooks for file trapper registered as 'id' or creates and registers rolling file trapper.
-     *
-     * @param id            trapper ID
-     * @param logLevel      log level (only messages with such or higher log level will be logged)
-     * @param path          path to log file (excluding numbered suffixes)
-     * @param count         number of archived files (excluding current one)
-     * @param maxSize       maximum file size
-     * @param logExceptions if true, stack traces of passed exceptions will be logged
-     * @return file trapper
-     */
-    @Primitive("rolling-file-trapper")
-    public FileTrapper rollingFileTrapper(String id, String logLevel, String path, int count, long maxSize, boolean logExceptions) {
-        FileTrapper trapper = fileTrappers.get(id);
-
-        if (trapper == null) {
-            trapper = FileTrapper.rolling(ZorkaLogLevel.valueOf(logLevel), formatCfg(path), count, maxSize, logExceptions);
-            trapper.start();
-            fileTrappers.put(id, trapper);
-        }
-
-        return trapper;
-    }
-
-
-    /**
-     * Looks for file trapper registered as 'id' or creates and registers daily file trapper.
-     *
-     * @param id            trapper ID
-     * @param logLevel      trapper log level (only messages with such or higher log level will be logged)
-     * @param path          path to log file (excluding suffix indicating log date)
-     * @param logExceptions if true, trapper will log stack traces of passed exceptions
-     * @return file trapper
-     */
-    @Primitive("daily-file-trapper")
-    public FileTrapper dailyFileTrapper(String id, ZorkaLogLevel logLevel, String path, boolean logExceptions) {
-        FileTrapper trapper = fileTrappers.get(id);
-
-        if (trapper == null) {
-            trapper = FileTrapper.daily(logLevel, formatCfg(path), logExceptions);
-            trapper.start();
-            fileTrappers.put(id, trapper);
-        }
-
-        return trapper;
-    }
-
-
-    /**
      * Stops and unregisters file trapper
      *
      * @param id trapper ID
@@ -809,123 +758,6 @@ public class ZorkaLib implements ZorkaService {
 
 
     /**
-     * Formats string containing references to zorka properties.
-     *
-     * @param input zorka properties
-     * @return
-     */
-    @Primitive("format-cfg")
-    public String formatCfg(String input) {
-        return config.formatCfg(input);
-    }
-
-
-    /**
-     * Returns true if given config property is set in zorka.properties file and has non-zero length
-     *
-     * @param key property key
-     * @return true if entry exists and is non-empty
-     */
-    @Primitive("has-cfg")
-    public boolean hasCfg(String key) {
-        return config.hasCfg(key);
-    }
-
-
-    @Primitive("bool-cfg")
-    public Boolean boolCfg(String key, Boolean defval) {
-        return config.boolCfg(key, defval);
-    }
-
-
-    @Primitive("int-cfg")
-    public Integer intCfg(String key, Integer defval) {
-        return config.intCfg(key, defval);
-    }
-
-
-    @Primitive("long-cfg")
-    public Long longCfg(String key, Long defval) {
-        return config.longCfg(key, defval);
-    }
-
-
-    @Primitive("kilo-cfg")
-    public Long kiloCfg(String key, Long defval) {
-        return config.kiloCfg(key, defval);
-    }
-
-
-    @Primitive("string-cfg")
-    public String stringCfg(String key, String defval) {
-        return config.stringCfg(key, defval);
-    }
-
-    @Primitive("def-cfg")
-    public void defCfg(String key, String defVal) {
-        if (!hasCfg(key)) {
-            config.setCfg(key, defVal);
-        }
-    }
-
-    @Primitive("set-cfg!")
-    public void setCfg(String key, String val) {
-        config.setCfg(key, val);
-    }
-
-    @Primitive("set-cfg")
-    public Set<String> setCfg(String key) {
-        Set<String> set = new HashSet<String>();
-        set.addAll(listCfg(key));
-        return set;
-    }
-
-    @Primitive("if-cfg")
-    public Object ifCfg(String key, boolean defVal, Object thenVal, Object elseVal) {
-        return boolCfg(key, defVal) ? thenVal : elseVal;
-    }
-
-
-    @Primitive("load-cfg")
-    public Properties loadCfg(String fname) {
-        String path = ZorkaUtil.path(config.getHomeDir(), fname);
-        Properties props = config.loadCfg(config.getProperties(), path, false);
-        if (props != null) {
-            log.info(ZorkaLogger.ZAG_INFO, "Loaded property file: " + path);
-        } else {
-            log.info(ZorkaLogger.ZAG_INFO, "Property file not found: " + path);
-        }
-        return props;
-    }
-
-
-    @Primitive("load-cfg-from-props")
-    public Properties loadCfg(Properties properties, String fname, boolean verbose) {
-        String path = ZorkaUtil.path(config.getHomeDir(), fname);
-        Properties props = config.loadCfg(properties, path, verbose);
-        if (props != null) {
-            log.info(ZorkaLogger.ZAG_INFO, "Loaded property file: " + path);
-        } else {
-            log.info(ZorkaLogger.ZAG_INFO, "Property file not found: " + path);
-        }
-        return props;
-    }
-
-
-    /**
-     * Parses comma-separated configuration setting and returns it as list of strings.
-     *
-     * @param key     key in zorka.properties file
-     * @param defVals set of default values (if key is missing)
-     * @return parsed list
-     */
-    @Primitive("list-cfg")
-    public List<String> listCfg(String key, String... defVals) {
-        return config.listCfg(key, defVals);
-    }
-
-
-    /**
      * Schedules a task.
      *
      * @param task     task (must be Runnable)
@@ -941,12 +773,6 @@ public class ZorkaLib implements ZorkaService {
         return new QueryDef(mbsName, query, attrs);
     }
 
-    @Primitive("allow")
-    public void allow(String... funcs) {
-        for (String func : funcs) {
-            translator.allow(func);
-        }
-    }
 
     @Primitive("cpu-hiccup")
     public HiccupMeter cpuHiccup(String mbsName, String mbeanName, String attr) {

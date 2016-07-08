@@ -16,7 +16,9 @@
 
 package com.jitlogic.zorka.lisp;
 
-public interface LispMap {
+import java.util.Map;
+
+public interface LispMap extends Iterable<LispMap.Entry> {
 
     public static final Object NULL_KEY = new Object();
 
@@ -41,4 +43,36 @@ public interface LispMap {
     int getFlags();
 
     void setFlags(int flags);
+
+
+    public static class Entry implements Map.Entry {
+        Object k, v;
+        LispMap m;
+
+        public Entry(LispMap m, Object k, Object v) {
+            this.m = m;
+            this.k = k;
+            this.v = v;
+        }
+
+        public Object getKey() {
+            return k;
+        }
+
+        public Object getValue() {
+            return v;
+        }
+
+        @Override
+        public Object setValue(Object value) {
+            if (0 != (m.getFlags() & MUTABLE)) {
+                m.assoc(k, value);
+            } else {
+                throw new LispException("Cannot modify immutable map.");
+            }
+            return null;
+        }
+    }
+
+
 }

@@ -16,6 +16,8 @@
 
 package com.jitlogic.zorka.lisp;
 
+import java.util.Iterator;
+
 import static com.jitlogic.zorka.lisp.StandardLibrary.cons;
 import static com.jitlogic.zorka.lisp.StandardLibrary.car;
 import static com.jitlogic.zorka.lisp.StandardLibrary.cdar;
@@ -175,6 +177,64 @@ public class LispSMap implements LispMap, Cloneable {
     }
 
 
+    private class SeqIterator implements Iterator<LispMap.Entry> {
+
+        int idx = -1;
+        private Entry val;
+
+        private void nextPos() {
+            for (idx = idx+1; idx < 6; idx++) {
+                if (idx <= 0 && k0 != null) { val = new Entry(LispSMap.this, k0, v0); return; }
+                if (idx <= 1 && k1 != null) { val = new Entry(LispSMap.this, k1, v1); return; }
+                if (idx <= 2 && k2 != null) { val = new Entry(LispSMap.this, k2, v2); return; }
+                if (idx <= 3 && k3 != null) { val = new Entry(LispSMap.this, k3, v3); return; }
+                if (idx <= 4 && k4 != null) { val = new Entry(LispSMap.this, k4, v4); return; }
+                if (idx <= 5 && k5 != null) { val = new Entry(LispSMap.this, k5, v5); return; }
+            }
+            val = null;
+        }
+
+        public SeqIterator() {
+            nextPos();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return val != null;
+        }
+
+        @Override
+        public Entry next() {
+            Entry rslt = val;
+            nextPos();
+            return rslt;
+        }
+
+        @Override
+        public void remove() {
+            if (0 != (flags & MUTABLE)) {
+                switch (idx) {
+                    case 0: k0 = null; v0 = null; break;
+                    case 1: k1 = null; v1 = null; break;
+                    case 2: k2 = null; v2 = null; break;
+                    case 3: k3 = null; v3 = null; break;
+                    case 4: k4 = null; v4 = null; break;
+                    case 5: k5 = null; v5 = null; break;
+                }
+                nextPos();
+            } else {
+                throw new LispException("Cannot remove from immutable LISP map.");
+            }
+        }
+    }
+
+
+    @Override
+    public Iterator<LispMap.Entry> iterator() {
+        return new SeqIterator();
+    }
+
+
     public class MapSeq implements Seq {
 
         private int idx;
@@ -204,6 +264,11 @@ public class LispSMap implements LispMap, Cloneable {
                 next = seq(idx+1);
             }
             return next;
+        }
+
+        @Override
+        public Iterator iterator() {
+            return new SeqIterator(this);
         }
     }
 

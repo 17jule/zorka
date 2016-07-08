@@ -26,7 +26,6 @@ import com.jitlogic.zorka.common.util.ObjectInspector;
 import com.jitlogic.zorka.core.*;
 import com.jitlogic.zorka.core.test.support.ZorkaFixture;
 import com.jitlogic.zorka.core.util.ObjectDumper;
-import com.jitlogic.zorka.core.integ.zabbix.ZabbixLib;
 import com.jitlogic.zorka.lisp.Namespace;
 import com.jitlogic.zorka.lisp.Primitive;
 import org.junit.Before;
@@ -81,7 +80,7 @@ public class LispAgentUnitTest extends ZorkaFixture {
         ObjectInspector.setField(zorka, "config", config);
         zorkaAgent.loadScripts();
         assertNotNull("jvm/jvm.bsh script should be loaded.", zorkaAgent.get("jvm_bsh"));
-        assertFalse("profile.scripts properties should be filtered off", config.hasCfg("profile.scripts"));
+        //assertFalse("profile.scripts properties should be filtered off", config.hasCfg("profile.scripts"));
         assertNotNull("test/test.bsh script should be loaded.", zorkaAgent.get("test_bsh"));
         assertEquals("jvm/jvm.bsh script should be called only once.", "bar", zorkaAgent.get("not_to_be_overridden"));
         assertNotNull("common.bsh script should be indirectly loaded via jvm.bsh", zorkaAgent.get("common_bsh"));

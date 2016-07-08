@@ -35,6 +35,10 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
+import static com.jitlogic.zorka.lisp.StandardLibrary.arrayList;
+
+import static com.jitlogic.zorka.core.AgentConfigConstants.*;
+
 public class ZorkaLispAgent implements ZorkaAgent, ZorkaService {
 
     /**
@@ -149,7 +153,7 @@ public class ZorkaLispAgent implements ZorkaAgent, ZorkaService {
      * @param script path to script
      */
     public synchronized String loadScript(String script) {
-        String path = ZorkaUtil.path(config.stringCfg(AgentConfig.PROP_SCRIPTS_DIR, null), script);
+        String path = ZorkaUtil.path(config.strVal(null, KW_SCRIPTS_DIR), script);
         InputStream is  = null;
         try {
             if (new File(path).canRead()) {
@@ -193,20 +197,17 @@ public class ZorkaLispAgent implements ZorkaAgent, ZorkaService {
      * Loads and executes all script in script directory.
      */
     public void loadScripts() {
-        String scriptsDir = config.stringCfg(AgentConfig.PROP_SCRIPTS_DIR, null);
+        String scriptsDir = config.strVal(null, KW_SCRIPTS_DIR);
 
         if (scriptsDir == null) {
             log.error(ZorkaLogger.ZAG_ERRORS, "Scripts directory not set. Internal error ?!?");
             return;
         }
 
-        List<String> scripts = config.listCfg("scripts");
-
-        if (scripts != null) {
-            for (String script : scripts) {
-                require(script);
-            }
+        for (Object script : Utils.iterable(config.seqVal(null, KW_SCRIPTS))) {
+            require((String)script);
         }
+
     }
 
 

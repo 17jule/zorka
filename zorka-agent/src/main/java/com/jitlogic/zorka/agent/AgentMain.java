@@ -100,11 +100,11 @@ public class AgentMain {
 
         instance.start();
 
-        if (instance.getConfig().boolCfg("spy", true)) {
-            addTransformer(instrumentation, instance.getClassTransformer(), retransformSupported);
-            MainSubmitter.setSubmitter(instance.getSubmitter());
-            MainSubmitter.setTracer(instance.getTracer());
-        }
+//        if (instance.getConfig().boolCfg("spy", true)) {
+//            addTransformer(instrumentation, instance.getClassTransformer(), retransformSupported);
+//            MainSubmitter.setSubmitter(instance.getSubmitter());
+//            MainSubmitter.setTracer(instance.getTracer());
+//        }
 
         instance.getMBeanServerRegistry().registerZorkaControl(
                 new ZorkaControl("java", "zorka:type=ZorkaControl,name=ZorkaControl", instance));

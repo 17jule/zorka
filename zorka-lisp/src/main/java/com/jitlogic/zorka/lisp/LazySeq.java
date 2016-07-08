@@ -16,6 +16,8 @@
 
 package com.jitlogic.zorka.lisp;
 
+import java.util.Iterator;
+
 public class LazySeq implements Seq {
 
     private Interpreter ctx;
@@ -72,5 +74,10 @@ public class LazySeq implements Seq {
         return o != null &&
             (o == this || o instanceof Seq &&
                 Utils.lstEquals((Seq) o, this));
+    }
+
+    @Override
+    public Iterator iterator() {
+        return new SeqIterator(this);
     }
 }

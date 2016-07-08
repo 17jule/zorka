@@ -72,4 +72,9 @@ public class IterSeq implements Seq {
             (o == this || o instanceof Seq &&
                 Utils.lstEquals((Seq) o, this));
     }
+
+    @Override
+    public Iterator iterator() {
+        return new SeqIterator(this);
+    }
 }

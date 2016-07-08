@@ -138,21 +138,18 @@ public class SpyLib {
 
     private SymbolRegistry symbolRegistry;
 
-    private ZorkaConfig config;
-
 
     /**
      * Creates spy library object
      *
      * @param classTransformer spy transformer
      */
-    public SpyLib(SpyClassTransformer classTransformer, MBeanServerRegistry mbsRegistry, ZorkaLispAgent agent, Tracer tracer, SymbolRegistry symbolRegistry, ZorkaConfig config) {
+    public SpyLib(SpyClassTransformer classTransformer, MBeanServerRegistry mbsRegistry, ZorkaLispAgent agent, Tracer tracer, SymbolRegistry symbolRegistry) {
         this.classTransformer = classTransformer;
         this.mbsRegistry = mbsRegistry;
         this.agent = agent;
         this.tracer = tracer;
         this.symbolRegistry = symbolRegistry;
-        this.config = config;
     }
 
 

@@ -22,6 +22,8 @@ import com.jitlogic.zorka.lisp.support.LispTestSupport;
 import org.junit.Test;
 
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import static org.junit.Assert.*;
@@ -39,6 +41,7 @@ public abstract class LispMapAbstractTest extends LispTestSupport {
     public static final int FULL_CHECK_SEQ    = 0x02;
     public static final int FULL_CHECK_SIZE   = 0x04;
     public static final int FULL_CHECK_EQUALS = 0x08;
+    public static final int FULL_CHECK_ITER   = 0x10;
 
     public static final int FULL_CHECK = FULL_CHECK_SIZE;
 
@@ -69,19 +72,19 @@ public abstract class LispMapAbstractTest extends LispTestSupport {
 
     @Test
     public void testAssocDissocGetSet4() {
-        assocDissocStress(4, 4 * 1024, 1, FULL_CHECK);
+        assocDissocStress(4, 4 * 1024, 1, FULL_CHECK|FULL_CHECK_ITER);
     }
 
 
     @Test
     public void testAssocDissocGetSet16() {
-        assocDissocStress(16, 16 * 1024, 1, FULL_CHECK);
+        assocDissocStress(16, 16 * 1024, 1, FULL_CHECK|FULL_CHECK_ITER);
     }
 
 
     @Test
     public void testAssocDissocGetSet64() {
-        assocDissocStress(64, 64 * 1024, 1, FULL_CHECK);
+        assocDissocStress(64, 64 * 1024, 1, FULL_CHECK|FULL_CHECK_ITER);
     }
 
 
@@ -123,6 +126,7 @@ public abstract class LispMapAbstractTest extends LispTestSupport {
                 if (0 != (checks & FULL_CHECK_GET)) checkGets(mult, flags, i, m1);
                 if (0 != (checks & FULL_CHECK_SEQ)) checkSeq(mult, flags, m1);
                 if (0 != (checks & FULL_CHECK_EQUALS)) checkCopyAndEquals(m1);
+                if (0 != (checks & FULL_CHECK_ITER)) checkIterators(m1);
 
                 m = m1;
             } else {
@@ -143,6 +147,7 @@ public abstract class LispMapAbstractTest extends LispTestSupport {
                 if (0 != (checks & FULL_CHECK_GET)) checkGets(mult, flags, i, m1);
                 if (0 != (checks & FULL_CHECK_SEQ)) checkSeq(mult, flags, m1);
                 if (0 != (checks & FULL_CHECK_EQUALS)) checkCopyAndEquals(m1);
+                if (0 != (checks & FULL_CHECK_ITER)) checkIterators(m1);
 
                 m = m1;
             }
@@ -209,6 +214,29 @@ public abstract class LispMapAbstractTest extends LispTestSupport {
         }
         if (m.hashCode() != m1.hashCode()) {
             fail("Maps do NOT have the same hash codes: " + m.hashCode() + " vs " + m1.hashCode());
+        }
+    }
+
+
+    private void checkIterators(LispMap m) {
+        Map<Object,Object> hm = new HashMap<Object,Object>();
+
+        for (Map.Entry e : m) {
+            hm.put(e.getKey(), e.getValue());
+        }
+
+        if (hm.size() != m.size()) {
+            for (Object o : m) {
+                System.out.println(o);
+            }
+            fail("Map and iterator result sizes do not match: " + m + " <-> " + hm);
+        }
+
+        for (Object o : hm.entrySet()) {
+            Map.Entry e = (Map.Entry)o;
+            if (!e.getValue().equals(m.get(e.getKey()))) {
+                fail("Map and iterator values do not match for key: " + e.getKey());
+            }
         }
     }
 }
