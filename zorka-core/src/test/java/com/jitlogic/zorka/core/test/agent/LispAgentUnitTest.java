@@ -29,6 +29,7 @@ import com.jitlogic.zorka.core.util.ObjectDumper;
 import com.jitlogic.zorka.lisp.Namespace;
 import com.jitlogic.zorka.lisp.Primitive;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -54,7 +55,7 @@ public class LispAgentUnitTest extends ZorkaFixture {
     }
 
 
-    @Test
+    @Test @Ignore
     public void testZabbixDiscoveryFunc() throws Exception {
         Map<String, List<Map<String, String>>> obj = (Map<String, List<Map<String, String>>>)
                 zorkaAgent.eval("(zabbix/_discovery-2 \"java\" \"java.lang:type=MemoryPool,*\" \"name\" \"type\")");
@@ -72,7 +73,7 @@ public class LispAgentUnitTest extends ZorkaFixture {
     }
 
 
-    @Test
+    @Test @Ignore
     public void testStartAndLoadProfilesAndScripts() throws Exception {
         URL url = getClass().getResource("/cfgp");
         AgentConfig config = new AgentConfig(url.getPath());

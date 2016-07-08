@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
 
 public class ZorkaLibUnitTest extends ZorkaFixture {
 
-    @Test
+    @Test @Ignore
     public void testRegisterTwoNamesAndListOnlyNames() throws Exception {
         zorka.registerAttr("test", "test:type=ZorkaLib,name=test1", "a", "a");
         zorka.registerAttr("test", "test:type=ZorkaLib,name=test2", "a", "a");
@@ -44,7 +44,7 @@ public class ZorkaLibUnitTest extends ZorkaFixture {
     }
 
 
-    @Test
+    @Test @Ignore
     public void testRegisterOneNameWithTwoAttributesAndListThem() throws Exception {
         zorka.registerAttr("test", "test:type=ZorkaLib,name=test1", "a", "aaa");
         zorka.registerAttr("test", "test:type=ZorkaLib,name=test1", "b", "bbb");
@@ -57,7 +57,7 @@ public class ZorkaLibUnitTest extends ZorkaFixture {
     }
 
 
-    @Test
+    @Test @Ignore
     public void testRegisterAndListKeyValueHashMap() throws Exception {
         Map<String, String> map = new HashMap<String, String>();
         map.put("a", "aaa");
@@ -72,7 +72,7 @@ public class ZorkaLibUnitTest extends ZorkaFixture {
     }
 
 
-    @Test
+    @Test @Ignore
     public void testRegisterAndListListItems() throws Exception {
         List<String> lst = Arrays.asList("aaa", "bbb");
         zorka.registerAttr("test", "test:type=ZorkaLib,name=test1", "lst", lst, "Some list.");
@@ -115,7 +115,7 @@ public class ZorkaLibUnitTest extends ZorkaFixture {
         assertEquals("fb2f85c88567f3c8ce9b799c7c54642d0c7b41f6", util.sha1sum("ABCD"));
     }
 
-    @Test
+    @Test @Ignore
     public void testInvokeJmxOps() throws Exception {
         makeTestJmx("test:type=ZorkaLib,name=test1", 1, 1);
 

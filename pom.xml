@@ -38,9 +38,6 @@
     </build>
 
     <modules>
-        <module>zorka-common</module>
-        <module>zorka-common-test</module>
-        <module>zorka-lisp</module>
         <module>zorka-core</module>
         <module>zorka-agent</module>
         <module>zorka-dist</module>

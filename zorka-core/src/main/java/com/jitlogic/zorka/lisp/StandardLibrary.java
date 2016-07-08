@@ -16,7 +16,7 @@
 
 package com.jitlogic.zorka.lisp;
 
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 import static com.jitlogic.zorka.lisp.Utils.next;
@@ -30,6 +30,7 @@ public class StandardLibrary {
     }
 
     // Implementation of basic primitives
+
 
     @Primitive("+")
     public static Number add(Number...nums) {
@@ -51,6 +52,7 @@ public class StandardLibrary {
         return rslt != null ? rslt : 0;
     }
 
+
     @Primitive("-")
     public static Number sub(Number...nums) {
 
@@ -70,6 +72,7 @@ public class StandardLibrary {
 
         return rslt != null ? rslt : 0;
     }
+
 
     @Primitive("*")
     public static Number mul(Number...nums) {
@@ -91,6 +94,7 @@ public class StandardLibrary {
         return rslt != null ? rslt : 0;
     }
 
+
     @Primitive("/")
     public static Number div(Number...nums) {
 
@@ -111,6 +115,7 @@ public class StandardLibrary {
         return rslt != null ? rslt : 0;
     }
 
+
     @Primitive("=")
     public static boolean isEqualNum(Number...nums) {
         for (int i = 1; i < nums.length; i++) {
@@ -123,10 +128,12 @@ public class StandardLibrary {
     }
 
 
+
     @Primitive("!=")
     public static boolean isNotEquals(Number...nums) {
         return !isEqualNum(nums);
     }
+
 
     @Primitive("<")
     public static boolean isLessThan(Number...nums) {
@@ -139,6 +146,7 @@ public class StandardLibrary {
         return true;
     }
 
+
     @Primitive("<=")
     public static boolean isLessOrEqual(Number...nums) {
         for (int i = 1; i < nums.length; i++) {
@@ -149,6 +157,7 @@ public class StandardLibrary {
 
         return true;
     }
+
 
     @Primitive(">")
     public static boolean isGreaterThan(Number...nums) {
@@ -161,6 +170,7 @@ public class StandardLibrary {
         return true;
     }
 
+
     @Primitive(">=")
     public static boolean isGreaterOrEqual(Number...nums) {
         for (int i = 1; i < nums.length; i++) {
@@ -172,10 +182,12 @@ public class StandardLibrary {
         return true;
     }
 
+
     @Primitive("_lazy-seq")
     public Object lazySeqNew(Fn fn) {
         return new LazySeq(ctx, fn);
     }
+
 
     @Primitive("abs")
     public static Number abs(Number n) {
@@ -195,6 +207,7 @@ public class StandardLibrary {
         }
     }
 
+
     @Primitive("apply")
     public Object apply(Fn fn, Object...args) {
         if (args.length > 0) {
@@ -208,6 +221,7 @@ public class StandardLibrary {
         }
     }
 
+
     @Primitive(value = "array-list", isNative = true)
     public static List arrayList(Interpreter ctx, Environment env, Seq args) {
         List<Object> rslt = new ArrayList<Object>(length(args));
@@ -217,106 +231,140 @@ public class StandardLibrary {
         return rslt;
     }
 
+
     @Primitive
     public static LispMap assoc(LispMap m, Object k, Object v) {
         return m.assoc(k, v);
     }
 
+
     @Primitive("atom?")
     public static boolean isAtom(Object o) { return !isList(o); }
+
 
     @Primitive("byte?")
     public static boolean isByte(Object o) { return o instanceof Byte; }
 
+
     @Primitive
     public static Object car(Object o) { return o instanceof Seq ? ((Seq)o).first() : null; }
+
 
     @Primitive
     public static Object cdr(Object o) { return o instanceof Seq ? ((Seq)o).rest() : null; }
 
+
     @Primitive
     public static Object caar(Object o) { return car(car(o)); }
+
 
     @Primitive
     public static Object cadr(Object o) { return car(cdr(o)); }
 
+
     @Primitive
     public static Object cdar(Object o) { return cdr(car(o)); }
+
 
     @Primitive
     public static Object cddr(Object o) { return cdr(cdr(o)); }
 
+
     @Primitive
     public static Object caaar(Object o) { return car(caar(o)); }
+
 
     @Primitive
     public static Object caadr(Object o) { return car(cadr(o)); }
 
+
     @Primitive
     public static Object cadar(Object o) { return car(cdar(o)); }
+
 
     @Primitive
     public static Object caddr(Object o) { return car(cddr(o)); }
 
+
     @Primitive
     public static Object cdaar(Object o) { return cdr(caar(o)); }
+
 
     @Primitive
     public static Object cdadr(Object o) { return cdr(cadr(o)); }
 
+
     @Primitive
     public static Object cddar(Object o) { return cdr(cdar(o)); }
+
 
     @Primitive
     public static Object cdddr(Object o) { return cdr(cddr(o)); }
 
+
     @Primitive
     public static Object caaaar(Object o) { return car(caaar(o)); }
+
 
     @Primitive
     public static Object caaadr(Object o) { return car(caadr(o)); }
 
+
     @Primitive
     public static Object caadar(Object o) { return car(cadar(o)); }
+
 
     @Primitive
     public static Object caaddr(Object o) { return car(caddr(o)); }
 
+
     @Primitive
     public static Object cadaar(Object o) { return car(cdaar(o)); }
+
 
     @Primitive
     public static Object cadadr(Object o) { return car(cdadr(o)); }
 
+
     @Primitive
     public static Object caddar(Object o) { return car(cddar(o)); }
+
 
     @Primitive
     public static Object cadddr(Object o) { return car(cdddr(o)); }
 
+
     @Primitive
     public static Object cdaaar(Object o) { return cdr(caaar(o)); }
+
 
     @Primitive
     public static Object cdaadr(Object o) { return cdr(caadr(o)); }
 
+
     @Primitive
     public static Object cdadar(Object o) { return cdr(cadar(o)); }
+
 
     @Primitive
     public static Object cdaddr(Object o) { return cdr(caddr(o)); }
 
+
     @Primitive
     public static Object cddaar(Object o) { return cdr(cdaar(o)); }
+
 
     @Primitive
     public static Object cddadr(Object o) { return cdr(cdadr(o)); }
 
+
     @Primitive
     public static Object cdddar(Object o) { return cdr(cddar(o)); }
 
+
     @Primitive
     public static Object cddddr(Object o) { return cdr(cdddr(o)); }
+
 
     @Primitive(value = "call-with-current-continuation", isNative = true)
     public static Object callWithCurrentContinuation(Interpreter ctx, Environment env, Seq args) {
@@ -337,43 +385,54 @@ public class StandardLibrary {
         }
     }
 
+
     @Primitive("cons")
     public static Seq cons(Object obj, Object seq) { return new Pair(obj, seq); }
+
 
     @Primitive("dec")
     public static Number dec(Number n) {
         return Utils.sub(n, (byte)1);
     }
 
+
     @Primitive
     public static LispMap dissoc(LispMap m, Object k) {
         return m.dissoc(k);
     }
 
+
     @Primitive("eq?")
     public static boolean isSame(Object obj1, Object obj2) { return obj1 == obj2; }
+
 
     @Primitive("eqv?")
     public static boolean isEquivalent(Object obj1, Object obj2) {
         return obj1 == obj2 || (isAtom(obj1) && obj1.equals(obj2));
     }
 
+
     @Primitive("equal?")
     public static boolean isEqual(Object obj1, Object obj2) { return Utils.objEquals(obj1, obj2); }
+
 
     @Primitive("eval")
     public Object eval(Object x) { return ctx.eval(x); }
 
+
     @Primitive("even?")
     public static boolean isEven(Number n) { return isZero(modulo(n,2)); }
 
+
     @Primitive("exact?")
     public static boolean isExact(Object n) { return isInteger(n); }
+
 
     @Primitive("fn?")
     public static boolean isFn(Object o) {
         return o instanceof Fn;
     }
+
 
     @Primitive(value = "get", isNative = true)
     public static Object get(Interpreter ctx, Environment env, Seq args) {
@@ -385,6 +444,7 @@ public class StandardLibrary {
             return rslt == null ? dv : rslt;
         }
     }
+
 
     @Primitive("hash-map")
     public static Map hashMap(Object...objs) {
@@ -401,6 +461,7 @@ public class StandardLibrary {
 
         return m;
     }
+
 
     @Primitive(isNative = true)
     public static LispMap lispMap(Interpreter ctx, Environment env, Seq args) {
@@ -419,31 +480,38 @@ public class StandardLibrary {
         return m;
     }
 
+
     @Primitive("inc")
     public static Number inc(Number n) {
         return Utils.add(n, (byte)1);
     }
+
 
     @Primitive("inexact?")
     public static boolean isInexact(Object n) {
         return n instanceof Double || n instanceof Float;
     }
 
+
     @Primitive("int?")
     public static boolean isInt(Object o) { return o instanceof Integer; }
 
+
     @Primitive("integer?")
     public static boolean isInteger(Object o) { return isInt(o) || isLong(o) || isByte(o) || isShort(o); }
+
 
     @Primitive("keyword")
     public static Keyword keyword(String name) {
         return Keyword.keyword(name);
     }
 
+
     @Primitive("keyword?")
     public static boolean isKeyword(Object o) {
         return o instanceof Keyword;
     }
+
 
     @Primitive("length")
     public static int length(Seq lst) {
@@ -454,18 +522,22 @@ public class StandardLibrary {
         return len;
     }
 
+
     @Primitive(value = "list", isNative = true)
     public static Seq list(Interpreter ctx, Environment env, Seq args) {
         return args;
     }
+
 
     @Primitive("list?")
     public static boolean isList(Object obj) {
         return obj == null || obj instanceof Seq;
     }
 
+
     @Primitive("long?")
     public static boolean isLong(Object o) { return o instanceof Long; }
+
 
     @Primitive("macroexpand")
     public Object macroexpand(Object x) {
@@ -474,6 +546,7 @@ public class StandardLibrary {
         if (!(o instanceof Fn) || !((Fn)o).isMacro()) return x;
         return ((Fn)o).apply(ctx, ctx.env(), next(x));
     }
+
 
     @Primitive("max")
     public Number max(Number...nums) {
@@ -492,6 +565,7 @@ public class StandardLibrary {
 
         return rslt;
     }
+
 
     @Primitive("min")
     public Number min(Number...nums) {
@@ -516,6 +590,7 @@ public class StandardLibrary {
         return n1 != null && n2 != null ? Utils.mod(n1, n2) : null;
     }
 
+
     @Primitive
     public static String name(Object obj) {
         if (obj instanceof Symbol) {
@@ -524,8 +599,10 @@ public class StandardLibrary {
         throw new LispException("Cannot determine name of object " + obj);
     }
 
+
     @Primitive("negative?")
     public static boolean isNegative(Number n) { return Utils.cmp(n, 0) < 0; }
+
 
     @Primitive(value = "new-map", isNative = true)
     public static LispMap newMap(Interpreter ctx, Environment env, Seq args) {
@@ -540,22 +617,28 @@ public class StandardLibrary {
         }
     }
 
+
     @Primitive("not")
     public static boolean not(Object o) {
         return o == null || Boolean.FALSE.equals(o);
     }
 
+
     @Primitive("null?")
     public static boolean isNull(Object o) { return o == null; }
+
 
     @Primitive("number?")
     public static boolean isNumber(Object o) { return o instanceof Number;}
 
+
     @Primitive("odd?")
     public static boolean isOdd(Number n) { return !isZero(modulo(n,2)); }
 
+
     @Primitive("positive?")
     public static boolean isPositive(Number n) { return Utils.cmp(n, 0) > 0; }
+
 
     @Primitive("println")
     public static void println(Object...args) {
@@ -569,15 +652,18 @@ public class StandardLibrary {
         System.out.println(sb.toString());
     }
 
+
     @Primitive("read")
     public static Object read(InputStream is) {
         return new Reader(is).read();
     }
 
+
     @Primitive("read-str")
     public static Object readStr(String s) {
         return new Reader(s).read();
     }
+
 
     @Primitive("seq")
     public static Seq seq(Object o) {
@@ -595,10 +681,12 @@ public class StandardLibrary {
         }
     }
 
+
     @Primitive("seq?")
     public static boolean isSeq(Object o) {
         return o instanceof Seq;
     }
+
 
     @Primitive("set-cdr")
     public static Object setCdr(Pair p, Object o) {
@@ -606,8 +694,10 @@ public class StandardLibrary {
         return p;
     }
 
+
     @Primitive("short?")
     public static boolean isShort(Object o) { return o instanceof Short; }
+
 
     @Primitive(value = "str", isNative = true)
     public static String str(Seq args) {
@@ -623,15 +713,69 @@ public class StandardLibrary {
         return sb.toString();
     }
 
+
+    @Primitive
+    public static String slurp(String path) {
+        InputStream is = null;
+        try {
+            if (path.startsWith("classpath:")) {
+                is = StandardLibrary.class.getResourceAsStream(path.substring(10));
+            } else if (path.startsWith("file:")) {
+                is = new FileInputStream(path.substring(5));
+            } else {
+                is = new FileInputStream(path);
+            }
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            byte[] buf = new byte[4096];
+            int len;
+            while (-1 != (len = is.read(buf))) {
+                bos.write(buf, 0, len);
+            }
+            return new String(bos.toByteArray());
+        } catch (IOException e) {
+            throw new LispException("Cannot open file: " + path, e);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+
+                }
+            }
+        }
+    }
+
+
+    @Primitive
+    public static void spit(String path, String content) {
+        OutputStream os = null;
+        try {
+            os = new FileOutputStream(path);
+            os.write(content.getBytes());
+        } catch (IOException e) {
+            throw new LispException("Cannot open file: " + path, e);
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
+
+
     @Primitive("symbol")
     public static Symbol symbol(String name) {
         return Symbol.symbol(name);
     }
 
+
     @Primitive("symbol?")
     public static boolean isSymbol(Object o) {
         return o instanceof Symbol;
     }
+
 
     @Primitive("to-array")
     public static Object[] toArray(Object sobj) {
@@ -647,23 +791,30 @@ public class StandardLibrary {
         }
     }
 
+
     @Primitive("to-byte")
     public static byte toByte(Number n) { return n != null ? n.byteValue() : (byte)0; }
+
 
     @Primitive("to-short")
     public static short toShort(Number n) { return n != null ? n.shortValue() : (short)0; }
 
+
     @Primitive("to-int")
     public static int toInt(Number n) { return n != null ? n.intValue() : 0; }
+
 
     @Primitive("to-long")
     public static long toLong(Number n) { return n != null ? n.longValue() : 0L; }
 
+
     @Primitive("to-float")
     public static float toFloat(Number n) { return n != null ? n.floatValue() : (float)0.0; }
 
+
     @Primitive("to-double")
     public static double toDouble(Number n) { return n != null ? n.doubleValue() : 0.0; }
+
 
     @Primitive("tree-map")
     public static Map treeMap(Object...objs) {
@@ -681,6 +832,7 @@ public class StandardLibrary {
         return m;
     }
 
+
     @Primitive("vector")
     public static List<Object> vector(Seq lst) {
         List<Object> vec = new ArrayList<Object>();
@@ -689,6 +841,7 @@ public class StandardLibrary {
         }
         return vec;
     }
+
 
     @Primitive("zero?")
     public static boolean isZero(Number n) {

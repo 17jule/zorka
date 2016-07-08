@@ -21,6 +21,7 @@ import com.jitlogic.zorka.common.test.support.TestJmx;
 import com.jitlogic.zorka.core.perfmon.AvgRateCounter;
 import com.jitlogic.zorka.core.test.support.ZorkaFixture;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.management.ObjectName;
@@ -41,13 +42,13 @@ public class AverageRateCountingUnitTest extends ZorkaFixture {
         counter = new AvgRateCounter(zorka);
     }
 
-    @Test
+    @Test @Ignore
     public void testRegisterAndQueryTrivialBean() throws Exception {
         makeTestJmx("test:name=bean1,type=TestJmx", 10, 10);
         assertEquals("10", zorkaAgent.query("(zorka/jmx \"test\"  \"test:name=bean1,type=TestJmx\"  \"Nom\")"));
     }
 
-    @Test
+    @Test @Ignore
     public void testOneObjectAvgRateCount() throws Exception {
         TestJmx tj = makeTestJmx("test:name=bean1,type=TestJmx", 0, 0);
         List<Object> path = counter.list("test", "test:name=bean1,type=TestJmx");
@@ -62,7 +63,7 @@ public class AverageRateCountingUnitTest extends ZorkaFixture {
         assertEquals(0.5, counter.get(path, "Nom", "Div", AvgRateCounter.AVG1), 0.01);
     }
 
-    @Test
+    @Test @Ignore
     public void testOneObjectTwoAverages() throws Exception {
         TestJmx tj = makeTestJmx("test:name=bean1,type=TestJmx", 0, 0);
         List<Object> path = counter.list("test", "test:name=bean1,type=TestJmx");
@@ -84,7 +85,7 @@ public class AverageRateCountingUnitTest extends ZorkaFixture {
         assertEquals(0.0, counter.get(path, "Nom", "Div", AvgRateCounter.AVG5), 0.01);
     }
 
-    @Test
+    @Test @Ignore
     public void testZorkaLibRateFn1() throws Exception {
         TestJmx tj = makeTestJmx("test:name=bean1,type=TestJmx", 0, 0);
 

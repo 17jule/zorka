@@ -60,23 +60,12 @@
                         <configuration>
                             <includes>
                                 <include>org.ow2.asm:asm</include>
-                                <include>com.jitlogic.zorka:zorka-common</include>
-                                <include>com.jitlogic.zoola:zoola-core</include>
-                                <include>com.jitlogic.contrib:libsnmp</include>
                                 <include>com.jitlogic.zorka:zorka-core</include>
                             </includes>
                             <rules>
                                 <rule>
                                     <pattern>org.objectweb.asm.**</pattern>
-                                    <result>com.jitlogic.zorka.deps.asm.@1</result>
-                                </rule>
-                                <rule>
-                                    <pattern>bsh.**</pattern>
-                                    <result>com.jitlogic.zorka.deps.bsh.@1</result>
-                                </rule>
-                                <rule>
-                                    <pattern>com.jitlogic.contrib.**</pattern>
-                                    <result>com.jitlogic.zorka.deps.@1</result>
+                                    <result>com.jitlogic.zorka.asm.@1</result>
                                 </rule>
                                 <keep>
                                     <pattern>com.jitlogic.zorka.**</pattern>

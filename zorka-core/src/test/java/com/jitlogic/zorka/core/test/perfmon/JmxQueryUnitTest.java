@@ -25,6 +25,7 @@ import com.jitlogic.zorka.core.test.support.ZorkaFixture;
 import com.jitlogic.zorka.common.util.ZorkaUtil;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.management.ObjectName;
@@ -40,7 +41,7 @@ public class JmxQueryUnitTest extends ZorkaFixture {
     }
 
 
-    @Test
+    @Test @Ignore
     public void testTrivialSearchAttrOnly() {
         QueryLister lister = new QueryLister(mBeanServerRegistry,
                 new QueryDef("test", "test:type=TestJmx,*", "name"));
@@ -53,7 +54,7 @@ public class JmxQueryUnitTest extends ZorkaFixture {
     }
 
 
-    @Test
+    @Test @Ignore
     public void testTrivialSearchAndGetSingleAttr() {
         QueryLister lister = new QueryLister(mBeanServerRegistry,
                 new QueryDef("test", "test:type=TestJmx,*", "name").getAs("Nom", "Nom"));
@@ -67,7 +68,7 @@ public class JmxQueryUnitTest extends ZorkaFixture {
     }
 
 
-    @Test
+    @Test @Ignore
     public void testSearchAndGetMultipleAttrs() {
         QueryLister lister = new QueryLister(mBeanServerRegistry,
                 new QueryDef("test", "test:type=TestJmx,*", "name").listAs("*", "Attr"));
@@ -83,7 +84,7 @@ public class JmxQueryUnitTest extends ZorkaFixture {
     }
 
 
-    @Test
+    @Test @Ignore
     public void testSearchAndGetMultiSecondLevelAttr() {
         QueryLister lister = new QueryLister(mBeanServerRegistry,
                 new QueryDef("test", "test:type=TestJmx,*", "name").get("StrMap").listAs("*", "Attr"));
@@ -99,7 +100,7 @@ public class JmxQueryUnitTest extends ZorkaFixture {
     }
 
 
-    @Test
+    @Test @Ignore
     public void testSearchAndGetMultipleSecondLevelAttr() {
         QueryLister lister = new QueryLister(mBeanServerRegistry,
                 new QueryDef("test", "test:type=TestJmx,*", "name").get("StrMap").getAs("oja", "Attr"));
@@ -115,7 +116,7 @@ public class JmxQueryUnitTest extends ZorkaFixture {
     }
 
 
-    @Test
+    @Test @Ignore
     public void testSearchWithSomeRecordsHavingNoSuchAttr() {
         QueryLister lister = new QueryLister(mBeanServerRegistry,
                 new QueryDef("test", "test:type=TestJmx,*", "name").get("StrMap").get("uja").with(QueryDef.NO_NULL_VALS));
@@ -126,7 +127,7 @@ public class JmxQueryUnitTest extends ZorkaFixture {
     }
 
 
-    @Test
+    @Test @Ignore
     public void testSearchWithNullAttrsInObjectName() throws Exception {
         QueryLister lister = new QueryLister(mBeanServerRegistry,
                 new QueryDef("test", "test:*", "name").with(QueryDef.NO_NULL_ATTRS));

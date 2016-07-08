@@ -88,7 +88,7 @@ public class ZorkaFixture {
     public void tearDownFixture() throws Exception {
 
         // Uninstall test MBean server
-        mBeanServerRegistry.unregister("test");
+        //mBeanServerRegistry.unregister("test");
 
         MainSubmitter.setSubmitter(null);
         MainSubmitter.setTracer(null);

@@ -20,6 +20,10 @@ import com.jitlogic.zorka.common.util.*;
 import com.jitlogic.zorka.lisp.Keyword;
 import com.jitlogic.zorka.lisp.LispMap;
 import com.jitlogic.zorka.lisp.Seq;
+import com.jitlogic.zorka.lisp.StandardLibrary;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class AgentConfig {
 
@@ -27,12 +31,10 @@ public class AgentConfig {
 
     public final static String DEFAULT_CONF_PATH = "/com/jitlogic/zorka/core/zorka.conf";
 
-    private String agentHome;
-
     private LispMap confData;
 
     public AgentConfig(String home) {
-        this.agentHome = home;
+        this.homeDir = home;
         reload();
     }
 
@@ -50,6 +52,14 @@ public class AgentConfig {
 
 
     public void reload() {
+        InputStream is = this.getClass().getResourceAsStream(DEFAULT_CONF_PATH);
+        confData = (LispMap)StandardLibrary.read(is);
+        confData = confData.assoc(AgentConfigConstants.KW_HOME_DIR, homeDir);
+        confData = confData.assoc(AgentConfigConstants.KW_SCRIPTS_DIR, ZorkaUtil.path(homeDir, "scripts"));
+        try {
+            is.close();
+        } catch (IOException e) {
+        }
     }
 
 
@@ -62,7 +72,7 @@ public class AgentConfig {
                 return notFound;
             }
         }
-        return notFound;
+        return obj;
     }
 
 

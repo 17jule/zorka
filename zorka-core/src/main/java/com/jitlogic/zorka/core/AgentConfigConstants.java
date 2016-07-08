@@ -23,6 +23,7 @@ public class AgentConfigConstants {
     public static final Keyword KW_COMPUTE_FRAMES = Keyword.keyword("compute-frames");
     public static final Keyword KW_ENABLED = Keyword.keyword("enabled");
     public static final Keyword KW_EXECUTOR = Keyword.keyword("executor");
+    public static final Keyword KW_HOME_DIR = Keyword.keyword("home-dir");
     public static final Keyword KW_HOSTNAME = Keyword.keyword("hostname");
     public static final Keyword KW_MBEAN = Keyword.keyword("mbean");
     public static final Keyword KW_QUEUE = Keyword.keyword("queue");
