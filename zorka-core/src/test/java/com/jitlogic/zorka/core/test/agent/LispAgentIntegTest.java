@@ -19,12 +19,12 @@ package com.jitlogic.zorka.core.test.agent;
 
 import static org.junit.Assert.*;
 
-import java.net.URL;
-
 
 import com.jitlogic.zorka.core.*;
 import com.jitlogic.zorka.core.test.support.ZorkaFixture;
 import org.junit.Test;
+
+import static com.jitlogic.zorka.core.AgentConfigConstants.*;
 
 public class LispAgentIntegTest extends ZorkaFixture {
 
@@ -59,7 +59,8 @@ public class LispAgentIntegTest extends ZorkaFixture {
 
 	@Test
 	public void testAgentFunctions() throws Exception {
-		//assertEquals(configProperties.getProperty("zorka.version"), execute("(zorka/version)", 1000));
+		assertEquals(config.strVal(null, KW_ZORKA, KW_VERSION),
+			execute("(zorka/version)", 1000));
 	}
 
 	@Test

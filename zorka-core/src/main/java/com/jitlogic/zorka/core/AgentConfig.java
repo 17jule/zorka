@@ -22,8 +22,7 @@ import com.jitlogic.zorka.lisp.LispMap;
 import com.jitlogic.zorka.lisp.Seq;
 import com.jitlogic.zorka.lisp.StandardLibrary;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 public class AgentConfig {
 
@@ -59,6 +58,29 @@ public class AgentConfig {
         try {
             is.close();
         } catch (IOException e) {
+            log.error(ZorkaLogger.ZAG_ERRORS, "Cannot close input stream.", e);
+        }
+        String fname = ZorkaUtil.path(homeDir, "zorka.conf");
+        File f = new File(fname);
+        if (f.canRead()) {
+            FileInputStream fis = null;
+            try {
+                fis = new FileInputStream(fname);
+                Object cfgObj = StandardLibrary.read(fis);
+                if (cfgObj instanceof LispMap) {
+                    confData = StandardLibrary.mergeRecursive(confData, (LispMap)cfgObj);
+                }
+            } catch (FileNotFoundException e) {
+                log.error(ZorkaLogger.ZAG_ERRORS, "Cannot open config file: " + fname, e);
+            } finally {
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+                        log.error(ZorkaLogger.ZAG_ERRORS, "Cannot close input stream.", e);
+                    }
+                }
+            }
         }
     }
 

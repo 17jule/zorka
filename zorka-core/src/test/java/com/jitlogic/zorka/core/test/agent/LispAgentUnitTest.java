@@ -55,25 +55,15 @@ public class LispAgentUnitTest extends ZorkaFixture {
     }
 
 
-    @Test @Ignore
-    public void testZabbixDiscoveryFunc() throws Exception {
-        Map<String, List<Map<String, String>>> obj = (Map<String, List<Map<String, String>>>)
-                zorkaAgent.eval("(zabbix/_discovery-2 \"java\" \"java.lang:type=MemoryPool,*\" \"name\" \"type\")");
-        assertTrue("should return map", obj != null);
-        List<Map<String, String>> data = obj.get("data");
-        assertTrue("obj.data should be non-empty", data.size() > 0);
-    }
-
-
     @Test
-    public void testNewBshEllipsis() throws Exception {
+    public void testNewLispEllipsis() throws Exception {
         zorkaAgent.install(new SomeTestLib());
         String rslt = zorkaAgent.query("(test/join \"a\" \"b\" \"c\")");
         assertEquals("a:bc", rslt);
     }
 
 
-    @Test @Ignore
+    @Test
     public void testStartAndLoadProfilesAndScripts() throws Exception {
         URL url = getClass().getResource("/cfgp");
         AgentConfig config = new AgentConfig(url.getPath());
@@ -81,7 +71,6 @@ public class LispAgentUnitTest extends ZorkaFixture {
         ObjectInspector.setField(zorka, "config", config);
         zorkaAgent.loadScripts();
         assertNotNull("jvm/jvm.bsh script should be loaded.", zorkaAgent.get("jvm_bsh"));
-        //assertFalse("profile.scripts properties should be filtered off", config.hasCfg("profile.scripts"));
         assertNotNull("test/test.bsh script should be loaded.", zorkaAgent.get("test_bsh"));
         assertEquals("jvm/jvm.bsh script should be called only once.", "bar", zorkaAgent.get("not_to_be_overridden"));
         assertNotNull("common.bsh script should be indirectly loaded via jvm.bsh", zorkaAgent.get("common_bsh"));

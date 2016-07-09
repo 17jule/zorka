@@ -567,6 +567,53 @@ public class StandardLibrary {
     }
 
 
+    @Primitive
+    public static LispMap merge(LispMap...maps) {
+        LispMap rslt = new LispSMap(LispMap.MUTABLE);
+
+        boolean mutable = false;
+
+        for (LispMap m : maps) {
+            if (0 != (m.getFlags() & LispMap.MUTABLE)) {
+                mutable = true;
+            }
+            for (Map.Entry e : m) {
+                rslt = rslt.assoc(e.getKey(), e.getValue());
+            }
+        }
+
+        rslt.setFlags(mutable ? LispMap.MUTABLE : 0);
+
+        return rslt;
+    }
+
+
+    @Primitive("merge-recursive")
+    public static LispMap mergeRecursive(LispMap...maps) {
+        LispMap rslt = new LispSMap(LispMap.MUTABLE);
+
+        boolean mutable = true;
+
+        for (LispMap m : maps) {
+            if (0 == (m.getFlags() & LispMap.MUTABLE)) {
+                mutable = false;
+            }
+            for (Map.Entry e : m) {
+                Object v = rslt.get(e.getKey());
+                if (v instanceof LispMap && e.getValue() instanceof LispMap) {
+                    rslt = rslt.assoc(e.getKey(), mergeRecursive(LispSMap.EMPTY, (LispMap)v, (LispMap)e.getValue()));
+                } else {
+                    rslt = rslt.assoc(e.getKey(), e.getValue());
+                }
+            }
+        }
+
+        rslt.setFlags(mutable ? LispMap.MUTABLE : 0);
+
+        return rslt;
+    }
+
+
     @Primitive("min")
     public Number min(Number...nums) {
         if (nums.length == 0) {
