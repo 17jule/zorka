@@ -27,7 +27,6 @@ import com.jitlogic.zorka.core.mbeans.AttrGetter;
 import com.jitlogic.zorka.core.spy.*;
 import com.jitlogic.zorka.common.tracedata.SymbolRegistry;
 import com.jitlogic.zorka.core.mbeans.MBeanServerRegistry;
-import com.jitlogic.zorka.core.normproc.NormLib;
 import com.jitlogic.zorka.core.util.DaemonThreadFactory;
 
 import java.util.Set;
@@ -88,11 +87,6 @@ public class AgentInstance implements ZorkaService {
 
     protected UtilLib utilLib;
 
-    /**
-     * Reference to normalizers library - available to zorka scripts as 'normalizers.*' function
-     */
-    protected NormLib normLib;
-
     protected MethodCallStatistics stats = new MethodCallStatistics();
 
     protected Tracer tracer;
@@ -136,8 +130,6 @@ public class AgentInstance implements ZorkaService {
             log.info(ZorkaLogger.ZAG_CONFIG, "Enabling Zorka SPY");
             getZorkaAgent().install(getSpyLib());
         }
-
-        getZorkaAgent().install(getNormLib());
     }
 
 
@@ -303,16 +295,6 @@ public class AgentInstance implements ZorkaService {
         }
 
         return spyLib;
-    }
-
-
-    public synchronized NormLib getNormLib() {
-
-        if (normLib == null) {
-            normLib = new NormLib();
-        }
-
-        return normLib;
     }
 
 
