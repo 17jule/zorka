@@ -22,6 +22,8 @@ import com.jitlogic.zorka.common.util.ZorkaLogger;
 import com.jitlogic.zorka.common.util.ZorkaUtil;
 import com.jitlogic.zorka.common.util.ZorkaLog;
 import com.jitlogic.zorka.lisp.Keyword;
+import com.jitlogic.zorka.lisp.LispMap;
+import com.jitlogic.zorka.lisp.LispSMap;
 
 import java.util.List;
 import java.util.Map;
@@ -50,11 +52,11 @@ public class DispatchingSubmitter implements SpySubmitter {
     /**
      * Submission stack is used to associate results from method entry probes with results from return/error probes.
      */
-    private ThreadLocal<Stack<Map>> submissionStack =
-            new ThreadLocal<Stack<Map>>() {
+    private ThreadLocal<Stack<LispMap>> submissionStack =
+            new ThreadLocal<Stack<LispMap>>() {
                 @Override
-                public Stack<Map> initialValue() {
-                    return new Stack<Map>();
+                public Stack<LispMap> initialValue() {
+                    return new Stack<LispMap>();
                 }
             };
 
@@ -83,7 +85,7 @@ public class DispatchingSubmitter implements SpySubmitter {
             return;
         }
 
-        Map<String, Object> record = getRecord(stage, ctx, submitFlags, vals);
+        LispMap record = getRecord(stage, ctx, submitFlags, vals);
 
         SpyDefinition sdef = ctx.getSpyDefinition();
 
@@ -105,8 +107,7 @@ public class DispatchingSubmitter implements SpySubmitter {
     }
 
     public static Keyword CTX    = Keyword.keyword("CTX");
-    public static Keyword STAGE  = Keyword.keyword("STAGE");
-    public static Keyword STAGES = Keyword.keyword("STAGES");
+
 
     /**
      * Retrieves or creates spy record for probe submission purposes.
@@ -118,29 +119,29 @@ public class DispatchingSubmitter implements SpySubmitter {
      * @param vals        submitted values
      * @return spy record
      */
-    private Map getRecord(int stage, SpyContext ctx, int submitFlags, Object[] vals) {
+    private LispMap getRecord(int stage, SpyContext ctx, int submitFlags, Object[] vals) {
 
-        Map<Object, Object> record;
+        LispMap record;
 
         switch (submitFlags) {
             case SF_IMMEDIATE:
             case SF_NONE:
-                record = ZorkaUtil.map(CTX, ctx, STAGE, 0, STAGES, 0);
+                record = new LispSMap(LispMap.MUTABLE).assoc(CTX, ctx);
                 break;
             case SF_FLUSH:
-                Stack<Map> stack = submissionStack.get();
+                Stack<LispMap> stack = submissionStack.get();
                 if (stack.size() > 0) {
                     record = stack.pop();
                     // TODO check if record belongs to proper frame, warn if not
                 } else {
                     log.error(ZorkaLogger.ZSP_ERRORS, "Submission thread local stack mismatch (ctx=" + ctx
                             + ", stage=" + stage + ", submitFlags=" + submitFlags + ")");
-                    record = ZorkaUtil.map(CTX, ctx, STAGE, 0, STAGES, 0);
+                    record = new LispSMap(LispMap.MUTABLE).assoc(CTX, ctx);
                 }
                 break;
             default:
                 log.error(ZorkaLogger.ZSP_ERRORS, "Illegal submission flag: " + submitFlags + ". Creating empty records.");
-                record = ZorkaUtil.map(CTX, ctx, STAGE, 0, STAGES, 0);
+                record = new LispSMap(LispMap.MUTABLE).assoc(CTX, ctx);
                 break;
         }
 
@@ -151,11 +152,11 @@ public class DispatchingSubmitter implements SpySubmitter {
 
         for (int i = 0; i < probes.size(); i++) {
             SpyProbe probe = probes.get(i);
-            record.put(probe.getDstField(), vals[i]);
+            record = record.assoc(probe.getDstField(), vals[i]);
         }
 
-        record.put(STAGES, (Integer) record.get(STAGES) | (1 << stage));
-        record.put(STAGE, stage);
+        SpyLib.markStage(record, stage);
+        SpyLib.setCurStage(record, stage);
 
         return record;
     }
@@ -169,11 +170,11 @@ public class DispatchingSubmitter implements SpySubmitter {
      * @param record spy record (input)
      * @return spy record (output) or null if record should not be further processed
      */
-    private Map process(int stage, SpyDefinition sdef, Map record) {
+    private LispMap process(int stage, SpyDefinition sdef, LispMap record) {
         List<SpyProcessor> processors = sdef.getProcessors(stage);
 
-        record.put(STAGES, (Integer) record.get(STAGES) | (1 << stage));
-        record.put(STAGE, stage);
+        SpyLib.markStage(record, stage);
+        SpyLib.setCurStage(record, stage);
 
         if (ZorkaLogger.isLogMask(ZorkaLogger.ZSP_ARGPROC)) {
             log.debug(ZorkaLogger.ZSP_ARGPROC, "Processing records (stage=" + stage + ")");

@@ -22,6 +22,8 @@ import com.jitlogic.zorka.core.spy.*;
 
 import com.jitlogic.zorka.core.spy.SpyProcessor;
 import com.jitlogic.zorka.common.util.ZorkaUtil;
+import com.jitlogic.zorka.lisp.LispMap;
+import com.jitlogic.zorka.lisp.LispSMap;
 import com.jitlogic.zorka.lisp.Namespace;
 import com.jitlogic.zorka.lisp.Primitive;
 import org.junit.Before;
@@ -49,7 +51,7 @@ public class StandardCollectorsUnitTest extends ZorkaFixture {
 
     protected SpyContext ctx;
     protected SpyDefinition sdef;
-    protected Map<String, Object> record;
+    protected LispMap record;
 
     @Before
     public void setUp() {
@@ -58,7 +60,7 @@ public class StandardCollectorsUnitTest extends ZorkaFixture {
         //sdef = spy.instance("x");
         ctx = new SpyContext(sdef, "some.Class", "someMethod", "()V", 1);
 
-        record = ZorkaUtil.map(".CTX", ctx, ".STAGE", 0, ".STAGES", 0);
+        //record = new LispSMap(LispMap.MUTABLE).assoc(".CTX", ctx, ".STAGE", 0, ".STAGES", 0);
     }
 
 
@@ -77,7 +79,7 @@ public class StandardCollectorsUnitTest extends ZorkaFixture {
         SpyProcessor col = (SpyProcessor) zorkaAgent.eval(
                 "(com.jitlogic.zorka.core.spy.SpyProcessor)this");
 
-        col.process(record);
+        //col.process(record);
 
         assertEquals("should submit one result", 1, results.size());
         assertEquals("result should be Spy record", record, results.get(0));

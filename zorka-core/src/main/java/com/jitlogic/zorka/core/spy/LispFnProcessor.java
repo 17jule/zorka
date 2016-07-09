@@ -18,6 +18,7 @@ package com.jitlogic.zorka.core.spy;
 
 import com.jitlogic.zorka.lisp.Fn;
 import com.jitlogic.zorka.lisp.Interpreter;
+import com.jitlogic.zorka.lisp.LispMap;
 import com.jitlogic.zorka.lisp.StandardLibrary;
 
 import java.util.Map;
@@ -33,7 +34,7 @@ public class LispFnProcessor implements SpyProcessor {
     }
 
     @Override
-    public Map process(Map record) {
-        return (Map)fn.apply(ctx, ctx.env(), StandardLibrary.cons(record,null));
+    public LispMap process(LispMap record) {
+        return (LispMap)fn.apply(ctx, ctx.env(), StandardLibrary.cons(record,null));
     }
 }

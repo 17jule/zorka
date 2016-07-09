@@ -17,7 +17,7 @@
 
 package com.jitlogic.zorka.core.spy;
 
-import java.util.Map;
+import com.jitlogic.zorka.lisp.LispMap;
 
 /**
  * Spy Argument Processor interface. All argument processors must implement it.
@@ -34,5 +34,5 @@ public interface SpyProcessor extends SpyDefArg {
      * @return processed record (can be the same as passed with record argument)
      *         or null to indicate that record should be dropped by instrumentation engine.
      */
-    Map process(Map record);
+    LispMap process(LispMap record);
 }

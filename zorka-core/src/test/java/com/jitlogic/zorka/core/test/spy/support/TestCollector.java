@@ -18,6 +18,7 @@
 package com.jitlogic.zorka.core.test.spy.support;
 
 import com.jitlogic.zorka.core.spy.SpyProcessor;
+import com.jitlogic.zorka.lisp.LispMap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +26,10 @@ import java.util.Map;
 
 public class TestCollector implements SpyProcessor {
 
-    private List<Map> records = new ArrayList<Map>();
+    private List<LispMap> records = new ArrayList<LispMap>();
 
     @Override
-    public Map process(Map record) {
+    public LispMap process(LispMap record) {
         records.add(record);
         return record;
     }
@@ -37,7 +38,7 @@ public class TestCollector implements SpyProcessor {
         return records.size();
     }
 
-    public Map get(int i) {
+    public LispMap get(int i) {
         return records.get(i);
     }
 

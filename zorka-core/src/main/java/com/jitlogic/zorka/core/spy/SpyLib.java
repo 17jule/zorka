@@ -358,4 +358,31 @@ public class SpyLib {
         return new OverlayClassLoader(parent, pattern, overlay);
     }
 
+
+    public static final int CUR_STAGE_MASK  = 0x03;
+    public static final int CUR_STAGE_SHIFT = 2;
+
+
+    @Primitive("set-cur-stage")
+    public static void setCurStage(LispMap m, int stage) {
+        m.setFlags((m.getFlags() & ~CUR_STAGE_MASK) | ((stage & CUR_STAGE_MASK) << CUR_STAGE_SHIFT));
+    }
+
+
+    @Primitive("get-cur-stage")
+    public static int getCurStage(LispMap m) {
+        return (m.getFlags() >> CUR_STAGE_SHIFT) & CUR_STAGE_MASK;
+    }
+
+
+    public static final int MARK_STAGES_MASK = 0x0f;
+    public static final int MARK_STAGES_SHIFT = 4;
+
+
+    @Primitive("mark-stage")
+    public static void markStage(LispMap m, int stage) {
+        m.setFlags(m.getFlags() | ((1 << (stage + MARK_STAGES_SHIFT)) & MARK_STAGES_MASK));
+    }
+
+
 }
