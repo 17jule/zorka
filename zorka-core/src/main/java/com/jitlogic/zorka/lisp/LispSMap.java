@@ -18,11 +18,6 @@ package com.jitlogic.zorka.lisp;
 
 import java.util.Iterator;
 
-import static com.jitlogic.zorka.lisp.StandardLibrary.cons;
-import static com.jitlogic.zorka.lisp.StandardLibrary.car;
-import static com.jitlogic.zorka.lisp.StandardLibrary.cdar;
-import static com.jitlogic.zorka.lisp.StandardLibrary.cddr;
-
 /**
  * IMap implementation for small maps (up to 6 elements). Uses single allocated memory block.
  * On 32-bit or 64-bit JVM with CompressedOps=true it takes 64 bytes (= 1 cache line).
@@ -49,12 +44,12 @@ public class LispSMap implements LispMap, Cloneable {
 
     public LispSMap(int flags, Seq args) {
         this.flags = flags;
-        if (args != null) { k0 = car(args); v0 = cdar(args); args = (Seq)cddr(args); }
-        if (args != null) { k1 = car(args); v1 = cdar(args); args = (Seq)cddr(args); }
-        if (args != null) { k2 = car(args); v2 = cdar(args); args = (Seq)cddr(args); }
-        if (args != null) { k3 = car(args); v3 = cdar(args); args = (Seq)cddr(args); }
-        if (args != null) { k4 = car(args); v4 = cdar(args); args = (Seq)cddr(args); }
-        if (args != null) { k5 = car(args); v5 = cdar(args); }
+        if (args != null) { k0 = StandardLibrary.car(args); v0 = StandardLibrary.cdar(args); args = (Seq) StandardLibrary.cddr(args); }
+        if (args != null) { k1 = StandardLibrary.car(args); v1 = StandardLibrary.cdar(args); args = (Seq) StandardLibrary.cddr(args); }
+        if (args != null) { k2 = StandardLibrary.car(args); v2 = StandardLibrary.cdar(args); args = (Seq) StandardLibrary.cddr(args); }
+        if (args != null) { k3 = StandardLibrary.car(args); v3 = StandardLibrary.cdar(args); args = (Seq) StandardLibrary.cddr(args); }
+        if (args != null) { k4 = StandardLibrary.car(args); v4 = StandardLibrary.cdar(args); args = (Seq) StandardLibrary.cddr(args); }
+        if (args != null) { k5 = StandardLibrary.car(args); v5 = StandardLibrary.cdar(args); }
     }
 
 
@@ -244,12 +239,12 @@ public class LispSMap implements LispMap, Cloneable {
         public MapSeq(int idx) {
             this.idx = idx;
             switch (this.idx) {
-                case 0: val = cons(k0, cons(v0, null)); break;
-                case 1: val = cons(k1, cons(v1, null)); break;
-                case 2: val = cons(k2, cons(v2, null)); break;
-                case 3: val = cons(k3, cons(v3, null)); break;
-                case 4: val = cons(k4, cons(v4, null)); break;
-                case 5: val = cons(k5, cons(v5, null)); break;
+                case 0: val = StandardLibrary.cons(k0, StandardLibrary.cons(v0, null)); break;
+                case 1: val = StandardLibrary.cons(k1, StandardLibrary.cons(v1, null)); break;
+                case 2: val = StandardLibrary.cons(k2, StandardLibrary.cons(v2, null)); break;
+                case 3: val = StandardLibrary.cons(k3, StandardLibrary.cons(v3, null)); break;
+                case 4: val = StandardLibrary.cons(k4, StandardLibrary.cons(v4, null)); break;
+                case 5: val = StandardLibrary.cons(k5, StandardLibrary.cons(v5, null)); break;
             }
         }
 

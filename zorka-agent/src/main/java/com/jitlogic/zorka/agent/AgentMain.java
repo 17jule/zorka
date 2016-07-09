@@ -17,12 +17,11 @@
 
 package com.jitlogic.zorka.agent;
 
-import com.jitlogic.zorka.common.util.ZorkaUtil;
-import com.jitlogic.zorka.core.AgentConfig;
-import com.jitlogic.zorka.core.AgentInstance;
-import com.jitlogic.zorka.core.ZorkaControl;
-import com.jitlogic.zorka.core.spy.MainSubmitter;
-import com.jitlogic.zorka.core.spy.SpyRetransformer;
+import com.jitlogic.zorka.util.ZorkaUtil;
+import com.jitlogic.zorka.AgentConfig;
+import com.jitlogic.zorka.AgentInstance;
+import com.jitlogic.zorka.ZorkaControl;
+import com.jitlogic.zorka.spy.SpyRetransformer;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;

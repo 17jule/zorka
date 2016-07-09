@@ -16,8 +16,6 @@
 
 package com.jitlogic.zorka.lisp;
 
-import static com.jitlogic.zorka.lisp.StandardLibrary.car;
-
 public class Continuation implements Fn {
 
     private LispException jmp;
@@ -29,7 +27,7 @@ public class Continuation implements Fn {
 
     @Override
     public Object apply(Interpreter ctx, Environment env, Seq args) {
-        this.value = car(args);
+        this.value = StandardLibrary.car(args);
         throw jmp;
     }
 

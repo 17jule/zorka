@@ -19,8 +19,6 @@ package com.jitlogic.zorka.lisp;
 import java.io.*;
 import java.util.*;
 
-import static com.jitlogic.zorka.lisp.Utils.next;
-
 public class StandardLibrary {
 
     private Interpreter ctx;
@@ -516,7 +514,7 @@ public class StandardLibrary {
     @Primitive("length")
     public static int length(Seq lst) {
         int len = 0;
-        for (Seq cur = lst; cur != null; cur = next(cur)) {
+        for (Seq cur = lst; cur != null; cur = Utils.next(cur)) {
             len++;
         }
         return len;
@@ -544,7 +542,7 @@ public class StandardLibrary {
         if (!(x instanceof Seq)) return x;
         Object o = ctx.eval(car(x));
         if (!(o instanceof Fn) || !((Fn)o).isMacro()) return x;
-        return ((Fn)o).apply(ctx, ctx.env(), next(x));
+        return ((Fn)o).apply(ctx, ctx.env(), Utils.next(x));
     }
 
 
@@ -702,13 +700,13 @@ public class StandardLibrary {
 
     @Primitive("read")
     public static Object read(InputStream is) {
-        return new Reader(is).read();
+        return new com.jitlogic.zorka.lisp.Reader(is).read();
     }
 
 
     @Primitive("read-str")
     public static Object readStr(String s) {
-        return new Reader(s).read();
+        return new com.jitlogic.zorka.lisp.Reader(s).read();
     }
 
 
@@ -749,7 +747,7 @@ public class StandardLibrary {
     @Primitive(value = "str", isNative = true)
     public static String str(Seq args) {
         StringBuilder sb = new StringBuilder();
-        for (Seq arg = args; arg != null; arg = next(arg)) {
+        for (Seq arg = args; arg != null; arg = Utils.next(arg)) {
             Object obj = car(arg);
             if (obj != null) {
                 sb.append(obj.toString());
@@ -829,7 +827,7 @@ public class StandardLibrary {
         Seq seq = seq(sobj);
         if (seq != null) {
             Object[] obj = new Object[length(seq)];
-            for (int i = 0; i < obj.length; i++,seq=next(seq)) {
+            for (int i = 0; i < obj.length; i++,seq= Utils.next(seq)) {
                 obj[i] = car(seq);
             }
             return obj;
@@ -883,7 +881,7 @@ public class StandardLibrary {
     @Primitive("vector")
     public static List<Object> vector(Seq lst) {
         List<Object> vec = new ArrayList<Object>();
-        for (Seq cur = lst; cur != null; cur = next(cur)) {
+        for (Seq cur = lst; cur != null; cur = Utils.next(cur)) {
             vec.add(car(cur));
         }
         return vec;

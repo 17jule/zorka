@@ -19,10 +19,6 @@ package com.jitlogic.zorka.lisp;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-import static com.jitlogic.zorka.lisp.StandardLibrary.car;
-import static com.jitlogic.zorka.lisp.StandardLibrary.cdr;
-import static com.jitlogic.zorka.lisp.StandardLibrary.length;
-
 public class LispException extends RuntimeException {
 
     private Seq evalStack, rewrittenStack;
@@ -47,16 +43,16 @@ public class LispException extends RuntimeException {
 
     private synchronized void rewriteStackTrace() {
         if (evalStack != null && evalStack != rewrittenStack) {
-            StackTraceElement[] stack = new StackTraceElement[length(evalStack)];
+            StackTraceElement[] stack = new StackTraceElement[StandardLibrary.length(evalStack)];
             Seq seq = evalStack;
             for (int i = stack.length-1; i >= 0; i--) {
-                Object obj = car(seq);
+                Object obj = StandardLibrary.car(seq);
                 String cpoint = obj instanceof CodePair ?
                     " [" + ((CodePair) obj).getLine() + ":" + ((CodePair) obj).getCol() + "]" : "[?]";
                 String fname = obj instanceof CodePair ? ((CodePair) obj).getSource() : null;
                 int line = obj instanceof CodePair ? ((CodePair) obj).getLine() : 0;
                 stack[i] = new StackTraceElement(obj.toString(), cpoint, fname, line);
-                seq = (Seq)cdr(seq);
+                seq = (Seq) StandardLibrary.cdr(seq);
             }
             rewrittenStack = evalStack;
             setStackTrace(stack);

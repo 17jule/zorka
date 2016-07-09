@@ -18,9 +18,6 @@ package com.jitlogic.zorka.lisp;
 
 import java.util.Map;
 
-import static com.jitlogic.zorka.lisp.StandardLibrary.car;
-import static com.jitlogic.zorka.lisp.Utils.next;
-
 public class Closure implements Fn {
 
     private Interpreter ctx;
@@ -54,8 +51,8 @@ public class Closure implements Fn {
 
         Object rslt = null;
 
-        for (Seq form = code; form != null; form = next(form)) {
-            rslt = ctx.eval(car(form), env1);
+        for (Seq form = code; form != null; form = Utils.next(form)) {
+            rslt = ctx.eval(StandardLibrary.car(form), env1);
         }
 
         return rslt;

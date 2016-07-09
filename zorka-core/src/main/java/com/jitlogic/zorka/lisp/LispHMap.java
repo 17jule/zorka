@@ -18,12 +18,6 @@ package com.jitlogic.zorka.lisp;
 
 import java.util.Iterator;
 
-import static com.jitlogic.zorka.lisp.StandardLibrary.car;
-import static com.jitlogic.zorka.lisp.StandardLibrary.cdr;
-import static com.jitlogic.zorka.lisp.StandardLibrary.cdar;
-import static com.jitlogic.zorka.lisp.StandardLibrary.cddr;
-import static com.jitlogic.zorka.lisp.StandardLibrary.cons;
-
 public class LispHMap implements LispMap {
 
     private static final int HBITS = 4;
@@ -273,7 +267,7 @@ public class LispHMap implements LispMap {
             Node n = nodeStack[stackPos];
             int i = idxStack[stackPos];
             return n != null && n.getClass() == LNode.class && i < n.size()
-                ? cons(((LNode)n).slots[i * 2], cons(((LNode)n).slots[i * 2 + 1], null)) : null;
+                ? StandardLibrary.cons(((LNode)n).slots[i * 2], StandardLibrary.cons(((LNode)n).slots[i * 2 + 1], null)) : null;
         }
 
 
@@ -341,11 +335,11 @@ public class LispHMap implements LispMap {
 
             sb.append('(');
 
-            for (Seq seq = this; seq != null; seq = (Seq)cdr(seq)) {
+            for (Seq seq = this; seq != null; seq = (Seq) StandardLibrary.cdr(seq)) {
                 if (sb.length() > 1) {
                     sb.append(' ');
                 }
-                sb.append(car(seq));
+                sb.append(StandardLibrary.car(seq));
             }
 
             sb.append(')');
@@ -375,8 +369,8 @@ public class LispHMap implements LispMap {
         this.flags = flags;
         if (args != null) {
             root = new LNode();
-            for (Seq seq = args; seq != null; seq = (Seq)cddr(seq)) {
-                Object k = car(seq), v = cdar(seq);
+            for (Seq seq = args; seq != null; seq = (Seq) StandardLibrary.cddr(seq)) {
+                Object k = StandardLibrary.car(seq), v = StandardLibrary.cdar(seq);
                 root = root.assoc(0, k.hashCode(), k, v, true);
             }
         }

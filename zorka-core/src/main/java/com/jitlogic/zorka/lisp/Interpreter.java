@@ -21,9 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 
-import static com.jitlogic.zorka.lisp.StandardLibrary.*;
-import static com.jitlogic.zorka.lisp.Utils.*;
-
 import static com.jitlogic.zorka.lisp.Symbol.symbol;
 
 /**
@@ -35,18 +32,18 @@ public class Interpreter {
 
     private Environment env = new Environment(null);
 
-    public final Symbol BEGIN = symbol("begin");
-    public final Symbol COND = symbol("cond");
-    public final Symbol DEF = symbol("def");
-    public final Symbol ELSE = symbol("else");
-    public final Symbol GE = symbol("=>");
-    public final Symbol FN = symbol("fn");
-    public final Symbol MACRO = symbol("macro");
-    public final Symbol QUOTE = symbol("quote");
-    public final Symbol QUASIQUOTE = symbol("quasiquote");
-    public final Symbol SET = symbol("set!");
-    public final Symbol UNQUOTE = symbol("unquote");
-    public final Symbol UNQUOTE_SPLICING = symbol("unquote-splicing");
+    public final Symbol BEGIN = Symbol.symbol("begin");
+    public final Symbol COND = Symbol.symbol("cond");
+    public final Symbol DEF = Symbol.symbol("def");
+    public final Symbol ELSE = Symbol.symbol("else");
+    public final Symbol GE = Symbol.symbol("=>");
+    public final Symbol FN = Symbol.symbol("fn");
+    public final Symbol MACRO = Symbol.symbol("macro");
+    public final Symbol QUOTE = Symbol.symbol("quote");
+    public final Symbol QUASIQUOTE = Symbol.symbol("quasiquote");
+    public final Symbol SET = Symbol.symbol("set!");
+    public final Symbol UNQUOTE = Symbol.symbol("unquote");
+    public final Symbol UNQUOTE_SPLICING = Symbol.symbol("unquote-splicing");
 
 
     public void install(Object lib) {
@@ -58,7 +55,7 @@ public class Interpreter {
         for (Method m : clazz.getDeclaredMethods()) {
             Primitive ann = m.getAnnotation(Primitive.class);
             if (ann != null) {
-                Symbol sym = symbol(
+                Symbol sym = Symbol.symbol(
                     ns != null ? ns.value() : null,
                     ann.value().equals("") ? m.getName() : ann.value());
                 env.define(sym, ann.isNative() ? new NativeMethod(m, lib) : new JavaMethod(m, lib));
@@ -74,34 +71,34 @@ public class Interpreter {
     }
 
     private Object quasiquote(Object x, Environment env) {
-        if (car(x) == UNQUOTE || car(x) == UNQUOTE_SPLICING) {
-            return eval(cadr(x), env);
+        if (StandardLibrary.car(x) == UNQUOTE || StandardLibrary.car(x) == UNQUOTE_SPLICING) {
+            return eval(StandardLibrary.cadr(x), env);
         } else if (x instanceof Seq) {
             Pair head = new Pair(), tail = head;
-            for (Object c = x; c instanceof Seq; c = cdr(c)) {
-                Object o = quasiquote(car(c), env);
-                if (caar(c) == UNQUOTE_SPLICING) {
-                    for (Object s = o; s instanceof Seq; s = cdr(s)) {
-                        tail.setRest(new Pair(car(s)));
-                        tail = (Pair) cdr(tail);
+            for (Object c = x; c instanceof Seq; c = StandardLibrary.cdr(c)) {
+                Object o = quasiquote(StandardLibrary.car(c), env);
+                if (StandardLibrary.caar(c) == UNQUOTE_SPLICING) {
+                    for (Object s = o; s instanceof Seq; s = StandardLibrary.cdr(s)) {
+                        tail.setRest(new Pair(StandardLibrary.car(s)));
+                        tail = (Pair) StandardLibrary.cdr(tail);
                     }
                 } else {
                     tail.setRest(new Pair(o));
-                    tail = (Pair) cdr(tail);
+                    tail = (Pair) StandardLibrary.cdr(tail);
                 }
             }
-            return cdr(head);
+            return StandardLibrary.cdr(head);
         } else {
             return x;
         }
     }
 
     public Object cond(Seq clauses, Environment env) {
-        for (Seq cur = clauses; cur != null; cur = next(cur)) {
-            Object cl = car(cur), c = car(cl);
-            if (c == ELSE || isTrue(c = eval(c, env))) {
-                return cdr(cl) == null ? c : eval(cadr(cl) == GE ?  caddr(cl)
-                    : cddr(cl) != null ? cons(BEGIN, cdr(cl)) : cadr(cl), env);
+        for (Seq cur = clauses; cur != null; cur = Utils.next(cur)) {
+            Object cl = StandardLibrary.car(cur), c = StandardLibrary.car(cl);
+            if (c == ELSE || Utils.isTrue(c = eval(c, env))) {
+                return StandardLibrary.cdr(cl) == null ? c : eval(StandardLibrary.cadr(cl) == GE ?  StandardLibrary.caddr(cl)
+                    : StandardLibrary.cddr(cl) != null ? StandardLibrary.cons(BEGIN, StandardLibrary.cdr(cl)) : StandardLibrary.cadr(cl), env);
             }
         }
         return false;
@@ -116,51 +113,51 @@ public class Interpreter {
                 } else if (x instanceof Symbol) {
                     return env.lookup((Symbol) x);
                 } else if (x instanceof Pair) {
-                    Object f = car(x);
-                    Seq n = next(x);
+                    Object f = StandardLibrary.car(x);
+                    Seq n = Utils.next(x);
                     if (f == QUOTE) {
-                        return car(n);
+                        return StandardLibrary.car(n);
                     } else if (f == QUASIQUOTE) {
-                        return quasiquote(car(n), env);
+                        return quasiquote(StandardLibrary.car(n), env);
                     } else if (f == BEGIN) {
                         while (n != null && n.rest() != null) {
                             eval(n.first(), env);
-                            n = next(n);
+                            n = Utils.next(n);
                         }
                         return n != null ? eval(n.first(), env) : null;
                     } else if (f == DEF) {
-                        Object sym = car(n);
+                        Object sym = StandardLibrary.car(n);
                         if (sym instanceof Symbol) {
-                            return env.define((Symbol) sym, eval(cadr(n), env));
+                            return env.define((Symbol) sym, eval(StandardLibrary.cadr(n), env));
                         } else if (sym instanceof Seq) {
-                            if (car(sym) instanceof Symbol) {
-                                Closure c = new Closure(this, env, next(sym), next(n), false);
-                                return env.define((Symbol) car(sym), c);
+                            if (StandardLibrary.car(sym) instanceof Symbol) {
+                                Closure c = new Closure(this, env, Utils.next(sym), Utils.next(n), false);
+                                return env.define((Symbol) StandardLibrary.car(sym), c);
                             }
                         }
                         throw new LispException("Defined name must be a symbol.");
                     } else if (f == SET) {
-                        Object sym = car(n);
+                        Object sym = StandardLibrary.car(n);
                         if (sym instanceof Symbol) {
-                            return env.set((Symbol) sym, eval(cadr(n), env));
+                            return env.set((Symbol) sym, eval(StandardLibrary.cadr(n), env));
                         } else {
                             throw new LispException("First argument in set! must be a symbol.");
                         }
                     } else if (f == FN || f == MACRO) {
-                        Object args = car(n);
+                        Object args = StandardLibrary.car(n);
                         if (args == null || args instanceof Seq || args instanceof Symbol) {
-                            return new Closure(this, env, args, next(n), f == MACRO);
+                            return new Closure(this, env, args, Utils.next(n), f == MACRO);
                         } else {
                             throw new LispException("First argument of (lambda...) needs to be list of symbols or symbol.");
                         }
                     } else if (f == COND) {
                         return cond(n, env);
                     } else if (f instanceof Symbol && ((Symbol)f).getName().startsWith(".")) {
-                        Object obj = eval(car(n), env);
+                        Object obj = eval(StandardLibrary.car(n), env);
                         if (obj != null) {
                             for (Method m : ObjectInspector.lookupMethods(obj.getClass(), ((Symbol) f).getName().substring(1), false)) {
-                                if (m.getParameterTypes().length == length(n) - 1) {
-                                    Object[] args = toArray(cdr(n));
+                                if (m.getParameterTypes().length == StandardLibrary.length(n) - 1) {
+                                    Object[] args = StandardLibrary.toArray(StandardLibrary.cdr(n));
                                     for (int i = 0; i < args.length; i++) {
                                         args[i] = eval(args[i],env);
                                     }
@@ -181,20 +178,20 @@ public class Interpreter {
                             Object expansion = fn.apply(this, env, n);
                             Pair p = (Pair) x;
                             if (expansion instanceof Seq) {
-                                p.setFirst(car(expansion));
-                                p.setRest(cdr(expansion));
+                                p.setFirst(StandardLibrary.car(expansion));
+                                p.setRest(StandardLibrary.cdr(expansion));
                             } else {
                                 p.setFirst(BEGIN);
-                                p.setRest(cons(expansion, null));
+                                p.setRest(StandardLibrary.cons(expansion, null));
                             }
                         } else {
                             Pair head = new Pair(), tail = head;
-                            for (Seq cur = n; cur != null; cur = next(cur)) {
-                                Pair p = new Pair(eval(car(cur), env));
+                            for (Seq cur = n; cur != null; cur = Utils.next(cur)) {
+                                Pair p = new Pair(eval(StandardLibrary.car(cur), env));
                                 tail.setRest(p);
                                 tail = p;
                             }
-                            return fn.apply(this, env, next(head));
+                            return fn.apply(this, env, Utils.next(head));
                         }
                     }
                 } else {
@@ -222,7 +219,7 @@ public class Interpreter {
     public Seq readScript(String path) {
         InputStream is = null;
         try {
-            is = open(path);
+            is = Utils.open(path);
             return new Reader(new File(path).getName(), is).readAll();
         } catch (Exception e) {
             throw new LispException("Cannot open script: " + path, e);
@@ -235,7 +232,7 @@ public class Interpreter {
 
     public Object evalScript(String path) {
         Object rslt = null;
-        for (Seq seq = readScript(path); seq != null; seq = next(seq)) {
+        for (Seq seq = readScript(path); seq != null; seq = Utils.next(seq)) {
             rslt = eval(seq.first());
         }
         return rslt;

@@ -20,11 +20,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-
-import static com.jitlogic.zorka.lisp.StandardLibrary.car;
-import static com.jitlogic.zorka.lisp.StandardLibrary.length;
-import static com.jitlogic.zorka.lisp.Utils.next;
-
 public class JavaMethod implements Fn {
 
     private Method method;
@@ -41,16 +36,16 @@ public class JavaMethod implements Fn {
         try {
             Object[] xargs = new Object[method.getParameterTypes().length]; // TODO this is expensive
             for (int i = 0; i < xargs.length - (method.isVarArgs() ? 1 : 0); i++) {
-                xargs[i] = car(args);
-                args = next(args);
+                xargs[i] = StandardLibrary.car(args);
+                args = Utils.next(args);
             }
             if (method.isVarArgs()) {
                 Class<?> atype = method.getParameterTypes()[method.getParameterTypes().length - 1];  // TODO this is expensive
-                Object[] vargs = (Object[])Array.newInstance(atype.getComponentType(), length(args));
+                Object[] vargs = (Object[])Array.newInstance(atype.getComponentType(), StandardLibrary.length(args));
                 for (int i = 0; i < vargs.length; i++) {
-                    Object v = car(args);
+                    Object v = StandardLibrary.car(args);
                     vargs[i] = v;
-                    args = next(args);
+                    args = Utils.next(args);
                 }
                 xargs[xargs.length-1] = vargs;
             }

@@ -30,14 +30,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.jitlogic.zorka.lisp.StandardLibrary.car;
-import static com.jitlogic.zorka.lisp.StandardLibrary.cdr;
-import static com.jitlogic.zorka.lisp.StandardLibrary.cadr;
-import static com.jitlogic.zorka.lisp.StandardLibrary.cddr;
-import static com.jitlogic.zorka.lisp.StandardLibrary.seq;
-
-import static com.jitlogic.zorka.lisp.Utils.next;
-
 public class ObjectInspector {
 
     /**
@@ -712,64 +704,64 @@ public class ObjectInspector {
 
     public static Map<Symbol, Object> destructure(Object params, Object args, Map<Symbol,Object> pmap) {
         if (params instanceof Seq) {
-            Seq a = seq(args);
-            for (Object p = params; p != null; a = next(a), p = cdr(p)) {
+            Seq a = StandardLibrary.seq(args);
+            for (Object p = params; p != null; a = Utils.next(a), p = StandardLibrary.cdr(p)) {
                 if (p instanceof Seq) {
-                    Object cp = car(p);
+                    Object cp = StandardLibrary.car(p);
                     if (cp instanceof Seq) {
-                        destructure(cp, car(a), pmap);
+                        destructure(cp, StandardLibrary.car(a), pmap);
                     } else {
-                        Object p1 = cadr(p);
+                        Object p1 = StandardLibrary.cadr(p);
                         if (cp instanceof Symbol) {
                             if (p1 instanceof String) {
                                 pmap.put((Symbol)cp, ObjectInspector.getAttr(args, p1));
-                                p = cdr(p);
+                                p = StandardLibrary.cdr(p);
                             } else if (p1 instanceof Keyword && !KWAS.equals(p1) && !KWOR.equals(p1)) {
                                 Object obj = ObjectInspector.getAttr(args, ((Keyword) p1).getName());
                                 if (obj == null) {
                                     obj = ObjectInspector.getAttr(args, p1);
                                 }
                                 pmap.put((Symbol)cp, obj);
-                                p = cdr(p);
+                                p = StandardLibrary.cdr(p);
                             } else {
-                                pmap.put((Symbol) cp, car(a));
+                                pmap.put((Symbol) cp, StandardLibrary.car(a));
                             }
                         } else if (KWAS.equals(cp)) {
                             if (p1 instanceof Symbol) {
                                 pmap.put((Symbol) p1, args);
-                                p = cdr(p);
+                                p = StandardLibrary.cdr(p);
                             } else {
                                 throw new LispException("Expected symbol but found: " + p1);
                             }
                         } else if (KEYS.equals(cp)) {
                             if (p1 instanceof Seq) {
-                                for (Seq kseq = (Seq)p1; kseq != null; kseq = next(kseq)) {
-                                    if (car(kseq) instanceof Symbol) {
-                                        Symbol sym = (Symbol)car(kseq);
+                                for (Seq kseq = (Seq)p1; kseq != null; kseq = Utils.next(kseq)) {
+                                    if (StandardLibrary.car(kseq) instanceof Symbol) {
+                                        Symbol sym = (Symbol) StandardLibrary.car(kseq);
                                         Object obj = ObjectInspector.getAttr(args, sym.getName());
                                         if (obj == null) {
                                             obj = ObjectInspector.getAttr(args, Keyword.keyword(sym.getName()));
                                         }
                                         pmap.put(sym, obj);
                                     } else {
-                                        throw new LispException("Invalid keylist item: " + car(kseq));
+                                        throw new LispException("Invalid keylist item: " + StandardLibrary.car(kseq));
                                     }
                                 }
                             } else {
                                 throw new LispException("Invalid keylist: " + p1);
                             }
-                            p = cdr(p);
+                            p = StandardLibrary.cdr(p);
                         } else if (KWOR.equals(cp)) {
                             if (p1 instanceof Seq) {
-                                for (Seq seq = (Seq)p1; seq != null; seq = (Seq)cddr(seq)) {
-                                    if (!(car(seq) instanceof Symbol)) {
-                                        throw new LispException("Expected symbol but got " + car(seq));
+                                for (Seq seq = (Seq)p1; seq != null; seq = (Seq) StandardLibrary.cddr(seq)) {
+                                    if (!(StandardLibrary.car(seq) instanceof Symbol)) {
+                                        throw new LispException("Expected symbol but got " + StandardLibrary.car(seq));
                                     }
-                                    Symbol key = (Symbol)car(seq);
-                                    if (cdr(seq) == null) {
+                                    Symbol key = (Symbol) StandardLibrary.car(seq);
+                                    if (StandardLibrary.cdr(seq) == null) {
                                         throw new LispException("Expected constant value after " + key);
                                     }
-                                    Object val = cadr(seq);
+                                    Object val = StandardLibrary.cadr(seq);
                                     if (pmap.get(key) == null) {
                                         pmap.put(key, val);
                                     }
@@ -777,9 +769,9 @@ public class ObjectInspector {
                             } else {
                                 throw new LispException("Expected list after :or but got " + p1);
                             }
-                            p = cdr(p);
+                            p = StandardLibrary.cdr(p);
                         } else {
-                            throw new LispException("Invalid parameter declaration: " + car(p));
+                            throw new LispException("Invalid parameter declaration: " + StandardLibrary.car(p));
                         }
                     }
                 } else if (p instanceof Symbol) {
