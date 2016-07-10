@@ -16,6 +16,8 @@
 
 package com.jitlogic.zorka.lisp;
 
+import com.jitlogic.zorka.util.ObjectInspector;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

@@ -15,6 +15,9 @@
  */
 package com.jitlogic.zorka.test.utils;
 
+import com.jitlogic.zorka.lisp.LispMap;
+import com.jitlogic.zorka.lisp.Pair;
+import com.jitlogic.zorka.lisp.Symbol;
 import com.jitlogic.zorka.test.utils.support.TestInspectorClass;
 import com.jitlogic.zorka.test.utils.support.TestInspectorClass2;
 import com.jitlogic.zorka.test.utils.support.TestStats;
@@ -28,6 +31,9 @@ import javax.management.j2ee.statistics.TimeStatistic;
 import java.io.ByteArrayInputStream;
 import java.util.*;
 
+import static com.jitlogic.zorka.test.lisp.support.LispTestSupport.lm;
+import static com.jitlogic.zorka.test.lisp.support.LispTestSupport.lst;
+import static com.jitlogic.zorka.test.lisp.support.LispTestSupport.sym;
 import static org.junit.Assert.*;
 
 public class ObjectInspectorUnitTest {
@@ -352,5 +358,14 @@ public class ObjectInspectorUnitTest {
 
 
     // TODO tests for tabular data
+
+    @Test
+    public void testDestructureAliasedMap() {
+        Symbol a = sym("a"), b = sym("b"), c = sym("c"), d = sym("d");
+        Pair params = lst(a, lst(b, "B", c, "CCC"), d);
+        Pair args = lst(1, ZorkaUtil.map("B", 2, "CCC", 3, "XXX", 42), 4);
+        LispMap m = ObjectInspector.destructure(params, args);
+        assertEquals(lm(a, 1, b, 2, c, 3, d, 4), m);
+    }
 
 }

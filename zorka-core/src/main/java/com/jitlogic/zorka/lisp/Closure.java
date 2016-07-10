@@ -16,7 +16,8 @@
 
 package com.jitlogic.zorka.lisp;
 
-import java.util.Map;
+import com.jitlogic.zorka.util.ObjectInspector;
+
 
 public class Closure implements Fn {
 
@@ -44,10 +45,8 @@ public class Closure implements Fn {
 
     @Override
     public Object apply(Interpreter ctx, Environment _env, Seq args) {
-
-        Map<Symbol, Object> pmap = ObjectInspector.destructure(params, args);
-
-        Environment env1 = new Environment(env, pmap);
+        LispMap m = ObjectInspector.destructure(params, args);
+        Environment env1 = new Environment(env, m);
 
         Object rslt = null;
 

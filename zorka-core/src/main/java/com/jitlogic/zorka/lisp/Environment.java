@@ -16,19 +16,19 @@
 
 package com.jitlogic.zorka.lisp;
 
+import com.jitlogic.zorka.util.ObjectInspector;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * LISP Environment contains symbol to variable bindings.
  */
 public class Environment {
 
-    private Map<Symbol,Object> vars = new HashMap<Symbol, Object>();
+    private LispMap vars = new LispSMap(LispMap.MUTABLE);
 
     private Environment parent;
 
@@ -36,14 +36,14 @@ public class Environment {
         this.parent = parent;
     }
 
-    public Environment(Environment parent, Map<Symbol,Object> vars) {
+    public Environment(Environment parent, LispMap vars) {
         this.parent = parent;
         this.vars = vars;
     }
 
 
     public Object lookup(Symbol sym) {
-        if (vars.containsKey(sym)) {
+        if (vars.contains(sym)) {
             return vars.get(sym);
         } else if (parent != null) {
             return parent.lookup(sym);
@@ -67,13 +67,13 @@ public class Environment {
     }
 
     public Object define(Symbol sym, Object val) {
-        vars.put(sym, val);
+        vars = vars.assoc(sym, val);
         return val;
     }
 
     public Object set(Symbol sym, Object val) {
-        if (vars.containsKey(sym)) {
-            vars.put(sym, val);
+        if (vars.contains(sym)) {
+            vars = vars.assoc(sym, val);
             return val;
         } else if (parent != null) {
             return parent.set(sym, val);

@@ -34,6 +34,7 @@ import static com.jitlogic.zorka.lisp.StandardLibrary.car;
 public class LispTestSuite extends ParentRunner<String> {
 
     private final static Symbol DEFTEST = Symbol.symbol("deftest");
+    private final static Symbol DEFTEST_SKIP = Symbol.symbol("deftest-");
 
     private LispTests tests;
 
@@ -79,11 +80,11 @@ public class LispTestSuite extends ParentRunner<String> {
                 if (!(testNameObj instanceof Symbol)) {
                     notifier.fireTestFailure(
                         new Failure(Description.createTestDescription(child,
-                            "<bad test @ " + ((CodePair)car(seq)).getLine() + ":" + ((CodePair)car(seq)).getCol()+ ">"),
+                            "<bad test @ " + ((CodePair) car(seq)).getLine() + ":" + ((CodePair) car(seq)).getCol() + ">"),
                             new RuntimeException("Missing or invalid test name: " + testNameObj)));
                     continue;
                 }
-                Symbol testName = (Symbol)testNameObj;
+                Symbol testName = (Symbol) testNameObj;
                 Description spec = Description.createTestDescription(child, testName.getName());
                 notifier.fireTestStarted(spec);
                 try {
@@ -95,6 +96,8 @@ public class LispTestSuite extends ParentRunner<String> {
                     notifier.fireTestFailure(new Failure(spec,
                         e.getCause() instanceof AssertionError ? e.getCause() : e));
                 }
+            } else if (DEFTEST_SKIP.equals(caar(seq))) {
+                notifier.fireTestIgnored(Description.createTestDescription(child, ((Symbol)cadar(seq)).getName()));
             } else {
                 ctx.eval(car(seq));
             }

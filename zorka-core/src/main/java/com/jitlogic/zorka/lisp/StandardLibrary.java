@@ -16,6 +16,8 @@
 
 package com.jitlogic.zorka.lisp;
 
+import com.jitlogic.zorka.util.ObjectInspector;
+
 import java.io.*;
 import java.util.*;
 

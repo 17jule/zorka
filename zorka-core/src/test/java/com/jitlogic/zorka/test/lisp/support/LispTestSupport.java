@@ -43,28 +43,27 @@ public class LispTestSupport {
         return ctx.evalStr(s);
     }
 
-    protected Object read(String s) {
-        Reader rdr = new Reader(s);
-        return rdr.read();
+    public static Object read(String s) {
+        return new Reader(s).read();
     }
 
 
-    protected Seq readAll(String s) {
+    public static Seq readAll(String s) {
         Reader rdr = new Reader(s);
         return rdr.readAll();
     }
 
 
-    protected Symbol sym(String name) {
+    public static Symbol sym(String name) {
         return Symbol.symbol(name);
     }
 
-    protected Keyword kw(String name) {
+    public static Keyword kw(String name) {
         return Keyword.keyword(name);
     }
 
 
-    protected Pair lst(Object...objs) {
+    public static Pair lst(Object...objs) {
         Pair head = null;
 
         for (int i = objs.length-1; i >= 0; i--) {
@@ -72,6 +71,14 @@ public class LispTestSupport {
         }
 
         return head;
+    }
+
+    public static LispMap lm(Object...objs) {
+        LispMap lm = new LispSMap(LispMap.MUTABLE);
+        for (int i = 1; i < objs.length; i += 2) {
+            lm = lm.assoc(objs[i-1], objs[i]);
+        }
+        return lm;
     }
 
     protected Pair pair(Object first, Object rest) {

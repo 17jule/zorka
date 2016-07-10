@@ -17,6 +17,7 @@
 
 package com.jitlogic.zorka.util;
 
+import com.jitlogic.zorka.lisp.*;
 import com.jitlogic.zorka.stats.ZorkaStats;
 
 import javax.management.*;
@@ -374,6 +375,23 @@ public final class ObjectInspector {
         }
     }
 
+    public static Class<?> findClass(String name) {
+        Class<?> c = null;
+        try {
+            c = Class.forName(name);
+        } catch (ClassNotFoundException ignored) { }
+
+        try {
+            if (c == null && !name.contains(".")) {
+                c = Class.forName("java.lang." + name);
+            }
+        } catch (ClassNotFoundException ignored) { }
+
+        return c;
+    }
+
+
+
 
     /**
      * Lookf for field of given name.
@@ -429,6 +447,37 @@ public final class ObjectInspector {
             }
         }
         return null;
+    }
+
+
+    public static List<Method> lookupMethods(Class<?> clazz, String name, boolean isStatic) {
+        Map<String,Method> m = new HashMap<String,Method>();
+        lookupMethods(clazz, name, m);
+        List<Method> rslt = new ArrayList<Method>(m.size());
+        for (Map.Entry<String,Method> e : m.entrySet()) {
+            if (isStatic == Modifier.isStatic(e.getValue().getModifiers())) {
+                rslt.add(e.getValue());
+            }
+        }
+        return rslt;
+    }
+
+
+    private static void lookupMethods(Class<?> clazz, String name, Map<String,Method> methods) {
+        for (Method m : clazz.getDeclaredMethods()) {
+            if (name.equals(m.getName())) {
+                String sgn = m.toGenericString();
+                if (!methods.containsKey(sgn)) {
+                    methods.put(sgn, m);
+                }
+            }
+        }
+        if (clazz != Object.class && clazz.getSuperclass() != null) {
+            lookupMethods(clazz.getSuperclass(), name, methods);
+        }
+        for (Class<?> icl : clazz.getInterfaces()) {
+            lookupMethods(icl, name, methods);
+        }
     }
 
     /**
@@ -633,6 +682,28 @@ public final class ObjectInspector {
         }
     }
 
+    public static Object getField(Object obj, Field field) {
+
+        boolean accessible = field.isAccessible();
+
+        if (!accessible) {
+            field.setAccessible(true);
+        }
+
+        Object rslt = null;
+
+        try {
+            rslt = field.get(obj);
+        } catch (IllegalAccessException ignored) {
+        }
+
+        if (!accessible) {
+            field.setAccessible(false);
+        }
+
+        return rslt;
+    }
+
 
     public static boolean setField(Object obj, String fieldName, Object value) {
         if (obj != null) {
@@ -680,4 +751,101 @@ public final class ObjectInspector {
 //        Class<? extends T> listClazz = List.class.asSubclass()
 //        //List<T>
 //    }
+
+    public static final Keyword KWAS = Keyword.keyword("as");
+    public static final Keyword KWOR = Keyword.keyword("or");
+    public static final Keyword KEYS = Keyword.keyword("keys");
+
+
+    public static LispMap destructure(Object params, Seq args) {
+        LispMap lm = new LispSMap(0);
+        return destructure(params, args, lm);
+    }
+
+
+    public static LispMap destructure(Object params, Object args, LispMap pmap) {
+        if (params instanceof Seq) {
+            Seq a = StandardLibrary.seq(args);
+            for (Object p = params; p != null; a = Utils.next(a), p = StandardLibrary.cdr(p)) {
+                if (p instanceof Seq) {
+                    Object cp = StandardLibrary.car(p);
+                    if (cp instanceof Seq) {
+                        pmap = destructure(cp, StandardLibrary.car(a), pmap);
+                    } else {
+                        Object p1 = StandardLibrary.cadr(p);
+                        if (cp instanceof Symbol) {
+                            if (p1 instanceof String) {
+                                pmap = pmap.assoc(StandardLibrary.car(p), ObjectInspector.getAttr(args, p1));
+                                p = StandardLibrary.cdr(p);
+                            } else if (p1 instanceof Keyword && !KWAS.equals(p1) && !KWOR.equals(p1)) {
+                                Object obj = ObjectInspector.getAttr(args, ((Keyword) p1).getName());
+                                if (obj == null) {
+                                    obj = ObjectInspector.getAttr(args, p1);
+                                }
+                                pmap = pmap.assoc(StandardLibrary.car(p), obj);
+                                p = StandardLibrary.cdr(p);
+                            } else {
+                                pmap = pmap.assoc(cp, StandardLibrary.car(a));
+                            }
+                        } else if (KWAS.equals(cp)) {
+                            if (p1 instanceof Symbol) {
+                                pmap = pmap.assoc(p1, args);
+                                p = StandardLibrary.cdr(p);
+                            } else {
+                                throw new LispException("Expected symbol but found: " + p1);
+                            }
+                        } else if (KEYS.equals(cp)) {
+                            if (p1 instanceof Seq) {
+                                for (Seq kseq = (Seq)p1; kseq != null; kseq = Utils.next(kseq)) {
+                                    if (StandardLibrary.car(kseq) instanceof Symbol) {
+                                        Symbol sym = (Symbol) StandardLibrary.car(kseq);
+                                        Object obj = ObjectInspector.getAttr(args, sym.getName());
+                                        if (obj == null) {
+                                            obj = ObjectInspector.getAttr(args, Keyword.keyword(sym.getName()));
+                                        }
+                                        pmap = pmap.assoc(sym, obj);
+                                    } else {
+                                        throw new LispException("Invalid keylist item: " + StandardLibrary.car(kseq));
+                                    }
+                                }
+                            } else {
+                                throw new LispException("Invalid keylist: " + p1);
+                            }
+                            p = StandardLibrary.cdr(p);
+                        } else if (KWOR.equals(cp)) {
+                            if (p1 instanceof Seq) {
+                                for (Seq seq = (Seq)p1; seq != null; seq = (Seq) StandardLibrary.cddr(seq)) {
+                                    if (!(StandardLibrary.car(seq) instanceof Symbol)) {
+                                        throw new LispException("Expected symbol but got " + StandardLibrary.car(seq));
+                                    }
+                                    Object key = StandardLibrary.car(seq);
+                                    if (StandardLibrary.cdr(seq) == null) {
+                                        throw new LispException("Expected constant value after " + key);
+                                    }
+                                    Object val = StandardLibrary.cadr(seq);
+                                    if (pmap.get(key) == null) {
+                                        pmap = pmap.assoc(key, val);
+                                    }
+                                }
+                            } else {
+                                throw new LispException("Expected list after :or but got " + p1);
+                            }
+                            p = StandardLibrary.cdr(p);
+                        } else {
+                            throw new LispException("Invalid parameter declaration: " + StandardLibrary.car(p));
+                        }
+                    }
+                } else if (p instanceof Symbol) {
+                    pmap = pmap.assoc(p, a);
+                } else {
+                    throw new LispException("Invalid parameter declaration: " + params);
+                }
+            }
+        } else if (params instanceof Symbol) {
+            pmap = pmap.assoc(params, args);
+        }
+        return pmap;
+    }
+
+
 }
