@@ -25,8 +25,9 @@ import com.jitlogic.zorka.util.ZorkaLogger;
 import com.jitlogic.zorka.util.ZorkaUtil;
 
 import java.io.*;
+import java.util.Iterator;
 
-public class AgentConfig {
+public class AgentConfig implements LispMap {
 
     private static final ZorkaLog log = ZorkaLogger.getLog(AgentConfig.class);
 
@@ -127,4 +128,55 @@ public class AgentConfig {
         return rslt instanceof LispMap ? (LispMap)rslt : null;
     }
 
+    @Override
+    public LispMap assoc(Object k, Object v) {
+        confData = confData.assoc(k,v);
+        return this;
+    }
+
+    @Override
+    public LispMap dissoc(Object k) {
+        confData = confData.dissoc(k);
+        return this;
+    }
+
+    @Override
+    public Object get(Object k) {
+        return confData.get(k);
+    }
+
+    @Override
+    public Object get(Object k, Object dv) {
+        return confData.get(k,dv);
+    }
+
+    @Override
+    public boolean contains(Object k) {
+        return confData.contains(k);
+    }
+
+    @Override
+    public int size() {
+        return confData.size();
+    }
+
+    @Override
+    public Seq seq() {
+        return confData.seq();
+    }
+
+    @Override
+    public int getFlags() {
+        return 0;
+    }
+
+    @Override
+    public void setFlags(int flags) {
+
+    }
+
+    @Override
+    public Iterator<Entry> iterator() {
+        return confData.iterator();
+    }
 }

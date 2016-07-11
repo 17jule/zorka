@@ -50,7 +50,7 @@ public class UtilLib {
         return ObjectInspector.get(obj, args);
     }
 
-    @Primitive
+    @Primitive("java-list")
     public List<?> list(Object...objs) {
         List<Object> lst = new ArrayList<Object>();
         for (Object obj : objs) {
@@ -59,12 +59,12 @@ public class UtilLib {
         return lst;
     }
 
-    @Primitive
+    @Primitive("java-map")
     public Map<?,?> map(Object...objs) {
         return ZorkaUtil.map(objs);
     }
 
-    @Primitive
+    @Primitive("java-set")
     public Set<Object> set(Object... objs) {
         return ZorkaUtil.set(objs);
     }

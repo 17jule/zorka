@@ -13,14 +13,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this software. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jitlogic.zorka;
+package com.jitlogic.zorka.net;
 
+import com.jitlogic.zorka.ZorkaLispAgent;
+import com.jitlogic.zorka.ZorkaService;
+import com.jitlogic.zorka.lisp.*;
 import com.jitlogic.zorka.stats.AgentDiagnostics;
 import com.jitlogic.zorka.util.ZorkaLog;
 import com.jitlogic.zorka.util.ZorkaLogger;
-import com.jitlogic.zorka.lisp.Keyword;
-import com.jitlogic.zorka.lisp.LispMap;
-import com.jitlogic.zorka.lisp.Seq;
 
 import static com.jitlogic.zorka.lisp.StandardLibrary.car;
 import static com.jitlogic.zorka.lisp.StandardLibrary.cdr;
@@ -35,13 +35,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Abstract class that implements basic functionality of a service
- * listening on TCP port, handling TCP connections and processing
- * requests using ZorkaBshAgent.
+ * General purpose agent that listens on a designated TCP port and
  *
  * @author rafal.lewczuk@jitlogic.com
  */
-public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
+public class TcpServer implements Runnable, ZorkaService {
 
     /**
      * Logger
@@ -52,6 +50,10 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
      * BSH agent
      */
     private ZorkaLispAgent agent;
+
+    private Interpreter interpterer;
+
+    private Environment env;
 
     /**
      * Connections accepting thread
@@ -66,7 +68,7 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
     /**
      * Name prefix (will appear in thread name, configuration properties will start with this prefix etc.)
      */
-    private String prefix;
+    private String name;
 
     /**
      * TCP listen port
@@ -79,6 +81,12 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
 
     private LispMap config;
 
+    private Fn parseFn;
+
+    private Fn formatFn;
+
+    private Fn evalFn;
+
     /**
      * TCP listen address
      */
@@ -87,7 +95,8 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
     /**
      * List of addresses from which agent will accept connections.
      */
-    private List<InetAddress> allowedAddrs = new ArrayList<InetAddress>();
+    private List<InetAddress> allowAddrs = new ArrayList<InetAddress>();
+    private List<InetAddress> denyAddrs = new ArrayList<InetAddress>();
 
     /**
      * TCP server socket
@@ -96,25 +105,27 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
 
     public static final Keyword KW_ADDR = Keyword.keyword("addr");
     public static final Keyword KW_PORT = Keyword.keyword("port");
-    public static final Keyword KW_SVRS = Keyword.keyword("servers");
+    public static final Keyword KW_ALLOW = Keyword.keyword("allow");
+    public static final Keyword KW_DENY = Keyword.keyword("deny");
+    public static final Keyword KW_NAME = Keyword.keyword("name");
+    public static final Keyword KW_PARSE = Keyword.keyword("parse");
+    public static final Keyword KW_FORMAT = Keyword.keyword("parse");
+    public static final Keyword KW_EVAL = Keyword.keyword("eval");
 
     /**
      * Standard constructor
      *
-     * @param agent       BSH agent
-     * @param prefix      agent name prefix
-     * @param defaultAddr
-     * @param defaultPort agent default port
+     * @param config      Map of configuration parameters
+     * @param agent       LISP agent
      */
-    public AbstractTcpAgent(LispMap config, ZorkaLispAgent agent,
-                            String prefix, String defaultAddr, int defaultPort) {
-
+    public TcpServer(LispMap config, ZorkaLispAgent agent) {
         this.agent = agent;
-        this.prefix = prefix;
-
-        this.defaultPort = defaultPort;
-        this.defaultAddr = defaultAddr;
         this.config = config;
+
+        this.name = (String)config.get(KW_NAME);
+        this.parseFn = (Fn)config.get(KW_PARSE);
+        this.formatFn = (Fn)config.get(KW_FORMAT);
+        this.evalFn = (Fn)config.get(KW_EVAL);
 
         setup();
     }
@@ -124,21 +135,21 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
         try {
             listenAddr = InetAddress.getByName(la.trim());
         } catch (UnknownHostException e) {
-            log.error(ZorkaLogger.ZAG_ERRORS, "Cannot parse " + prefix + " address in zorka.conf", e);
+            log.error(ZorkaLogger.ZAG_ERRORS, "Cannot parse " + name + " address in zorka.conf", e);
             AgentDiagnostics.inc(AgentDiagnostics.CONFIG_ERRORS);
         }
 
         listenPort = (Integer)config.get(KW_PORT, defaultPort);
 
-        log.info(ZorkaLogger.ZAG_ERRORS, "Zorka will listen for " + prefix + " connections on " + listenAddr + ":" + listenPort);
+        log.info(ZorkaLogger.ZAG_ERRORS, "Zorka will listen for " + name + " connections on " + listenAddr + ":" + listenPort);
 
-        for (Seq seq = (Seq)config.get(KW_SVRS, cons("127.0.0.1", null)); seq != null; seq = (Seq)cdr(seq)) {
+        for (Seq seq = (Seq)config.get(KW_ALLOW, cons("127.0.0.1", null)); seq != null; seq = (Seq)cdr(seq)) {
             String sa = (String)car(seq);
             try {
-                log.info(ZorkaLogger.ZAG_ERRORS, "Zorka will accept " + prefix + " connections from '" + sa.trim() + "'.");
-                allowedAddrs.add(InetAddress.getByName(sa.trim()));
+                log.info(ZorkaLogger.ZAG_ERRORS, "Zorka will accept " + name + " connections from '" + sa.trim() + "'.");
+                allowAddrs.add(InetAddress.getByName(sa.trim()));
             } catch (UnknownHostException e) {
-                log.error(ZorkaLogger.ZAG_ERRORS, "Cannot parse " + prefix + ".server.addr in zorka.properties", e);
+                log.error(ZorkaLogger.ZAG_ERRORS, "Cannot parse " + name + ".server.addr in zorka.properties", e);
             }
         }
     }
@@ -153,12 +164,12 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
                 socket = new ServerSocket(listenPort, 0, listenAddr);
                 running = true;
                 thread = new Thread(this);
-                thread.setName("ZORKA-" + prefix + "-main");
+                thread.setName("ZORKA-" + name + "-main");
                 thread.setDaemon(true);
                 thread.start();
-                log.info(ZorkaLogger.ZAG_CONFIG, "ZORKA-" + prefix + " core is listening at " + listenAddr + ":" + listenPort + ".");
+                log.info(ZorkaLogger.ZAG_CONFIG, "ZORKA-" + name + " core is listening at " + listenAddr + ":" + listenPort + ".");
             } catch (IOException e) {
-                log.error(ZorkaLogger.ZAG_ERRORS, "I/O error while starting " + prefix + " core:" + e.getMessage());
+                log.error(ZorkaLogger.ZAG_ERRORS, "I/O error while starting " + name + " core:" + e.getMessage());
             }
         }
     }
@@ -186,7 +197,7 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
                     }
                 }
 
-                log.warn(ZorkaLogger.ZAG_WARNINGS, "ZORKA-" + prefix + " thread didn't stop after 1000 milliseconds. Shutting down forcibly.");
+                log.warn(ZorkaLogger.ZAG_WARNINGS, "ZORKA-" + name + " thread didn't stop after 1000 milliseconds. Shutting down forcibly.");
 
                 thread.stop();
                 thread = null;
@@ -203,7 +214,7 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
 
     @Override
     public void shutdown() {
-        log.info(ZorkaLogger.ZAG_CONFIG, "Shutting down " + prefix + " agent ...");
+        log.info(ZorkaLogger.ZAG_CONFIG, "Shutting down " + name + " agent ...");
         stop();
         if (socket != null) {
             try {
@@ -214,41 +225,43 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
         }
     }
 
-    /**
-     * This abstract method creates new request handlers for accepted TCP connections.
-     *
-     * @param sock socket representing accepted connection
-     * @return request handler for new connection
-     */
-    protected abstract ZorkaRequestHandler newRequest(Socket sock);
 
     @Override
     public void run() {
 
         while (running) {
-            Socket sock;
-            ZorkaRequestHandler rh = null;
+            Socket sock = null;
+            LispFnTcpCallback cb = null;
             try {
                 sock = socket.accept();
                 if (!allowedAddr(sock)) {
                     log.warn(ZorkaLogger.ZAG_WARNINGS, "Illegal connection attempt from '" + socket.getInetAddress() + "'.");
                     sock.close();
                 } else {
-                    rh = newRequest(sock);
-                    String req = rh.getReq();
-                    agent.exec(req, rh);
+                    Object query = parseFn.apply(
+                        agent.getInterpreter(), agent.getInterpreter().env(),
+                        StandardLibrary.cons(sock.getInputStream(), null));
+                    cb = new LispFnTcpCallback(sock, formatFn);
+                    if (query instanceof String) {
+                        agent.exec((String) query, cb);
+                    }
                 }
             } catch (Exception e) {
                 if (running) {
                     log.error(ZorkaLogger.ZAG_ERRORS, "Error occured when processing request.", e);
                 }
-                if (running && rh != null) {
-                    rh.handleError(e);
+                if (running && cb != null) {
+                    cb.handleError(e);
+                }
+            } finally {
+                try {
+                    if (sock != null) {
+                        sock.close();
+                    }
+                } catch (IOException e) {
+                    log.error(ZorkaLogger.ZAG_ERRORS, "Error while closing socket: ", e);
                 }
             }
-
-            rh = null;
-
         }
 
         thread = null;
@@ -258,7 +271,7 @@ public abstract class AbstractTcpAgent implements Runnable, ZorkaService {
 
     private boolean allowedAddr(Socket sock) {
 
-        for (InetAddress addr : allowedAddrs) {
+        for (InetAddress addr : allowAddrs) {
             if (addr.equals(sock.getInetAddress())) {
                 return true;
             }

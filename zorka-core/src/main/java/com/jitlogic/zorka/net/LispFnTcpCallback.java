@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2015 Rafal Lewczuk <rafal.lewczuk@jitlogic.com>
+ * Copyright 2012-2016 Rafal Lewczuk <rafal.lewczuk@jitlogic.com>
  * <p/>
  * This is free software. You can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -13,26 +13,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this software. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jitlogic.zorka;
+
+package com.jitlogic.zorka.net;
 
 import com.jitlogic.zorka.ZorkaCallback;
+import com.jitlogic.zorka.lisp.Fn;
 
-import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
 
-/**
- * Zorka request handler receives, parses incoming requests and sends replies.
- * Implementations of this interface handle specific protocols, eg. Zabbix or Nagios.
- *
- * @author rafal.lewczuk@jitlogic.com
- */
-public interface ZorkaRequestHandler extends ZorkaCallback {
+public class LispFnTcpCallback implements ZorkaCallback {
 
-    /**
-     * Reads, parses and returns request string
-     *
-     * @return request (translated to BSH)
-     *
-     * @throws IOException if I/O error occurs
-     */
-    public String getReq() throws IOException;
+    public LispFnTcpCallback(Socket socket, Fn formatFn) {
+
+    }
+
+    @Override
+    public void handleResult(Object rslt) {
+
+    }
+
+    @Override
+    public void handleError(Throwable e) {
+
+    }
 }

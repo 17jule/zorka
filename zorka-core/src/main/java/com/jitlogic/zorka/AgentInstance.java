@@ -16,6 +16,7 @@
 
 package com.jitlogic.zorka;
 
+import com.jitlogic.zorka.net.NetworkLibrary;
 import com.jitlogic.zorka.stats.AgentDiagnostics;
 import com.jitlogic.zorka.stats.MethodCallStatistics;
 import com.jitlogic.zorka.stats.ValGetter;
@@ -121,12 +122,15 @@ public class AgentInstance implements ZorkaService {
 
     private void initLibs() {
 
-        getZorkaAgent().install(getZorkaLib());
-        getZorkaAgent().install(getUtilLib());
+        ZorkaLispAgent agent = getZorkaAgent();
+
+        agent.install(new ZorkaLib(this));
+        agent.install(new UtilLib());
+        agent.install(new NetworkLibrary(agent));
 
         if (config.boolVal(true, KW_ZORKA, KW_SPY, KW_ENABLED)) {
             log.info(ZorkaLogger.ZAG_CONFIG, "Enabling Zorka SPY");
-            getZorkaAgent().install(getSpyLib());
+            agent.install(getSpyLib());
         }
     }
 

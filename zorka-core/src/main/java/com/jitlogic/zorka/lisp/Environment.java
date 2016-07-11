@@ -55,7 +55,6 @@ public class Environment {
                     return ObjectInspector.getField(null, f);
                 }
                 List<Method> methods = ObjectInspector.lookupMethods(c, sym.getName(), true);
-                Method m = methods.size() > 0 ? methods.get(0) : null;
                 if (methods.size() == 1) {
                     return new JavaMethod(methods.get(0), null);
                 }
@@ -66,10 +65,12 @@ public class Environment {
         }
     }
 
+
     public Object define(Symbol sym, Object val) {
         vars = vars.assoc(sym, val);
         return val;
     }
+
 
     public Object set(Symbol sym, Object val) {
         if (vars.contains(sym)) {

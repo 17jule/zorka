@@ -1,0 +1,12 @@
+
+(def test/echo-server
+  (net/tcp-server
+    {:name   "ECHO",
+     :parse  slurp,
+     :eval   eval,
+     :format spit,
+     :addr   "0.0.0.0",
+     :port   "8644"
+     :allow '("127.0.0.1", "192.168.0.0/24")
+     :deny  '("192.168.0.42")}))
+
