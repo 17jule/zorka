@@ -16,10 +16,7 @@
 
 package com.jitlogic.zorka.test.lisp;
 
-import com.jitlogic.zorka.lisp.LispSMap;
-import com.jitlogic.zorka.lisp.ReaderException;
-import com.jitlogic.zorka.lisp.Symbol;
-import com.jitlogic.zorka.lisp.Utils;
+import com.jitlogic.zorka.lisp.*;
 import com.jitlogic.zorka.test.lisp.support.LispTestSupport;
 import org.junit.Before;
 import org.junit.Test;
@@ -125,8 +122,8 @@ public class ReaderUnitTest extends LispTestSupport {
 
     @Test
     public void testReadVectors() {
-        assertEquals(vec(), read("[]"));
-        assertEquals(vec(), read("[ ]"));
+        assertEquals(LispVector.EMPTY, read("[]"));
+        assertEquals(LispVector.EMPTY, read("[ ]"));
         assertEquals(vec(1,2), read("[1 2]"));
         assertEquals(vec(1,2,3), read("[ 1, 2, 3 ]"));
     }

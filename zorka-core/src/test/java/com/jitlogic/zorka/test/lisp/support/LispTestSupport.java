@@ -85,10 +85,10 @@ public class LispTestSupport {
         return new Pair(first, rest);
     }
 
-    protected List vec(Object...objs) {
-        List<Object> vec = new ArrayList<Object>(objs.length);
+    protected LispVector vec(Object...objs) {
+        LispVector vec = LispVector.EMPTY;
         for (Object obj : objs) {
-            vec.add(obj);
+            vec = vec.append(obj);
         }
         return vec;
     }

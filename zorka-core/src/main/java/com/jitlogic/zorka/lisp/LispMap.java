@@ -18,32 +18,13 @@ package com.jitlogic.zorka.lisp;
 
 import java.util.Map;
 
-public interface LispMap extends Iterable<LispMap.Entry> {
+public interface LispMap extends Iterable<LispMap.Entry>, Associative {
 
     public static final Object NULL_KEY = new Object();
-
-    public static final Object NOT_FOUND = new Object();
-
-    public static final int MUTABLE = 0x00000001;
 
     LispMap assoc(Object k, Object v);
 
     LispMap dissoc(Object k);
-
-    Object get(Object k);
-
-    Object get(Object k, Object dv);
-
-    boolean contains(Object k);
-
-    int size();
-
-    Seq seq();
-
-    int getFlags();
-
-    void setFlags(int flags);
-
 
     public static class Entry implements Map.Entry {
         Object k, v;

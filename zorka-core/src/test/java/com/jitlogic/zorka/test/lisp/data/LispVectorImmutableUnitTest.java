@@ -14,14 +14,15 @@
  * along with this software. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.jitlogic.zorka.test.lisp.map;
+package com.jitlogic.zorka.test.lisp.data;
 
-import com.jitlogic.zorka.lisp.LispHMap;
-import com.jitlogic.zorka.lisp.LispMap;
+import com.jitlogic.zorka.lisp.LispVector;
 
-public class LispHMMapUnitTest extends LispMapAbstractTest {
+public class LispVectorImmutableUnitTest extends LispVectorAbstractTest {
     @Override
-    public LispMap newMap() {
-        return new LispHMap(LispMap.MUTABLE);
+    public LispVector newVec() {
+        return new LispVector(0);
     }
+
+
 }

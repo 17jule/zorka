@@ -167,18 +167,17 @@ public class Reader {
             } // for ( .. )
             return head.rest();
         } else if (V_BEGIN.equals(t)) {
-            Pair head = null;
-            int l = rl, c = rc;
+            LispVector v = new LispVector(Associative.MUTABLE);
             for (Object o = read(); o != V_END; o = read()) {
                 if (o == EOF) {
                     throw new ReaderException(line, col, "Unexpected end of stream.");
                 }
-                head = pair(l, c, o, head);
-                l = rl; c = rc;
+                v = v.append(o);
             }
-            return StandardLibrary.vector(Utils.lstReverse(head));
+            v.setFlags(0);
+            return v;
         } else if (M_BEGIN.equals(t)) {
-            LispMap m = LispSMap.EMPTY;
+            LispMap m = new LispSMap(Associative.MUTABLE);
             Object k = null;
             for (Object o = read(); o != M_END; o = read()) {
                 if (o == EOF) {
@@ -194,6 +193,7 @@ public class Reader {
             if (k != null) {
                 throw new ReaderException(line, col, "Uneven number of elements in declared map.");
             }
+            m.setFlags(0);
             return m;
         }
 

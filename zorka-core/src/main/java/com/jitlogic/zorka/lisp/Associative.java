@@ -14,19 +14,25 @@
  * along with this software. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.jitlogic.zorka.test.lisp.map;
+package com.jitlogic.zorka.lisp;
 
-import com.jitlogic.zorka.lisp.LispMap;
-import com.jitlogic.zorka.lisp.LispSMap;
+public interface Associative {
 
-/**
- * Small mutable map testing.
- */
-public class LispSMMapUnitTest extends LispMapAbstractTest {
+    public static final Object NOT_FOUND = new Object();
 
-    @Override
-    public LispMap newMap() {
-        return new LispSMap(LispMap.MUTABLE);
-    }
+    public static final int MUTABLE = 0x00000001;
 
+    Object get(Object k);
+
+    Object get(Object k, Object dv);
+
+    boolean contains(Object k);
+
+    int getFlags();
+
+    void setFlags(int flags);
+
+    int size();
+
+    Seq seq();
 }
