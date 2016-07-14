@@ -665,11 +665,15 @@ public class StandardLibrary {
     }
 
 
-    @Primitive("not")
+    @Primitive
     public static boolean not(Object o) {
         return o == null || Boolean.FALSE.equals(o);
     }
 
+    @Primitive
+    public static Object nth(LispVector vec, Integer i, Object...args) {
+        return vec.get(i, args.length > 0 ? args[0] : null);
+    }
 
     @Primitive("null?")
     public static boolean isNull(Object o) { return o == null; }
@@ -880,13 +884,20 @@ public class StandardLibrary {
     }
 
 
-    @Primitive("vector")
-    public static List<Object> vector(Seq lst) {
-        List<Object> vec = new ArrayList<Object>();
+    @Primitive("vec")
+    public static LispVector vec(Seq lst) {
+        LispVector vec = new LispVector(Associative.MUTABLE);
         for (Seq cur = lst; cur != null; cur = Utils.next(cur)) {
-            vec.add(car(cur));
+            vec = vec.append(car(cur));
         }
+        vec.setFlags(0);
         return vec;
+    }
+
+
+    @Primitive("vector?")
+    public static boolean isVector(Object obj) {
+        return obj instanceof LispVector;
     }
 
 
