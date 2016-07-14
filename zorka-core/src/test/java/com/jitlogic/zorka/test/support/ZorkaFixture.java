@@ -23,10 +23,17 @@ import com.jitlogic.zorka.spy.*;
 import com.jitlogic.zorka.test.utils.support.TestUtil;
 
 import com.jitlogic.zorka.SymbolRegistry;
+import com.jitlogic.zorka.util.ZorkaLogLevel;
+import com.jitlogic.zorka.util.ZorkaLogger;
+import com.jitlogic.zorka.util.ZorkaTrapper;
 import org.junit.After;
 import org.junit.Before;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 public class ZorkaFixture {
 
@@ -46,17 +53,39 @@ public class ZorkaFixture {
 
     protected UtilLib util;
 
-
+    protected List<String> logs = new ArrayList<String>();
 
     private String tmpDir;
 
     @Before
     public void setUpFixture() throws Exception {
 
+        File f = new File(this.getClass().getResource("/test/cfg/zorka.conf").getPath());
+
+        if (!f.canRead()) {
+            fail("Cannot find test config: " + f);
+        }
+
+        tmpDir = "/tmp" + File.separatorChar + "zorka-unit-test";
+        TestUtil.rmrf(tmpDir);
+        if (!new File(tmpDir).mkdirs()) {
+            fail("Cannot create temporary directory: " + tmpDir);
+        }
+
         // Configure and spawn agent instance ...
 
-        config = new AgentConfig("/tmp");
+        config = new AgentConfig(f.getParent());
         agentInstance = new TestAgentInstance(config, new DummySpyRetransformer(null, config));
+
+        ZorkaLogger.getLogger().addTrapper(
+            new ZorkaTrapper() {
+                @Override
+                public void trap(ZorkaLogLevel logLevel, String tag, String msg, Throwable e, Object... args) {
+                    logs.add(logLevel + "|" + tag + "|" + msg + "|" + e);
+                    if (e != null) e.printStackTrace();
+                }
+        });
+
         agentInstance.start();
 
         // Get all agent components used by tests
@@ -77,9 +106,6 @@ public class ZorkaFixture {
 
         symbols = agentInstance.getSymbolRegistry();
 
-        tmpDir = "/tmp" + File.separatorChar + "zorka-unit-test";
-        TestUtil.rmrf(tmpDir);
-        new File(tmpDir).mkdirs();
     }
 
 
@@ -107,6 +133,12 @@ public class ZorkaFixture {
         //testMbs.registerMBean(bean, new ObjectName(name));
 
         return bean;
+    }
+
+    protected void printLogs() {
+        for (String s : logs) {
+            System.out.println(s);
+        }
     }
 
 }

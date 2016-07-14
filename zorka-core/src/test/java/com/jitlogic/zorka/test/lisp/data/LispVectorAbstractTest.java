@@ -18,13 +18,18 @@ package com.jitlogic.zorka.test.lisp.data;
 
 import com.jitlogic.zorka.lisp.LispVector;
 
+import com.jitlogic.zorka.lisp.Seq;
 import org.junit.Test;
+
+import java.util.Random;
 
 import static org.junit.Assert.*;
 
 public abstract class LispVectorAbstractTest {
 
-    public final static int FULL_CHECK_GET = 0x01;
+    public final static int FULL_CHECK_GET  = 0x01;
+    public final static int FULL_CHECK_SEQ  = 0x02;
+    public final static int FULL_CHECK_ITER = 0x04;
 
     public final static int FULL_CHECK = 0xff;
 
@@ -131,6 +136,19 @@ public abstract class LispVectorAbstractTest {
                     assertEquals(v.get(j), (Integer)(i-j));
                 }
             }
+            if (0 != (flags & FULL_CHECK_SEQ)) {
+                Seq seq = v;
+                for (int j = 0; seq != null; seq = (Seq)seq.rest(),j++) {
+                    assertEquals(seq.first(), (Integer)(i-j));
+                }
+            }
+            if (0 != (flags & FULL_CHECK_ITER)) {
+                int j = 0;
+                for (Object o : v) {
+                    assertEquals(o, (Integer)(i-j));
+                    j++;
+                }
+            }
         }
 
         assertEquals(limit, v.size());
@@ -148,6 +166,19 @@ public abstract class LispVectorAbstractTest {
             if (0 != (flags & FULL_CHECK_GET)) {
                 for (int j = 0; j <= i; j++) {
                     assertEquals(v.get(j), (Integer)j);
+                }
+            }
+            if (0 != (flags & FULL_CHECK_SEQ)) {
+                Seq seq = v;
+                for (int j = 0; seq != null; seq = (Seq)seq.rest(),j++) {
+                    assertEquals(seq.first(), (Integer)j);
+                }
+            }
+            if (0 != (flags & FULL_CHECK_ITER)) {
+                int j = 0;
+                for (Object o : v) {
+                    assertEquals(o, (Integer)j);
+                    j++;
                 }
             }
 

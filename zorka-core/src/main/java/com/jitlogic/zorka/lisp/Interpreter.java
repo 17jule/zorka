@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import static com.jitlogic.zorka.lisp.Symbol.symbol;
 
@@ -110,10 +111,23 @@ public class Interpreter {
         while (true) {
             try {
                 if (x == null || x instanceof Number || x instanceof String || x instanceof Boolean
-                    || x instanceof Keyword || x instanceof Character || x.getClass().isArray() || x.getClass().isEnum()) {
+                    || x instanceof Keyword || x instanceof Character
+                    || x.getClass().isArray() || x.getClass().isEnum()) {
                     return x;
                 } else if (x instanceof Symbol) {
                     return env.lookup((Symbol) x);
+                } else if (x instanceof LispMap) {
+                    LispMap m = LispSMap.EMPTY;
+                    for (Map.Entry e : (LispMap)x) {
+                        m = m.assoc(eval(e.getKey(), env), eval(e.getValue(), env));
+                    }
+                    return m;
+                } else if (x instanceof LispVector) {
+                    LispVector v = LispVector.EMPTY;
+                    for (Object o : (LispVector)x) {
+                        v = v.append(eval(o,env));
+                    }
+                    return v;
                 } else if (x instanceof Pair) {
                     Object f = StandardLibrary.car(x);
                     Seq n = Utils.next(x);

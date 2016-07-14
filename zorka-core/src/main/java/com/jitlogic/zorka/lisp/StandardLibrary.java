@@ -766,15 +766,20 @@ public class StandardLibrary {
 
 
     @Primitive
-    public static String slurp(String path) {
+    public static String slurp(Object arg) {
         InputStream is = null;
         try {
-            if (path.startsWith("classpath:")) {
-                is = StandardLibrary.class.getResourceAsStream(path.substring(10));
-            } else if (path.startsWith("file:")) {
-                is = new FileInputStream(path.substring(5));
-            } else {
-                is = new FileInputStream(path);
+            if (arg instanceof String) {
+                String path = (String)arg;
+                if (path.startsWith("classpath:")) {
+                    is = StandardLibrary.class.getResourceAsStream(path.substring(10));
+                } else if (path.startsWith("file:")) {
+                    is = new FileInputStream(path.substring(5));
+                } else {
+                    is = new FileInputStream(path);
+                }
+            } else if (arg instanceof InputStream) {
+                is = (InputStream)arg;
             }
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             byte[] buf = new byte[4096];
@@ -784,9 +789,9 @@ public class StandardLibrary {
             }
             return new String(bos.toByteArray());
         } catch (IOException e) {
-            throw new LispException("Cannot open file: " + path, e);
+            throw new LispException("Cannot open or read: " + arg, e);
         } finally {
-            if (is != null) {
+            if (is != null && !(arg instanceof InputStream)) {
                 try {
                     is.close();
                 } catch (IOException e) {
@@ -798,13 +803,13 @@ public class StandardLibrary {
 
 
     @Primitive
-    public static void spit(String path, String content) {
+    public static void spit(Object arg, String content) {
         OutputStream os = null;
         try {
-            os = new FileOutputStream(path);
+            os = arg instanceof OutputStream ? (OutputStream) arg : new FileOutputStream((String)arg);
             os.write(content.getBytes());
         } catch (IOException e) {
-            throw new LispException("Cannot open file: " + path, e);
+            throw new LispException("Cannot open or read: " + arg, e);
         } finally {
             if (os != null) {
                 try {

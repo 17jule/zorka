@@ -270,6 +270,11 @@ public class ZorkaLogger implements ZorkaTrapper {
     }
 
 
+    public synchronized void clearTrappers() {
+        trappers.clear();
+    }
+
+
     public synchronized void shutdown() {
         for (ZorkaTrapper trapper : trappers) {
             if (trapper instanceof ZorkaAsyncThread) {

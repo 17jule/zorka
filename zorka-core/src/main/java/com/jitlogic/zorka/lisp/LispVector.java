@@ -218,7 +218,7 @@ public class LispVector implements Associative, Seq {
 
     @Override
     public Object rest() {
-        return subv(1);
+        return (idx1-idx0) > 1 ? subv(1) : null;
     }
 
 
