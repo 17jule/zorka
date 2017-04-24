@@ -20,6 +20,12 @@ import com.jitlogic.zorka.ZorkaLispAgent;
 import com.jitlogic.zorka.lisp.LispMap;
 import com.jitlogic.zorka.lisp.Namespace;
 import com.jitlogic.zorka.lisp.Primitive;
+import com.jitlogic.zorka.lisp.Seq;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 @Namespace("net")
 public class NetworkLibrary {
@@ -35,6 +41,32 @@ public class NetworkLibrary {
         TcpServer server = new TcpServer(config, agent);
         server.start();
         return server;
+    }
+
+    @Primitive("read-line")
+    public static String readLine(InputStream is) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        for (int b = is.read(); b != 0x0a && b != -1; b = is.read()) {
+            bos.write(b);
+        }
+        return new String(bos.toByteArray());
+    }
+
+    @Primitive("parse-bracket-query")
+    public static Seq bracketQueryParse(String query) {
+        return null;
+    }
+
+    private static final byte[] ZBX_HDR = {(byte) 'Z', (byte) 'B', (byte) 'X', (byte) 'D', 0x01};
+
+    @Primitive("zabbix-read-packet")
+    public static String zabbixReadPacket(InputStream is) {
+        return null;
+    }
+
+    @Primitive("zabbix-write-packet")
+    public static void zabbixWritePacket(OutputStream os, Object v) {
+        //if (v == null) v =
     }
 
 }

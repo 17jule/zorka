@@ -63,5 +63,4 @@ public class TraceFormat {
             TREC_HEADER = TREC_HEADER_LE;
         }
     }
-
 }

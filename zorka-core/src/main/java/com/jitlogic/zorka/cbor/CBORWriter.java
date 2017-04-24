@@ -183,4 +183,5 @@ public class CBORWriter {
     public void writeTag(int tag) throws IOException {
         writeUInt(0xc0, tag);
     }
+
 }
